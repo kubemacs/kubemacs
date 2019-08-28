@@ -1,0 +1,12 @@
+#+TITLE: iiorgmacs
+
+* Introdction
+
+ii brings a number of technologies together to create an open workflow.
+Using docker will reduce the setup and maintenance of sharing the core components with others.
+
+* Core Components
+
+- [[http://spacemacs.org/][Spac(emacs)]]
+- [[https://orgmode.org/][Orgmode]]
+- [[https://gitlab.com/oer/oer-reveal][oer-reveal]]
