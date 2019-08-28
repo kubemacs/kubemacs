@@ -19,8 +19,8 @@ RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ENV LANG en_US.utf8
 
 RUN cd /tmp &&\
-    curl -L -O https://github.com/jgm/pandoc/releases/download/2.7.2/pandoc-2.7.3-amd64.deb &&\
-    dpkg -i /tmp/pandoc-2.7.3-amd64.deb
+    curl -L -O https://github.com/jgm/pandoc/releases/download/2.7.3/pandoc-2.7.3-1-amd64.deb &&\
+    dpkg -i /tmp/pandoc-2.7.3-1-amd64.deb
 
 RUN apt-get install -y emacs
 
