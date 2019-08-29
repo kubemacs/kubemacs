@@ -22,7 +22,7 @@ RUN cd /tmp &&\
     curl -L -O https://github.com/jgm/pandoc/releases/download/2.7.3/pandoc-2.7.3-1-amd64.deb &&\
     dpkg -i /tmp/pandoc-2.7.3-1-amd64.deb
 
-RUN apt-get install -y emacs
+RUN add-apt-repository ppa:kelleyk/emacs && apt-get install -y emacs26
 
 RUN git clone --depth 1 --recurse-submodules \
         https://github.com/iimacs/site-lisp \
