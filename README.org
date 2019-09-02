@@ -10,3 +10,23 @@ Using docker will reduce the setup and maintenance of sharing the core component
 - [[http://spacemacs.org/][Spac(emacs)]]
 - [[https://orgmode.org/][Orgmode]]
 - [[https://gitlab.com/oer/oer-reveal][oer-reveal]]
+
+* Build
+
+The [[https://gitlab.ii.coop/ii/tooling/iiorgmacs/blob/master/Dockerfile][Dockerfile]] uses [[https://gitlab.ii.coop/ii/tooling/iibase/blob/master/Dockerfile][iibase]] as its initial build stage.
+
+#+BEGIN_SRC tmate
+docker build -t iiorgmacs .
+#+END_SRC
+
+* Test Image as User ii
+
+#+BEGIN_SRC tmate
+docker run --name=iiorgmacs-$USER --hostname=iiorgmacs --rm -it iiorgmacs
+#+END_SRC
+
+* Test Image as root User
+
+#+BEGIN_SRC tmate
+docker run --name=iiorgmacs-$USER --hostname=iiorgmacs --rm -it -u 0:0 iiorgmacs
+#+END_SRC
