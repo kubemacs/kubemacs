@@ -30,3 +30,13 @@ docker run --name=iiorgmacs-$USER --hostname=iiorgmacs --rm -it iiorgmacs
 #+BEGIN_SRC tmate
 docker run --name=iiorgmacs-$USER --hostname=iiorgmacs --rm -it -u 0:0 iiorgmacs
 #+END_SRC
+
+* Debug image with strace
+
+#+BEGIN_SRC tmate
+docker run --cap-add=SYS_PTRACE \
+           --security-opt seccomp=unconfined \
+           --name=iiorgmacs-$USER \
+           --hostname=iiorgmacs \
+           --rm -it -u 0:0 iiorgmacs
+#+END_SRC
