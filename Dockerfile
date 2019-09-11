@@ -1,7 +1,7 @@
 # "iiorgmacs" Add "Spacemacs" layer, supporting files and "ii" user
 # Version 0.1 Sept 2019
 
-FROM iibase
+FROM iimacs/base
 
 RUN rm -rf /usr/local/share/emacs/site-lisp &&\
     git clone --depth 1 --recurse-submodules \
