@@ -78,7 +78,13 @@ This function should only modify configuration layer settings."
           org-journal-date-prefix "#+TITLE: "
           org-journal-date-format "%A, %B %d %Y"
           org-journal-time-prefix "* "
-          org-journal-time-format "")
+          org-journal-time-format ""
+          org-babel-tmate-session-prefix ""
+          org-babel-python-command "python3"
+          org-babel-tmate-default-window-name "main"
+          org-confirm-babel-evaluate nil
+          org-use-property-inheritance t
+          )
      ;; (shell :variables
      ;;        shell-default-height 30
      ;;        shell-default-position 'bottom)
@@ -152,8 +158,8 @@ This function should only modify configuration layer settings."
                                       evil-vimish-fold
                                       fancy-narrow
                                       feature-mode
-                                      (forge :location "/usr/local/share/emacs/site-lisp/forge"
-                                             :afer magit)
+                                      ;;(forge :location "/usr/local/share/emacs/site-lisp/forge"
+                                      ;;       :afer magit)
                                       ghub
                                       go-playground
                                       go-dlv
@@ -221,7 +227,7 @@ This function should only modify configuration layer settings."
                                       ;; this would in turn enable support on many
                                       ;; default linux/gnome terminals
                                       ;; for now, you probably want to use xterm
-                                      (osc52e :location "/usr/local/share/emacs/site-lisp/osc52e")
+                                      ;; (osc52e :location "/usr/local/share/emacs/site-lisp/osc52e")
                                       ;; for jupyter
                                       websocket
                                       ;; simple-httpd
@@ -325,7 +331,7 @@ It should only modify the values of Spacemacs settings."
    ;; by your Emacs build.
    ;; If the value is nil then no banner is displayed. (default 'official)
    ;; Can be a string path to PNG
-   spacemacs-banner-directory (expand-file-name (concat dotspacemacs-directory "banners/"))
+   ;; spacemacs-banner-directory (expand-file-name (concat dotspacemacs-directory "banners/"))
    dotspacemacs-startup-banner 4
 
    ;; List of items to show in startup buffer or an association list of
@@ -625,6 +631,13 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
 This function is called only while dumping Spacemacs configuration. You can
 `require' or `load' the libraries of your choice that will be included in the
 dump."
+  (require 'ox-publish)
+  (require 'org-checklist)
+  (require 'ein)
+  (require 'ob-ein)
+  (require 'togetherly)
+  (require 'ob-sql-mode)
+  (require 'ob-tmate)
   )
 
 (defun dotspacemacs/user-config ()
@@ -633,4 +646,159 @@ This function is called at the very end of Spacemacs startup, after layer
 configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
+  ;; (setq-default
+  ;;  time-stamp-zone "Pacific/Auckland"
+  ;;  ;; https://www.emacswiki.org/emacs/TimeStamp
+  ;;  time-stamp-pattern "10/#+UPDATED: needs time-local formatted regexp"
+  ;;  )
+  ;; (defun togetherly-server-start-now ()
+  ;;   "Start a Togetherly server with this buffer."
+  ;;   (interactive)
+  ;;   (cond ((null togetherly--server)
+  ;;          (let* ((addr "127.0.0.1")
+  ;;                 (server-port togetherly-port)
+  ;;                 (server-name user-login-name)
+  ;;                 (server-proc (make-network-process
+  ;;                               :name "togetherly-server" :server t
+  ;;                               :service server-port :noquery t :host addr
+  ;;                               :sentinel 'togetherly--server-sentinel-function
+  ;;                               :filter 'togetherly--server-filter-function))
+  ;;                 (rcolor (car togetherly-region-colors))
+  ;;                 (pcolor (car togetherly-cursor-colors)))
+  ;;            (setq togetherly-region-colors   (cdr togetherly-region-colors)
+  ;;                  togetherly-cursor-colors   (cdr togetherly-cursor-colors)
+  ;;                  togetherly--server         `(,server-proc ,server-name ,rcolor . ,pcolor)
+  ;;                  togetherly--server-buffer  (current-buffer)
+  ;;                  togetherly--server-clients nil
+  ;;                  togetherly--server-timer-object
+  ;;                  (run-with-timer nil togetherly-cursor-sync-rate
+  ;;                                  'togetherly--server-broadcast-cursor-positions))
+  ;;            (set (make-local-variable 'header-line-format)
+  ;;                 (concat " " (propertize server-name 'face `(:background ,pcolor)))))
+  ;;          (add-hook 'before-change-functions 'togetherly--server-before-change nil t)
+  ;;          (add-hook 'after-change-functions 'togetherly--server-after-change nil t)
+  ;;          (add-hook 'kill-buffer-query-functions 'togetherly--server-kill-buffer-query)
+  ;;          (populate-x-togetherly) ;; go ahead and create the tmate paste for the togetherly
+  ;;          )
+  ;;         ((y-or-n-p "Togetherly server already started. Migrate to this buffer ? ")
+  ;;          (set (make-local-variable 'header-line-format)
+  ;;               (buffer-local-value 'header-line-format togetherly--server-buffer))
+  ;;          (add-hook 'before-change-functions 'togetherly--server-before-change nil t)
+  ;;          (add-hook 'after-change-functions 'togetherly--server-after-change nil t)
+  ;;          (with-current-buffer togetherly--server-buffer
+  ;;            (remove-hook 'before-change-functions 'togetherly--server-before-change t)
+  ;;            (remove-hook 'after-change-functions 'togetherly--server-after-change t)
+  ;;            (kill-local-variable 'header-line-format))
+  ;;          (setq togetherly--server-buffer (current-buffer))
+  ;;          (togetherly--server-broadcast `(welcome ,(togetherly--buffer-string) . ,major-mode))
+  ;;          )
+  ;;         (t
+  ;;          (message "Togetherly: Canceled."))))
+  ;; (defun populate-x-togetherly ()
+  ;;   "Populate the clipboard with the command for a together client"
+  ;;   (interactive)
+  ;;   (message "Setting X Clipboard to contain the start-tmate command")
+  ;;   (xclip-mode 1)
+  ;;   (gui-select-text start-tmate-for-togetherly-client)
+  ;;   )
+  (defun runs-and-exits-zero (program &rest args)
+    "Run PROGRAM with ARGS and return the exit code."
+    (with-temp-buffer
+      (if (= 0 (apply 'call-process program nil (current-buffer) nil args))
+          'true
+        ))
+    )
+  (defun xclip-working ()
+    "Quick Check to see if X is working."
+    (if (getenv "DISPLAY")
+        ;; this xset test is a bit flakey
+        ;; (if (runs-and-exits-zero "xset" "q")
+        ;; Using xclip to set an invalid selection is as lightly intrusive
+        ;; check I could come up with, and not overwriting anything
+        ;; however it seems to hang
+        ;; (if (runs-and-exits-zero "xclip" "-selection" "unused")
+        ;;     'true)
+        'true
+      ;; )
+      )
+    )
+  (defun create-target-script (filename command)
+    "Create a temporary script to create/connect to target tmate window"
+    (message "Creating a script file in tmp")
+    (with-current-buffer (find-file-noselect filename)
+      (erase-buffer)
+      (insert-for-yank
+       (concat "\n#!/bin/sh\n\n" command))
+      (save-buffer)
+      (set-file-modes filename #o755)
+      )
+    )
+  (defun populate-terminal-clipboard ()
+    "Populate the osc52 clipboard via terminal with the start-tmate-sh"
+    ;; TODO
+    (message "Unable to set X Clipboard to contain the start-tmate-sh")
+    (create-target-script tmate-sh start-tmate-command)
+    ;; (gui-select-text tmate-sh)
+    (setq current-tmate-sh tmate-sh) ;; since tmate-sh is buffer-local..
+    ;;(setq current-tmate-ssh (concat "export IISOCK=" socket " ; rm -f $IISOCK ; ssh -tAX " ssh-user-host " -L $IISOCK:$IISOCK " tmate-sh))
+    (setq current-tmate-ssh (concat "ssh -tAX " ssh-user-host " " tmate-sh))
+    (with-current-buffer (get-buffer-create "start-tmate-sh" )
+      (insert-for-yank "You will need to copy this manually:\n\n" )
+      (insert-for-yank
+       (concat "\nTo open on another host, forward your iisocket by pasting:\n\n" current-tmate-ssh
+               "\n\nOR open another terminal on the same host and paste:\n\n" current-tmate-sh)
+       ))
+    )
+  (defun populate-x-clipboard ()
+    "Populate the X clipboard with the start-tmate-sh"
+    (message "Setting X Clipboard to contain the start-tmate-sh")
+    (xclip-mode 1)
+    ;; (gui-select-text (concat "rm -fi " socket "; ssh -tAX " ssh-user "@" ssh-host " -L " socket ":" socket " " start-tmate-over-ssh-command))
+    (create-target-script tmate-sh start-tmate-command)
+    ;; (gui-select-text tmate-sh)
+    ;; If we work to detect if it's a remote host, this might make sense
+    ;; but for now we mostly connect to the pair box
+    ;; (setq current-tmate-ssh (concat "export II=" socket " ; rm -f $II ; ssh -tAX " ssh-user-host " -L $II:$II " tmate-sh))
+    (setq current-tmate-sh tmate-sh) ;; since tmate-sh is buffer-local..
+    (setq current-tmate-ssh (concat "ssh -tAX " ssh-user-host " " tmate-sh))
+    (gui-select-text current-tmate-ssh)
+                                        ; (gui-select-text start-tmate-command)
+    (xclip-mode 0)
+    (with-current-buffer (get-buffer-create "start-tmate-sh")
+      (insert-for-yank "The following has been populated to your local X clipboard:\n")
+      (insert-for-yank
+       ;; we can use the global current-tmate-sh
+       (concat "\nTo open on another host, forward your iisocket by pasting:\n\n" current-tmate-ssh
+               "\n\nOR open another terminal on the same host and paste:\n\n" current-tmate-sh)
+       ))
+    ;; and unset it when done
+    (setq current-tmate-ssh nil)
+    (setq current-tmate-sh nil)
+    )
+  ;; https://www.wisdomandwonder.com/article/10630/how-fast-can-you-tangle-in-org-mode
+  (setq help/default-gc-cons-threshold gc-cons-threshold)
+  (defun help/set-gc-cons-threshold (&optional multiplier notify)
+    "Set `gc-cons-threshold' either to its default value or a
+   `multiplier' thereof."
+    (let* ((new-multiplier (or multiplier 1))
+           (new-threshold (* help/default-gc-cons-threshold
+                             new-multiplier)))
+      (setq gc-cons-threshold new-threshold)
+      (when notify (message "Setting `gc-cons-threshold' to %s"
+                            new-threshold))))
+  (defun help/double-gc-cons-threshold () "Double `gc-cons-threshold'." (help/set-gc-cons-threshold 2))
+  (add-hook 'org-babel-pre-tangle-hook #'help/double-gc-cons-threshold)
+  (add-hook 'org-babel-post-tangle-hook #'help/set-gc-cons-threshold)
+  ;; info:org#Conflicts for org 9 and very recent yas
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (setq-local yas/trigger-key [tab])
+              (define-key yas/keymap [tab] 'yas/next-field-or-maybe-expand)))
+  ;;  (defun yas/org-very-safe-expand ()
+  ;;    (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))
+  ;;  (yas/expand)
+  ;; (add-to-list 'org-tab-first-hook 'yas/org-very-safe-expand)
+  ;;(make-variable-buffer-local 'yas/trigger-key)
+  ;;(setq yas/trigger-key [tab])
+  ;;(define-key yas/keymap [tab] 'yas/next-field)
   )
