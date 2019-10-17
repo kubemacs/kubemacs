@@ -114,12 +114,6 @@ This function should only modify configuration layer settings."
           lsp-print-io t
           )
      nginx
-     ;;;; ob-async
-     ;;;; (ob-tmate :location (recipe
-     ;;;;                    :fetcher github
-     ;;;;                     :repo "ii/ob-tmate"))
-     ;;;; org-pdfview
-     ;;;; osc52e
      pandoc
      pdf
      python
@@ -145,7 +139,96 @@ This function should only modify configuration layer settings."
    ;; To use a local version of a package, use the `:location' property:
    ;; '(your-package :location "~/path/to/your-package/")
    ;; Also include the dependencies as they will not be resolved automatically.
-   dotspacemacs-additional-packages '()
+   dotspacemacs-additional-packages '(
+
+                                      async
+                                      closql
+                                      command-log-mode
+                                      dash
+                                      demo-it
+                                      ein ;; https://github.com/millejoh/emacs-ipython-notebook
+                                      emms
+                                      emacsql-sqlite
+                                      evil-vimish-fold
+                                      fancy-narrow
+                                      feature-mode
+                                      (forge :location "/usr/local/share/emacs/site-lisp/forge"
+                                             :afer magit)
+                                      ghub
+                                      go-playground
+                                      go-dlv
+                                      gorepl-mode ;; go
+                                      graphql
+                                      graphql-mode
+                                      ;; (graphql-mode :location (recipe
+                                      ;;                          :fetcher github
+                                      ;;                          :repo "davazp/graphql-mode"
+                                      ;;                          :commit "301a218"
+                                      ;;                          ))
+                                      groovy-mode
+                                      jupyter
+                                      ob-async
+                                      (ob-tmate :location (recipe
+                                                           :fetcher github
+                                                           :repo "ii/ob-tmate"))
+                                      org-pdfview
+                                      ob-sql-mode
+                                      oer-reveal
+                                      (org-protocol-capture-html :location (recipe
+                                                                            :fetcher github
+                                                                            :repo "alphapapa/org-protocol-capture-html"
+                                                                            :commit "23a1336c"))
+                                      org-re-reveal-ref
+                                      (emacs-reveal :location (recipe
+                                                               :fetcher gitlab
+                                                               :repo "oer/emacs-reveal"
+                                                               :commit "d0aa1f9d"))
+                                      ob-go
+                                      ;; org-protocol ;; https://orgmode.org/worg/org-contrib/org-protocol.html
+                                      ;; http://tech.memoryimprintstudio.com/org-capture-from-external-applications/
+                                      ;; https://github.com/sprig/org-capture-extension
+                                      ob-tmux
+                                      org-babel-eval-in-repl
+                                      org-tree-slide
+                                      ;; org-mu4e
+                                      org-pdfview
+                                      ox-reveal
+                                      ;; pdf-tools ;; https://github.com/politza/pdf-tools
+                                      ;; pdf-view
+                                      s
+                                      scad-mode
+                                      slime
+                                      transcribe
+                                      togetherly
+                                      vimish-fold
+                                      xclip
+                                      (yasnippet :location (recipe
+                                                            :fetcher github
+                                                            :repo "joaotavora/yasnippet"
+                                                            :commit "89eb7ab"))
+                                      ;;                      :branch "0.12.2"))
+                                      ;; for tmate and over ssh cut-and-paste
+                                                 ;; https://gist.github.com/49eabc1978fe3d6dedb3ca5674a16ece.git
+                                      ;; sakura is waiting on vte
+                                      ;; https://bugs.launchpad.net/sakura/+bug/1769575
+                                      ;; I'm pretty sure the lib vte issue is stale
+                                      ;; https://bugzilla.gnome.org/show_bug.cgi?id=795774
+                                      ;; available in minitty since 2.6.1
+                                      ;; https://github.com/mintty/mintty/issues/258
+                                      ;; http://mintty.github.io/ (Default tty on Cygwin etc)
+                                      ;; I created a ticket to add support to vte
+                                      ;; https://gitlab.gnome.org/GNOME/vte/issues/125
+                                      ;; this would in turn enable support on many
+                                      ;; default linux/gnome terminals
+                                      ;; for now, you probably want to use xterm
+                                      (osc52e :location "/usr/local/share/emacs/site-lisp/osc52e")
+                                      ;; for jupyter
+                                      websocket
+                                      ;; simple-httpd
+                                      ;; emacs-websocket
+                                      ;; company-mode
+                                      ;; markdown-mode
+                                      )
 
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
