@@ -32,28 +32,110 @@ This function should only modify configuration layer settings."
 
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(markdown
+   '(
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press `SPC f e R' (Vim style) or
      ;; `M-m f e R' (Emacs style) to install them.
      ;; ----------------------------------------------------------------
-     auto-completion
+     (auto-completion :variables
+                      auto-completion-private-snippets-directory (expand-file-name "~/.emacs.d/snippets")
+                      auto-completion-enable-sort-by-usage t
+                      auto-completion-enable-snippets-in-popup t
+                      auto-completion-enable-help-tooltip t)
      better-defaults
+     deft ;; https://jblevins.org/projects/deft/
      emacs-lisp
+     emoji ;; sudo apt-get install ttf-ancient-fonts
+     ;; ~SPC a E~ ~SPC i e~
      git
      helm
      lsp
      markdown
+     (mu4e :variables
+           mu4e-enable-mode-line nil
+           mu4e-enable-notifications nil
+           mu4e-drafts-folder "/[Gmail].Drafts"
+           mu4e-sent-folder   "/[Gmail].Sent Mail"
+           mu4e-trash-folder  "/[Gmail].Bin"
+           mu4e-maildir-shortcuts
+           '( ("/INBOX"               . ?i)
+              ("/[Gmail].Sent Mail"   . ?s)
+              ("/[Gmail].Bin"       . ?t)
+              ("/[Gmail].All Mail"    . ?a))
+           )
      multiple-cursors
-     org
+     neotree
+     (org :variables
+          org-enable-github-support t
+          org-enable-bootstrap-support t
+          org-enable-reveal-js-support t
+          org-enable-hugo-support t
+          org-enable-org-journal-support t
+          org-projectile-file "TODO.org"
+          org-journal-dir "~/org/journal/"
+          org-journal-file-format "%Y-%m-%d"
+          org-journal-date-prefix "#+TITLE: "
+          org-journal-date-format "%A, %B %d %Y"
+          org-journal-time-prefix "* "
+          org-journal-time-format "")
      ;; (shell :variables
      ;;        shell-default-height 30
      ;;        shell-default-position 'bottom)
      ;; spell-checking
+     sql
      syntax-checking
+     copy-as-format ;; ~SPC x f g~ copy-as-format-markdown
+     docker
+     dash ;; https://zealdocs.org/download.html
+     ;;forge
+     (go :variables
+         godoc-at-point-function 'godoc-gogetdoc
+         go-tab-width 4
+         go-use-gometalinter t)
+     html
+     impatient-mode
+     javascript
+     lua
+     (lsp :variables
+          lsp-navigation 'both
+          lsp-ui-doc-enable t
+          lsp-ui-doc-position 'top
+          lsp-ui-doc-alignment 'frame
+                                        ; lsp-ui-doc-border 'white
+          lsp-ui-doc-use-childframe t
+          lsp-ui-doc-use-webkit t
+          lsp-ui-doc-delay 0.2
+          lsp-ui-doc-include-signature nil 
+          lsp-ui-sideline-show-symbol t
+          lsp-ui-remap-xref-keybindings t
+          lsp-ui-sideline-enable t
+          lsp-prefer-flymake nil
+          lsp-print-io t
+          )
+     nginx
+     ob-async
+     (ob-tmate :location (recipe
+                          :fetcher github
+                          :repo "ii/ob-tmate"))
+     org-pdfview
+     osc52e
+     pandoc
+     pdf
+     python
+     ruby
+     ;; speed-reading
+     ;; search-engine
+     shell-scripts
+     terraform
      treemacs
+     typography
+     ;; #+REVEAL_ROOT: http://cdn.jsdelivr.net/reveal.js/3.0.0/
+     ;; (setq org-bullets-bullet-list '("■" "◆" "▲" "▶"))
+     ;;async-shell
+     xkcd ;; ~SPC a x~
      version-control
+     yaml
      )
 
    ;; List of additional packages that will be installed without being

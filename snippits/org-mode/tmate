@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: tmate
+# key: tmate_
+# --
+#+BEGIN_SRC tmate
+$0
+#+END_SRC
