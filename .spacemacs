@@ -174,11 +174,12 @@ This function should only modify configuration layer settings."
                                       groovy-mode
                                       jupyter
                                       ob-async
-                                      (ob-tmate :location (recipe
+                                      (ob-tmate :ensure t
+                                                :location (recipe
                                                            :fetcher github
                                                            :repo "ii/ob-tmate"))
                                       org-pdfview
-                                      ob-sql-mode
+                                      (ob-sql-mode :ensure t)
                                       oer-reveal
                                       (org-protocol-capture-html :location (recipe
                                                                             :fetcher github
@@ -211,7 +212,8 @@ This function should only modify configuration layer settings."
                                       (yasnippet :location (recipe
                                                             :fetcher github
                                                             :repo "joaotavora/yasnippet"
-                                                            :commit "89eb7ab"))
+                                                            :branch "0.13.0"))
+                                                            ;; :commit "89eb7ab"))
                                       ;;                      :branch "0.12.2"))
                                       ;; for tmate and over ssh cut-and-paste
                                                  ;; https://gist.github.com/49eabc1978fe3d6dedb3ca5674a16ece.git
@@ -646,6 +648,8 @@ This function is called at the very end of Spacemacs startup, after layer
 configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
+  (require 'ob-tmate)
+  (require 'ob-sql-mode)
   ;; (setq-default
   ;;  time-stamp-zone "Pacific/Auckland"
   ;;  ;; https://www.emacswiki.org/emacs/TimeStamp
@@ -789,11 +793,19 @@ before packages are loaded."
   (defun help/double-gc-cons-threshold () "Double `gc-cons-threshold'." (help/set-gc-cons-threshold 2))
   (add-hook 'org-babel-pre-tangle-hook #'help/double-gc-cons-threshold)
   (add-hook 'org-babel-post-tangle-hook #'help/set-gc-cons-threshold)
-  ;; info:org#Conflicts for org 9 and very recent yas
+  (defun yas/org-very-safe-expand ()
+    (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))
   (add-hook 'org-mode-hook
             (lambda ()
-              (setq-local yas/trigger-key [tab])
-              (define-key yas/keymap [tab] 'yas/next-field-or-maybe-expand)))
+              (make-variable-buffer-local 'yas/trigger-key)
+              (setq yas/trigger-key [tab])
+              (add-to-list 'org-tab-first-hook 'yas/org-very-safe-expand)
+              (define-key yas/keymap [tab] 'yas/next-field)))
+  ;; info:org#Conflicts for org 9 and very recent yas
+  ;; (add-hook 'org-mode-hook
+  ;;           (lambda ()
+  ;;             (setq-local yas/trigger-key [tab])
+  ;;             (define-key yas/keymap [tab] 'yas/next-field-or-maybe-expand)))
   ;;  (defun yas/org-very-safe-expand ()
   ;;    (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))
   ;;  (yas/expand)
@@ -802,3 +814,29 @@ before packages are loaded."
   ;;(setq yas/trigger-key [tab])
   ;;(define-key yas/keymap [tab] 'yas/next-field)
   )
+;; ‘yasnippet.el’
+;;      The way Org mode binds the ‘<TAB>’ key (binding to ‘[tab]’ instead
+;;      of ‘"\t"’) overrules YASnippet’s access to this key.  The following
+;;      code fixed this problem:
+
+;;           (add-hook 'org-mode-hook
+;;                     (lambda ()
+;;                       (setq-local yas/trigger-key [tab])
+;;                       (define-key yas/keymap [tab] 'yas/next-field-or-maybe-expand)))
+
+;;      The latest version of YASnippet does not play well with Org mode.
+;;      If the above code does not fix the conflict, start by defining the
+;;      following function:
+
+;;           (defun yas/org-very-safe-expand ()
+;;             (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))
+
+;;      Then, tell Org mode to use that function:
+
+;;           (add-hook 'org-mode-hook
+;;                     (lambda ()
+;;                       (make-variable-buffer-local 'yas/trigger-key)
+;;                       (setq yas/trigger-key [tab])
+;;                       (add-to-list 'org-tab-first-hook 'yas/org-very-safe-expand)
+;;                       (define-key yas/keymap [tab] 'yas/next-field)))
+
