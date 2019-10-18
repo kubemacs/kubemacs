@@ -648,6 +648,10 @@ This function is called at the very end of Spacemacs startup, after layer
 configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
+  ;; FIXME: workaround
+  ;; https://github.com/syl20bnr/spacemacs/issues/11798
+  (when (version<= "9.2" (org-version))
+    (require 'org-tempo))
   (require 'ob-tmate)
   (require 'ob-sql-mode)
   ;; (setq-default
@@ -793,14 +797,14 @@ before packages are loaded."
   (defun help/double-gc-cons-threshold () "Double `gc-cons-threshold'." (help/set-gc-cons-threshold 2))
   (add-hook 'org-babel-pre-tangle-hook #'help/double-gc-cons-threshold)
   (add-hook 'org-babel-post-tangle-hook #'help/set-gc-cons-threshold)
-  (defun yas/org-very-safe-expand ()
-    (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))
-  (add-hook 'org-mode-hook
-            (lambda ()
-              (make-variable-buffer-local 'yas/trigger-key)
-              (setq yas/trigger-key [tab])
-              (add-to-list 'org-tab-first-hook 'yas/org-very-safe-expand)
-              (define-key yas/keymap [tab] 'yas/next-field)))
+  ;; (defun yas/org-very-safe-expand ()
+  ;;   (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))
+  ;; (add-hook 'org-mode-hook
+  ;;           (lambda ()
+  ;;             (make-variable-buffer-local 'yas/trigger-key)
+  ;;             (setq yas/trigger-key [tab])
+  ;;             (add-to-list 'org-tab-first-hook 'yas/org-very-safe-expand)
+  ;;             (define-key yas/keymap [tab] 'yas/next-field)))
   ;; info:org#Conflicts for org 9 and very recent yas
   ;; (add-hook 'org-mode-hook
   ;;           (lambda ()
