@@ -229,7 +229,11 @@ This function should only modify configuration layer settings."
                                       ;; this would in turn enable support on many
                                       ;; default linux/gnome terminals
                                       ;; for now, you probably want to use xterm
-                                      ;; (osc52e :location "/usr/local/share/emacs/site-lisp/osc52e")
+                                      ;;(osc52e :location (recipe
+                                      ;;                   :fetcher git
+                                      ;;                   :url "https://gist.github.com/49eabc1978fe3d6dedb3ca5674a16ece.git"
+                                      ;;                   :ensure t
+                                      ;;                   ))
                                       ;; for jupyter
                                       websocket
                                       ;; simple-httpd
@@ -640,6 +644,7 @@ dump."
   (require 'togetherly)
   (require 'ob-sql-mode)
   (require 'ob-tmate)
+  (load (expand-file-name "~/.emacs.d/osc52e/osc52e.el"))
   )
 
 (defun dotspacemacs/user-config ()
