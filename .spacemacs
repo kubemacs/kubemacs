@@ -257,7 +257,10 @@ This function should only modify configuration layer settings."
    ;; installs only the used packages but won't delete unused ones. `all'
    ;; installs *all* packages supported by Spacemacs and never uninstalls them.
    ;; (default is `used-only')
-   dotspacemacs-install-packages 'used-only))
+   dotspacemacs-install-packages 'used-only)
+
+  (message "ii: dotspacemacs/layers END")
+  )
 
 (defun dotspacemacs/init ()
   "Initialization:
@@ -265,6 +268,18 @@ This function is called at the very beginning of Spacemacs startup,
 before layer configuration.
 It should only modify the values of Spacemacs settings."
   (message "ii: dotspacemacs/init START")
+  (if (eq 'dumped spacemacs-dump-mode)
+      (progn
+        (message "Fixing broken dump state")
+        (define-key evil-insert-state-map (kbd "ESC") 'evil-normal-state)
+        (defun dotspacemacs/user-load() "no run" (message "NO user-load"))
+        (defun dotspacemacs/user-init() "no run" (message "NO user-init"))
+        (defun dotspacemacs/user-env() "no run" (message "NO user-env"))
+        (defun dotspacemacs/user-config() "no run" (message "NO user-config"))
+        (defun dotspacemacs/layers() "no run" (message "NO layers"))
+        (message "ii: dotspacemacs/init DUMPED END")
+        )
+    (progn
   ;; This setq-default sexp is an exhaustive list of all the supported
   ;; spacemacs settings.
   (setq-default
@@ -617,7 +632,10 @@ It should only modify the values of Spacemacs settings."
    ;; Run `spacemacs/prettify-org-buffer' when
    ;; visiting README.org files of Spacemacs.
    ;; (default nil)
-   dotspacemacs-pretty-docs nil))
+   dotspacemacs-pretty-docs nil)
+  (message "ii: dotspacemacs/init NORMAL END")
+  ))
+  )
 
 (defun dotspacemacs/user-env ()
   "Environment variables setup.
@@ -626,7 +644,9 @@ default it calls `spacemacs/load-spacemacs-env' which loads the environment
 variables declared in `~/.spacemacs.env' or `~/.spacemacs.d/.spacemacs.env'.
 See the header of this file for more information."
   (message "ii: dotspacemacs/user-env START")
-  (spacemacs/load-spacemacs-env))
+  (spacemacs/load-spacemacs-env)
+  (message "ii: dotspacemacs/user-env END")
+  )
 
 (defun dotspacemacs/user-init ()
   "Initialization for user code:
@@ -635,6 +655,7 @@ configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
   (message "ii: dotspacemacs/user-init START")
+  (message "ii: dotspacemacs/user-init END")
   )
 
 (defun dotspacemacs/user-load ()
@@ -757,6 +778,7 @@ dump."
    ;; https://www.emacswiki.org/emacs/TimeStamp
    time-stamp-pattern "10/#+UPDATED: needs time-local formatted regexp"
    )
+  (message "ii: dotspacemacs/user-load END")
   )
 
 (defun dotspacemacs/user-config ()
@@ -765,7 +787,7 @@ This function is called at the very end of Spacemacs startup, after layer
 configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
-  (message "ii: dotspacemacs/userconfig START")
+  (message "ii: dotspacemacs/user-config START")
   ;; (defun togetherly-server-start-now ()
   ;;   "Start a Togetherly server with this buffer."
   ;;   (interactive)
@@ -836,6 +858,7 @@ before packages are loaded."
   ;;(make-variable-buffer-local 'yas/trigger-key)
   ;;(setq yas/trigger-key [tab])
   ;;(define-key yas/keymap [tab] 'yas/next-field)
+  (message "ii: dotspacemacs/user-config END")
   )
 ;; ‘yasnippet.el’
 ;;      The way Org mode binds the ‘<TAB>’ key (binding to ‘[tab]’ instead
