@@ -1,0 +1,3 @@
+#!/bin/sh
+emacs --dump-file ~/.emacs.d/.cache/dumps/spacemacs.pdmp -nw $* || \
+emacs --force-dump -nw $*
