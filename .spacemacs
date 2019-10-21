@@ -5,6 +5,7 @@
 (defun dotspacemacs/layers ()
   "Layer configuration:
 This function should only modify configuration layer settings."
+  (message "ii: dotspacemacs/layers START")
   (setq-default
    ;; Base distribution to use. This is a layer contained in the directory
    ;; `+distribution'. For now available distributions are `spacemacs-base'
@@ -263,6 +264,7 @@ This function should only modify configuration layer settings."
 This function is called at the very beginning of Spacemacs startup,
 before layer configuration.
 It should only modify the values of Spacemacs settings."
+  (message "ii: dotspacemacs/init START")
   ;; This setq-default sexp is an exhaustive list of all the supported
   ;; spacemacs settings.
   (setq-default
@@ -623,6 +625,7 @@ This function defines the environment variables for your Emacs session. By
 default it calls `spacemacs/load-spacemacs-env' which loads the environment
 variables declared in `~/.spacemacs.env' or `~/.spacemacs.d/.spacemacs.env'.
 See the header of this file for more information."
+  (message "ii: dotspacemacs/user-env START")
   (spacemacs/load-spacemacs-env))
 
 (defun dotspacemacs/user-init ()
@@ -631,6 +634,7 @@ This function is called immediately after `dotspacemacs/init', before layer
 configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
+  (message "ii: dotspacemacs/user-init START")
   )
 
 (defun dotspacemacs/user-load ()
@@ -638,36 +642,28 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
 This function is called only while dumping Spacemacs configuration. You can
 `require' or `load' the libraries of your choice that will be included in the
 dump."
-   (require 'ein)
+  (message "ii: dotspacemacs/user-load START")
+  (require 'ein)
    (require 'togetherly)
    (require 'org-checklist)
    (require 'ox-publish)
    (require 'ob-ein)
    (require 'ob-sql-mode)
    (require 'ob-tmate)
-   (require 'zmq)
+   ;;(require 'zmq)
    (load (expand-file-name "~/.emacs.d/osc52e/osc52e.el"))
    (when (version<= "9.2" (org-version))
      (require 'org-tempo))
-  )
-
-(defun dotspacemacs/user-config ()
-  "Configuration for user code:
-This function is called at the very end of Spacemacs startup, after layer
-configuration.
-Put your configuration code here, except for variables that should be set
-before packages are loaded."
-  (require 'ein)
-  (require 'togetherly)
-  (require 'org-checklist)
-  (require 'ox-publish)
-  (require 'ob-ein)
-  (require 'ob-sql-mode)
-  (require 'ob-tmate)
-  (require 'zmq)
-  (load (expand-file-name "~/.emacs.d/osc52e/osc52e.el"))
-  (when (version<= "9.2" (org-version))
-    (require 'org-tempo))
+   (setq org-confirm-babel-evaluate nil)
+   (put 'org-babel-tmate-session-prefix 'safe-local-variable #'stringp)
+   (put 'github-username 'safe-local-variable #'stringp)
+   (put 'github-user 'safe-local-variable #'stringp)
+   (put 'org-babel-tmate-default-window-name 'safe-local-variable #'stringp)
+   (put 'org-confirm-babel-evaluate 'safe-local-variable #'booleanp)
+   ;; (put 'org-confirm-babel-evaluate 'safe-local-variable (lambda (_) t))
+   (put 'org-use-property-inheritance 'safe-local-variable (lambda (_) t))
+   (put 'org-file-dir 'safe-local-variable (lambda (_) t))
+   (put 'eval 'safe-local-variable (lambda (_) t))
   (defun runs-and-exits-zero (program &rest args)
     "Run PROGRAM with ARGS and return the exit code."
     (with-temp-buffer
@@ -756,17 +752,20 @@ before packages are loaded."
   (defun help/double-gc-cons-threshold () "Double `gc-cons-threshold'." (help/set-gc-cons-threshold 2))
   (add-hook 'org-babel-pre-tangle-hook #'help/double-gc-cons-threshold)
   (add-hook 'org-babel-post-tangle-hook #'help/set-gc-cons-threshold)
-  ;; FIXME: workaround
-  ;; https://github.com/syl20bnr/spacemacs/issues/11798
-  ;; (when (version<= "9.2" (org-version))
-  ;;   (require 'org-tempo))
-  ;; (require 'ob-tmate)
-  ;; (require 'ob-sql-mode)
-  ;; (setq-default
-  ;;  time-stamp-zone "Pacific/Auckland"
-  ;;  ;; https://www.emacswiki.org/emacs/TimeStamp
-  ;;  time-stamp-pattern "10/#+UPDATED: needs time-local formatted regexp"
-  ;;  )
+  (setq-default
+   time-stamp-zone "Pacific/Auckland"
+   ;; https://www.emacswiki.org/emacs/TimeStamp
+   time-stamp-pattern "10/#+UPDATED: needs time-local formatted regexp"
+   )
+  )
+
+(defun dotspacemacs/user-config ()
+  "Configuration for user code:
+This function is called at the very end of Spacemacs startup, after layer
+configuration.
+Put your configuration code here, except for variables that should be set
+before packages are loaded."
+  (message "ii: dotspacemacs/userconfig START")
   ;; (defun togetherly-server-start-now ()
   ;;   "Start a Togetherly server with this buffer."
   ;;   (interactive)
