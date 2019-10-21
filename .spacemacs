@@ -240,6 +240,7 @@ This function should only modify configuration layer settings."
                                       ;; emacs-websocket
                                       ;; company-mode
                                       ;; markdown-mode
+                                      (zmq :ensure t)
                                       )
 
    ;; A list of packages that cannot be updated.
@@ -637,14 +638,17 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
 This function is called only while dumping Spacemacs configuration. You can
 `require' or `load' the libraries of your choice that will be included in the
 dump."
-  (require 'ox-publish)
-  (require 'org-checklist)
-  (require 'ein)
-  (require 'ob-ein)
-  (require 'togetherly)
-  (require 'ob-sql-mode)
-  (require 'ob-tmate)
-  (load (expand-file-name "~/.emacs.d/osc52e/osc52e.el"))
+   (require 'ein)
+   (require 'togetherly)
+   (require 'org-checklist)
+   (require 'ox-publish)
+   (require 'ob-ein)
+   (require 'ob-sql-mode)
+   (require 'ob-tmate)
+   (require 'zmq)
+   (load (expand-file-name "~/.emacs.d/osc52e/osc52e.el"))
+   (when (version<= "9.2" (org-version))
+     (require 'org-tempo))
   )
 
 (defun dotspacemacs/user-config ()
@@ -653,67 +657,17 @@ This function is called at the very end of Spacemacs startup, after layer
 configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
-  ;; FIXME: workaround
-  ;; https://github.com/syl20bnr/spacemacs/issues/11798
+  (require 'ein)
+  (require 'togetherly)
+  (require 'org-checklist)
+  (require 'ox-publish)
+  (require 'ob-ein)
+  (require 'ob-sql-mode)
+  (require 'ob-tmate)
+  (require 'zmq)
+  (load (expand-file-name "~/.emacs.d/osc52e/osc52e.el"))
   (when (version<= "9.2" (org-version))
     (require 'org-tempo))
-  (require 'ob-tmate)
-  (require 'ob-sql-mode)
-  ;; (setq-default
-  ;;  time-stamp-zone "Pacific/Auckland"
-  ;;  ;; https://www.emacswiki.org/emacs/TimeStamp
-  ;;  time-stamp-pattern "10/#+UPDATED: needs time-local formatted regexp"
-  ;;  )
-  ;; (defun togetherly-server-start-now ()
-  ;;   "Start a Togetherly server with this buffer."
-  ;;   (interactive)
-  ;;   (cond ((null togetherly--server)
-  ;;          (let* ((addr "127.0.0.1")
-  ;;                 (server-port togetherly-port)
-  ;;                 (server-name user-login-name)
-  ;;                 (server-proc (make-network-process
-  ;;                               :name "togetherly-server" :server t
-  ;;                               :service server-port :noquery t :host addr
-  ;;                               :sentinel 'togetherly--server-sentinel-function
-  ;;                               :filter 'togetherly--server-filter-function))
-  ;;                 (rcolor (car togetherly-region-colors))
-  ;;                 (pcolor (car togetherly-cursor-colors)))
-  ;;            (setq togetherly-region-colors   (cdr togetherly-region-colors)
-  ;;                  togetherly-cursor-colors   (cdr togetherly-cursor-colors)
-  ;;                  togetherly--server         `(,server-proc ,server-name ,rcolor . ,pcolor)
-  ;;                  togetherly--server-buffer  (current-buffer)
-  ;;                  togetherly--server-clients nil
-  ;;                  togetherly--server-timer-object
-  ;;                  (run-with-timer nil togetherly-cursor-sync-rate
-  ;;                                  'togetherly--server-broadcast-cursor-positions))
-  ;;            (set (make-local-variable 'header-line-format)
-  ;;                 (concat " " (propertize server-name 'face `(:background ,pcolor)))))
-  ;;          (add-hook 'before-change-functions 'togetherly--server-before-change nil t)
-  ;;          (add-hook 'after-change-functions 'togetherly--server-after-change nil t)
-  ;;          (add-hook 'kill-buffer-query-functions 'togetherly--server-kill-buffer-query)
-  ;;          (populate-x-togetherly) ;; go ahead and create the tmate paste for the togetherly
-  ;;          )
-  ;;         ((y-or-n-p "Togetherly server already started. Migrate to this buffer ? ")
-  ;;          (set (make-local-variable 'header-line-format)
-  ;;               (buffer-local-value 'header-line-format togetherly--server-buffer))
-  ;;          (add-hook 'before-change-functions 'togetherly--server-before-change nil t)
-  ;;          (add-hook 'after-change-functions 'togetherly--server-after-change nil t)
-  ;;          (with-current-buffer togetherly--server-buffer
-  ;;            (remove-hook 'before-change-functions 'togetherly--server-before-change t)
-  ;;            (remove-hook 'after-change-functions 'togetherly--server-after-change t)
-  ;;            (kill-local-variable 'header-line-format))
-  ;;          (setq togetherly--server-buffer (current-buffer))
-  ;;          (togetherly--server-broadcast `(welcome ,(togetherly--buffer-string) . ,major-mode))
-  ;;          )
-  ;;         (t
-  ;;          (message "Togetherly: Canceled."))))
-  ;; (defun populate-x-togetherly ()
-  ;;   "Populate the clipboard with the command for a together client"
-  ;;   (interactive)
-  ;;   (message "Setting X Clipboard to contain the start-tmate command")
-  ;;   (xclip-mode 1)
-  ;;   (gui-select-text start-tmate-for-togetherly-client)
-  ;;   )
   (defun runs-and-exits-zero (program &rest args)
     "Run PROGRAM with ARGS and return the exit code."
     (with-temp-buffer
@@ -802,6 +756,67 @@ before packages are loaded."
   (defun help/double-gc-cons-threshold () "Double `gc-cons-threshold'." (help/set-gc-cons-threshold 2))
   (add-hook 'org-babel-pre-tangle-hook #'help/double-gc-cons-threshold)
   (add-hook 'org-babel-post-tangle-hook #'help/set-gc-cons-threshold)
+  ;; FIXME: workaround
+  ;; https://github.com/syl20bnr/spacemacs/issues/11798
+  ;; (when (version<= "9.2" (org-version))
+  ;;   (require 'org-tempo))
+  ;; (require 'ob-tmate)
+  ;; (require 'ob-sql-mode)
+  ;; (setq-default
+  ;;  time-stamp-zone "Pacific/Auckland"
+  ;;  ;; https://www.emacswiki.org/emacs/TimeStamp
+  ;;  time-stamp-pattern "10/#+UPDATED: needs time-local formatted regexp"
+  ;;  )
+  ;; (defun togetherly-server-start-now ()
+  ;;   "Start a Togetherly server with this buffer."
+  ;;   (interactive)
+  ;;   (cond ((null togetherly--server)
+  ;;          (let* ((addr "127.0.0.1")
+  ;;                 (server-port togetherly-port)
+  ;;                 (server-name user-login-name)
+  ;;                 (server-proc (make-network-process
+  ;;                               :name "togetherly-server" :server t
+  ;;                               :service server-port :noquery t :host addr
+  ;;                               :sentinel 'togetherly--server-sentinel-function
+  ;;                               :filter 'togetherly--server-filter-function))
+  ;;                 (rcolor (car togetherly-region-colors))
+  ;;                 (pcolor (car togetherly-cursor-colors)))
+  ;;            (setq togetherly-region-colors   (cdr togetherly-region-colors)
+  ;;                  togetherly-cursor-colors   (cdr togetherly-cursor-colors)
+  ;;                  togetherly--server         `(,server-proc ,server-name ,rcolor . ,pcolor)
+  ;;                  togetherly--server-buffer  (current-buffer)
+  ;;                  togetherly--server-clients nil
+  ;;                  togetherly--server-timer-object
+  ;;                  (run-with-timer nil togetherly-cursor-sync-rate
+  ;;                                  'togetherly--server-broadcast-cursor-positions))
+  ;;            (set (make-local-variable 'header-line-format)
+  ;;                 (concat " " (propertize server-name 'face `(:background ,pcolor)))))
+  ;;          (add-hook 'before-change-functions 'togetherly--server-before-change nil t)
+  ;;          (add-hook 'after-change-functions 'togetherly--server-after-change nil t)
+  ;;          (add-hook 'kill-buffer-query-functions 'togetherly--server-kill-buffer-query)
+  ;;          (populate-x-togetherly) ;; go ahead and create the tmate paste for the togetherly
+  ;;          )
+  ;;         ((y-or-n-p "Togetherly server already started. Migrate to this buffer ? ")
+  ;;          (set (make-local-variable 'header-line-format)
+  ;;               (buffer-local-value 'header-line-format togetherly--server-buffer))
+  ;;          (add-hook 'before-change-functions 'togetherly--server-before-change nil t)
+  ;;          (add-hook 'after-change-functions 'togetherly--server-after-change nil t)
+  ;;          (with-current-buffer togetherly--server-buffer
+  ;;            (remove-hook 'before-change-functions 'togetherly--server-before-change t)
+  ;;            (remove-hook 'after-change-functions 'togetherly--server-after-change t)
+  ;;            (kill-local-variable 'header-line-format))
+  ;;          (setq togetherly--server-buffer (current-buffer))
+  ;;          (togetherly--server-broadcast `(welcome ,(togetherly--buffer-string) . ,major-mode))
+  ;;          )
+  ;;         (t
+  ;;          (message "Togetherly: Canceled."))))
+  ;; (defun populate-x-togetherly ()
+  ;;   "Populate the clipboard with the command for a together client"
+  ;;   (interactive)
+  ;;   (message "Setting X Clipboard to contain the start-tmate command")
+  ;;   (xclip-mode 1)
+  ;;   (gui-select-text start-tmate-for-togetherly-client)
+  ;;   )
   ;; (defun yas/org-very-safe-expand ()
   ;;   (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))
   ;; (add-hook 'org-mode-hook
