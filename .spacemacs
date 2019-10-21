@@ -686,6 +686,16 @@ dump."
   (put 'org-use-property-inheritance 'safe-local-variable (lambda (_) t))
   (put 'org-file-dir 'safe-local-variable (lambda (_) t))
   (put 'eval 'safe-local-variable (lambda (_) t))
+  (setenv "PATH" (concat user-home-directory "go/bin:" (getenv "PATH")))
+  (defun ssh-find-agent ()
+    (interactive)
+    (setenv "SSH_AUTH_SOCK" (shell-command-to-string "\
+          . ~/.ssh/ssh-find-agent.sh ;\
+          ssh-find-agent | grep ssh- | tail -1 \
+          | tail -1 | awk '{print $2}' | awk -F= '{print $2}' \
+          | tr --delete '\n'"))
+    (message (getenv "SSH_AUTH_SOCK"))
+    )
   (defun runs-and-exits-zero (program &rest args)
     "Run PROGRAM with ARGS and return the exit code."
     (with-temp-buffer
