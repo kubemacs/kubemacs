@@ -5,7 +5,6 @@
 (defun dotspacemacs/layers ()
   "Layer configuration:
 This function should only modify configuration layer settings."
-  (message "ii: dotspacemacs/layers START")
   (setq-default
    ;; Base distribution to use. This is a layer contained in the directory
    ;; `+distribution'. For now available distributions are `spacemacs-base'
@@ -29,7 +28,7 @@ This function should only modify configuration layer settings."
 
    ;; List of additional paths where to look for configuration layers.
    ;; Paths must have a trailing slash (i.e. `~/.mycontribs/')
-   dotspacemacs-configuration-layer-path '()
+   dotspacemacs-configuration-layer-path '("~/.emacs.d/layers/")
 
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
@@ -39,104 +38,23 @@ This function should only modify configuration layer settings."
      ;; Uncomment some layer names and press `SPC f e R' (Vim style) or
      ;; `M-m f e R' (Emacs style) to install them.
      ;; ----------------------------------------------------------------
-     (auto-completion :variables
-                      auto-completion-private-snippets-directory (expand-file-name "~/.emacs.d/snippets")
-                      auto-completion-enable-sort-by-usage t
-                      auto-completion-enable-snippets-in-popup t
-                      auto-completion-enable-help-tooltip t)
-     better-defaults
-     deft ;; https://jblevins.org/projects/deft/
+     ;; auto-completion
+     ;; better-defaults
      emacs-lisp
-     emoji ;; sudo apt-get install ttf-ancient-fonts
-     ;; ~SPC a E~ ~SPC i e~
-     git
+     ;; git
      helm
-     lsp
-     markdown
-     (mu4e :variables
-           mu4e-enable-mode-line nil
-           mu4e-enable-notifications nil
-           mu4e-drafts-folder "/[Gmail].Drafts"
-           mu4e-sent-folder   "/[Gmail].Sent Mail"
-           mu4e-trash-folder  "/[Gmail].Bin"
-           mu4e-maildir-shortcuts
-           '( ("/INBOX"               . ?i)
-              ("/[Gmail].Sent Mail"   . ?s)
-              ("/[Gmail].Bin"       . ?t)
-              ("/[Gmail].All Mail"    . ?a))
-           )
+     ;; lsp
+     ;; markdown
      multiple-cursors
-     neotree
-     (org :variables
-          org-enable-github-support t
-          org-enable-bootstrap-support t
-          org-enable-reveal-js-support t
-          org-enable-hugo-support t
-          org-enable-org-journal-support t
-          org-projectile-file "TODO.org"
-          org-journal-dir "~/org/journal/"
-          org-journal-file-format "%Y-%m-%d"
-          org-journal-date-prefix "#+TITLE: "
-          org-journal-date-format "%A, %B %d %Y"
-          org-journal-time-prefix "* "
-          org-journal-time-format ""
-          org-babel-tmate-session-prefix ""
-          org-babel-python-command "python3"
-          org-babel-tmate-default-window-name "main"
-          org-confirm-babel-evaluate nil
-          org-use-property-inheritance t
-          )
+     ;; org
      ;; (shell :variables
      ;;        shell-default-height 30
      ;;        shell-default-position 'bottom)
      ;; spell-checking
-     sql
-     syntax-checking
-     copy-as-format ;; ~SPC x f g~ copy-as-format-markdown
-     docker
-     dash ;; https://zealdocs.org/download.html
-     ;;forge
-     (go :variables
-         godoc-at-point-function 'godoc-gogetdoc
-         go-tab-width 4
-         go-use-gometalinter t)
-     html
-     ;;;; impatient-mode
-     javascript
-     lua
-     (lsp :variables
-          lsp-navigation 'both
-          lsp-ui-doc-enable t
-          lsp-ui-doc-position 'top
-          lsp-ui-doc-alignment 'frame
-                                        ; lsp-ui-doc-border 'white
-          lsp-ui-doc-use-childframe t
-          lsp-ui-doc-use-webkit t
-          lsp-ui-doc-delay 0.2
-          lsp-ui-doc-include-signature nil 
-          lsp-ui-sideline-show-symbol t
-          lsp-ui-remap-xref-keybindings t
-          lsp-ui-sideline-enable t
-          lsp-prefer-flymake nil
-          lsp-print-io t
-          )
-     nginx
-     pandoc
-     pdf
-     python
-     ruby
-     ;; speed-reading
-     ;; search-engine
-     shell-scripts
-     terraform
+     ;; syntax-checking
      treemacs
-     typography
-     ;; #+REVEAL_ROOT: http://cdn.jsdelivr.net/reveal.js/3.0.0/
-     ;; (setq org-bullets-bullet-list '("■" "◆" "▲" "▶"))
-     ;;async-shell
-     xkcd ;; ~SPC a x~
-     version-control
-     yaml
+     ;; version-control
+     ii
      )
 
    ;; List of additional packages that will be installed without being
@@ -146,103 +64,7 @@ This function should only modify configuration layer settings."
    ;; To use a local version of a package, use the `:location' property:
    ;; '(your-package :location "~/path/to/your-package/")
    ;; Also include the dependencies as they will not be resolved automatically.
-   dotspacemacs-additional-packages '(
-
-                                      async
-                                      closql
-                                      command-log-mode
-                                      dash
-                                      demo-it
-                                      ein ;; https://github.com/millejoh/emacs-ipython-notebook
-                                      emms
-                                      emacsql-sqlite
-                                      evil-vimish-fold
-                                      fancy-narrow
-                                      feature-mode
-                                      ;;(forge :location "/usr/local/share/emacs/site-lisp/forge"
-                                      ;;       :afer magit)
-                                      ghub
-                                      go-playground
-                                      go-dlv
-                                      gorepl-mode ;; go
-                                      graphql
-                                      graphql-mode
-                                      ;; (graphql-mode :location (recipe
-                                      ;;                          :fetcher github
-                                      ;;                          :repo "davazp/graphql-mode"
-                                      ;;                          :commit "301a218"
-                                      ;;                          ))
-                                      groovy-mode
-                                      jupyter
-                                      ob-async
-                                      (ob-tmate :ensure t
-                                                :location (recipe
-                                                           :fetcher github
-                                                           :repo "ii/ob-tmate"))
-                                      org-pdfview
-                                      (ob-sql-mode :ensure t)
-                                      oer-reveal
-                                      (org-protocol-capture-html :location (recipe
-                                                                            :fetcher github
-                                                                            :repo "alphapapa/org-protocol-capture-html"
-                                                                            :commit "23a1336c"))
-                                      org-re-reveal-ref
-                                      (emacs-reveal :location (recipe
-                                                               :fetcher gitlab
-                                                               :repo "oer/emacs-reveal"
-                                                               :commit "d0aa1f9d"))
-                                      ob-go
-                                      ;; org-protocol ;; https://orgmode.org/worg/org-contrib/org-protocol.html
-                                      ;; http://tech.memoryimprintstudio.com/org-capture-from-external-applications/
-                                      ;; https://github.com/sprig/org-capture-extension
-                                      ob-tmux
-                                      org-babel-eval-in-repl
-                                      org-tree-slide
-                                      ;; org-mu4e
-                                      org-pdfview
-                                      ox-reveal
-                                      ;; pdf-tools ;; https://github.com/politza/pdf-tools
-                                      ;; pdf-view
-                                      s
-                                      scad-mode
-                                      slime
-                                      transcribe
-                                      togetherly
-                                      vimish-fold
-                                      xclip
-                                      (yasnippet :location (recipe
-                                                            :fetcher github
-                                                            :repo "joaotavora/yasnippet"
-                                                            :branch "0.13.0"))
-                                                            ;; :commit "89eb7ab"))
-                                      ;;                      :branch "0.12.2"))
-                                      ;; for tmate and over ssh cut-and-paste
-                                                 ;; https://gist.github.com/49eabc1978fe3d6dedb3ca5674a16ece.git
-                                      ;; sakura is waiting on vte
-                                      ;; https://bugs.launchpad.net/sakura/+bug/1769575
-                                      ;; I'm pretty sure the lib vte issue is stale
-                                      ;; https://bugzilla.gnome.org/show_bug.cgi?id=795774
-                                      ;; available in minitty since 2.6.1
-                                      ;; https://github.com/mintty/mintty/issues/258
-                                      ;; http://mintty.github.io/ (Default tty on Cygwin etc)
-                                      ;; I created a ticket to add support to vte
-                                      ;; https://gitlab.gnome.org/GNOME/vte/issues/125
-                                      ;; this would in turn enable support on many
-                                      ;; default linux/gnome terminals
-                                      ;; for now, you probably want to use xterm
-                                      ;;(osc52e :location (recipe
-                                      ;;                   :fetcher git
-                                      ;;                   :url "https://gist.github.com/49eabc1978fe3d6dedb3ca5674a16ece.git"
-                                      ;;                   :ensure t
-                                      ;;                   ))
-                                      ;; for jupyter
-                                      websocket
-                                      ;; simple-httpd
-                                      ;; emacs-websocket
-                                      ;; company-mode
-                                      ;; markdown-mode
-                                      (zmq :ensure t)
-                                      )
+   dotspacemacs-additional-packages '()
 
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -257,30 +79,13 @@ This function should only modify configuration layer settings."
    ;; installs only the used packages but won't delete unused ones. `all'
    ;; installs *all* packages supported by Spacemacs and never uninstalls them.
    ;; (default is `used-only')
-   dotspacemacs-install-packages 'used-only)
-
-  (message "ii: dotspacemacs/layers END")
-  )
+   dotspacemacs-install-packages 'used-only))
 
 (defun dotspacemacs/init ()
   "Initialization:
 This function is called at the very beginning of Spacemacs startup,
 before layer configuration.
 It should only modify the values of Spacemacs settings."
-  (message "ii: dotspacemacs/init START")
-  (if (eq 'dumped spacemacs-dump-mode)
-      (progn
-        (message "Fixing broken dump state")
-        (define-key evil-insert-state-map (kbd "ESC") 'evil-normal-state)
-        (evil-define-key 'insert evil-org-mode-map (kbd "ESC") 'evil-normal-state)
-        (defun dotspacemacs/user-load() "no run" (message "NO user-load"))
-        (defun dotspacemacs/user-init() "no run" (message "NO user-init"))
-        (defun dotspacemacs/user-env() "no run" (message "NO user-env"))
-        (defun dotspacemacs/user-config() "no run" (message "NO user-config"))
-        (defun dotspacemacs/layers() "no run" (message "NO layers"))
-        (message "ii: dotspacemacs/init DUMPED END")
-        )
-    (progn
   ;; This setq-default sexp is an exhaustive list of all the supported
   ;; spacemacs settings.
   (setq-default
@@ -288,7 +93,7 @@ It should only modify the values of Spacemacs settings."
    ;; to compile Emacs 27 from source following the instructions in file
    ;; EXPERIMENTAL.org at to root of the git repository.
    ;; (default nil)
-   dotspacemacs-enable-emacs-pdumper t
+   dotspacemacs-enable-emacs-pdumper nil
 
    ;; Name of executable file pointing to emacs 27+. This executable must be
    ;; in your PATH.
@@ -324,7 +129,7 @@ It should only modify the values of Spacemacs settings."
    ;; If non-nil then Spacelpa repository is the primary source to install
    ;; a locked version of packages. If nil then Spacemacs will install the
    ;; latest version of packages from MELPA. (default nil)
-   dotspacemacs-use-spacelpa t
+   dotspacemacs-use-spacelpa nil
 
    ;; If non-nil then verify the signature for downloaded Spacelpa archives.
    ;; (default t)
@@ -355,9 +160,7 @@ It should only modify the values of Spacemacs settings."
    ;; directory. A string value must be a path to an image format supported
    ;; by your Emacs build.
    ;; If the value is nil then no banner is displayed. (default 'official)
-   ;; Can be a string path to PNG
-   ;; spacemacs-banner-directory (expand-file-name (concat dotspacemacs-directory "banners/"))
-   dotspacemacs-startup-banner 4
+   dotspacemacs-startup-banner 'official
 
    ;; List of items to show in startup buffer or an association list of
    ;; the form `(list-type . list-size)`. If nil then it is disabled.
@@ -578,7 +381,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; If non-nil, start an Emacs server if one is not already running.
    ;; (default nil)
-   dotspacemacs-enable-server t
+   dotspacemacs-enable-server nil
 
    ;; Set the emacs server socket location.
    ;; If nil, uses whatever the Emacs default is, otherwise a directory path
@@ -633,10 +436,7 @@ It should only modify the values of Spacemacs settings."
    ;; Run `spacemacs/prettify-org-buffer' when
    ;; visiting README.org files of Spacemacs.
    ;; (default nil)
-   dotspacemacs-pretty-docs nil)
-  (message "ii: dotspacemacs/init NORMAL END")
-  ))
-  )
+   dotspacemacs-pretty-docs nil))
 
 (defun dotspacemacs/user-env ()
   "Environment variables setup.
@@ -644,10 +444,7 @@ This function defines the environment variables for your Emacs session. By
 default it calls `spacemacs/load-spacemacs-env' which loads the environment
 variables declared in `~/.spacemacs.env' or `~/.spacemacs.d/.spacemacs.env'.
 See the header of this file for more information."
-  (message "ii: dotspacemacs/user-env START")
-  (spacemacs/load-spacemacs-env)
-  (message "ii: dotspacemacs/user-env END")
-  )
+  (spacemacs/load-spacemacs-env))
 
 (defun dotspacemacs/user-init ()
   "Initialization for user code:
@@ -655,8 +452,6 @@ This function is called immediately after `dotspacemacs/init', before layer
 configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
-  (message "ii: dotspacemacs/user-init START")
-  (message "ii: dotspacemacs/user-init END")
   )
 
 (defun dotspacemacs/user-load ()
@@ -664,132 +459,6 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
 This function is called only while dumping Spacemacs configuration. You can
 `require' or `load' the libraries of your choice that will be included in the
 dump."
-  (message "ii: dotspacemacs/user-load START")
-  (require 'ein)
-  (require 'togetherly)
-  (require 'org-checklist)
-  (require 'ox-publish)
-  (require 'ob-ein)
-  (require 'ob-sql-mode)
-  (require 'ob-tmate)
-  ;;(require 'zmq)
-  (load (expand-file-name "~/.emacs.d/osc52e/osc52e.el"))
-  (when (version<= "9.2" (org-version))
-    (require 'org-tempo))
-  (setq org-confirm-babel-evaluate nil)
-  (put 'org-babel-tmate-session-prefix 'safe-local-variable #'stringp)
-  (put 'github-username 'safe-local-variable #'stringp)
-  (put 'github-user 'safe-local-variable #'stringp)
-  (put 'org-babel-tmate-default-window-name 'safe-local-variable #'stringp)
-  (put 'org-confirm-babel-evaluate 'safe-local-variable #'booleanp)
-  ;; (put 'org-confirm-babel-evaluate 'safe-local-variable (lambda (_) t))
-  (put 'org-use-property-inheritance 'safe-local-variable (lambda (_) t))
-  (put 'org-file-dir 'safe-local-variable (lambda (_) t))
-  (put 'eval 'safe-local-variable (lambda (_) t))
-  (setenv "PATH" (concat user-home-directory "go/bin:" (getenv "PATH")))
-  (defun ssh-find-agent ()
-    (interactive)
-    (setenv "SSH_AUTH_SOCK" (shell-command-to-string "\
-          . ~/.ssh/ssh-find-agent.sh ;\
-          ssh-find-agent | grep ssh- | tail -1 \
-          | tail -1 | awk '{print $2}' | awk -F= '{print $2}' \
-          | tr --delete '\n'"))
-    (message (getenv "SSH_AUTH_SOCK"))
-    )
-  (defun runs-and-exits-zero (program &rest args)
-    "Run PROGRAM with ARGS and return the exit code."
-    (with-temp-buffer
-      (if (= 0 (apply 'call-process program nil (current-buffer) nil args))
-          'true
-        ))
-    )
-  (defun xclip-working ()
-    "Quick Check to see if X is working."
-    (if (getenv "DISPLAY")
-        ;; this xset test is a bit flakey
-        ;; (if (runs-and-exits-zero "xset" "q")
-        ;; Using xclip to set an invalid selection is as lightly intrusive
-        ;; check I could come up with, and not overwriting anything
-        ;; however it seems to hang
-        ;; (if (runs-and-exits-zero "xclip" "-selection" "unused")
-        ;;     'true)
-        'true
-      ;; )
-      )
-    )
-  (defun create-target-script (filename command)
-    "Create a temporary script to create/connect to target tmate window"
-    (message "Creating a script file in tmp")
-    (with-current-buffer (find-file-noselect filename)
-      (erase-buffer)
-      (insert-for-yank
-       (concat "\n#!/bin/sh\n\n" command))
-      (save-buffer)
-      (set-file-modes filename #o755)
-      )
-    )
-  (defun populate-terminal-clipboard ()
-    "Populate the osc52 clipboard via terminal with the start-tmate-sh"
-    ;; TODO
-    (message "Unable to set X Clipboard to contain the start-tmate-sh")
-    (create-target-script tmate-sh start-tmate-command)
-    ;; (gui-select-text tmate-sh)
-    (setq current-tmate-sh tmate-sh) ;; since tmate-sh is buffer-local..
-    ;;(setq current-tmate-ssh (concat "export IISOCK=" socket " ; rm -f $IISOCK ; ssh -tAX " ssh-user-host " -L $IISOCK:$IISOCK " tmate-sh))
-    (setq current-tmate-ssh (concat "ssh -tAX " ssh-user-host " " tmate-sh))
-    (with-current-buffer (get-buffer-create "start-tmate-sh" )
-      (insert-for-yank "You will need to copy this manually:\n\n" )
-      (insert-for-yank
-       (concat "\nTo open on another host, forward your iisocket by pasting:\n\n" current-tmate-ssh
-               "\n\nOR open another terminal on the same host and paste:\n\n" current-tmate-sh)
-       ))
-    )
-  (defun populate-x-clipboard ()
-    "Populate the X clipboard with the start-tmate-sh"
-    (message "Setting X Clipboard to contain the start-tmate-sh")
-    (xclip-mode 1)
-    ;; (gui-select-text (concat "rm -fi " socket "; ssh -tAX " ssh-user "@" ssh-host " -L " socket ":" socket " " start-tmate-over-ssh-command))
-    (create-target-script tmate-sh start-tmate-command)
-    ;; (gui-select-text tmate-sh)
-    ;; If we work to detect if it's a remote host, this might make sense
-    ;; but for now we mostly connect to the pair box
-    ;; (setq current-tmate-ssh (concat "export II=" socket " ; rm -f $II ; ssh -tAX " ssh-user-host " -L $II:$II " tmate-sh))
-    (setq current-tmate-sh tmate-sh) ;; since tmate-sh is buffer-local..
-    (setq current-tmate-ssh (concat "ssh -tAX " ssh-user-host " " tmate-sh))
-    (gui-select-text current-tmate-ssh)
-                                        ; (gui-select-text start-tmate-command)
-    (xclip-mode 0)
-    (with-current-buffer (get-buffer-create "start-tmate-sh")
-      (insert-for-yank "The following has been populated to your local X clipboard:\n")
-      (insert-for-yank
-       ;; we can use the global current-tmate-sh
-       (concat "\nTo open on another host, forward your iisocket by pasting:\n\n" current-tmate-ssh
-               "\n\nOR open another terminal on the same host and paste:\n\n" current-tmate-sh)
-       ))
-    ;; and unset it when done
-    (setq current-tmate-ssh nil)
-    (setq current-tmate-sh nil)
-    )
-  ;; https://www.wisdomandwonder.com/article/10630/how-fast-can-you-tangle-in-org-mode
-  (setq help/default-gc-cons-threshold gc-cons-threshold)
-  (defun help/set-gc-cons-threshold (&optional multiplier notify)
-    "Set `gc-cons-threshold' either to its default value or a
-   `multiplier' thereof."
-    (let* ((new-multiplier (or multiplier 1))
-           (new-threshold (* help/default-gc-cons-threshold
-                             new-multiplier)))
-      (setq gc-cons-threshold new-threshold)
-      (when notify (message "Setting `gc-cons-threshold' to %s"
-                            new-threshold))))
-  (defun help/double-gc-cons-threshold () "Double `gc-cons-threshold'." (help/set-gc-cons-threshold 2))
-  (add-hook 'org-babel-pre-tangle-hook #'help/double-gc-cons-threshold)
-  (add-hook 'org-babel-post-tangle-hook #'help/set-gc-cons-threshold)
-  (setq-default
-   time-stamp-zone "Pacific/Auckland"
-   ;; https://www.emacswiki.org/emacs/TimeStamp
-   time-stamp-pattern "10/#+UPDATED: needs time-local formatted regexp"
-   )
-  (message "ii: dotspacemacs/user-load END")
   )
 
 (defun dotspacemacs/user-config ()
@@ -798,102 +467,5 @@ This function is called at the very end of Spacemacs startup, after layer
 configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
-  (message "ii: dotspacemacs/user-config START")
-  ;; (defun togetherly-server-start-now ()
-  ;;   "Start a Togetherly server with this buffer."
-  ;;   (interactive)
-  ;;   (cond ((null togetherly--server)
-  ;;          (let* ((addr "127.0.0.1")
-  ;;                 (server-port togetherly-port)
-  ;;                 (server-name user-login-name)
-  ;;                 (server-proc (make-network-process
-  ;;                               :name "togetherly-server" :server t
-  ;;                               :service server-port :noquery t :host addr
-  ;;                               :sentinel 'togetherly--server-sentinel-function
-  ;;                               :filter 'togetherly--server-filter-function))
-  ;;                 (rcolor (car togetherly-region-colors))
-  ;;                 (pcolor (car togetherly-cursor-colors)))
-  ;;            (setq togetherly-region-colors   (cdr togetherly-region-colors)
-  ;;                  togetherly-cursor-colors   (cdr togetherly-cursor-colors)
-  ;;                  togetherly--server         `(,server-proc ,server-name ,rcolor . ,pcolor)
-  ;;                  togetherly--server-buffer  (current-buffer)
-  ;;                  togetherly--server-clients nil
-  ;;                  togetherly--server-timer-object
-  ;;                  (run-with-timer nil togetherly-cursor-sync-rate
-  ;;                                  'togetherly--server-broadcast-cursor-positions))
-  ;;            (set (make-local-variable 'header-line-format)
-  ;;                 (concat " " (propertize server-name 'face `(:background ,pcolor)))))
-  ;;          (add-hook 'before-change-functions 'togetherly--server-before-change nil t)
-  ;;          (add-hook 'after-change-functions 'togetherly--server-after-change nil t)
-  ;;          (add-hook 'kill-buffer-query-functions 'togetherly--server-kill-buffer-query)
-  ;;          (populate-x-togetherly) ;; go ahead and create the tmate paste for the togetherly
-  ;;          )
-  ;;         ((y-or-n-p "Togetherly server already started. Migrate to this buffer ? ")
-  ;;          (set (make-local-variable 'header-line-format)
-  ;;               (buffer-local-value 'header-line-format togetherly--server-buffer))
-  ;;          (add-hook 'before-change-functions 'togetherly--server-before-change nil t)
-  ;;          (add-hook 'after-change-functions 'togetherly--server-after-change nil t)
-  ;;          (with-current-buffer togetherly--server-buffer
-  ;;            (remove-hook 'before-change-functions 'togetherly--server-before-change t)
-  ;;            (remove-hook 'after-change-functions 'togetherly--server-after-change t)
-  ;;            (kill-local-variable 'header-line-format))
-  ;;          (setq togetherly--server-buffer (current-buffer))
-  ;;          (togetherly--server-broadcast `(welcome ,(togetherly--buffer-string) . ,major-mode))
-  ;;          )
-  ;;         (t
-  ;;          (message "Togetherly: Canceled."))))
-  ;; (defun populate-x-togetherly ()
-  ;;   "Populate the clipboard with the command for a together client"
-  ;;   (interactive)
-  ;;   (message "Setting X Clipboard to contain the start-tmate command")
-  ;;   (xclip-mode 1)
-  ;;   (gui-select-text start-tmate-for-togetherly-client)
-  ;;   )
-  ;; (defun yas/org-very-safe-expand ()
-  ;;   (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))
-  ;; (add-hook 'org-mode-hook
-  ;;           (lambda ()
-  ;;             (make-variable-buffer-local 'yas/trigger-key)
-  ;;             (setq yas/trigger-key [tab])
-  ;;             (add-to-list 'org-tab-first-hook 'yas/org-very-safe-expand)
-  ;;             (define-key yas/keymap [tab] 'yas/next-field)))
-  ;; info:org#Conflicts for org 9 and very recent yas
-  ;; (add-hook 'org-mode-hook
-  ;;           (lambda ()
-  ;;             (setq-local yas/trigger-key [tab])
-  ;;             (define-key yas/keymap [tab] 'yas/next-field-or-maybe-expand)))
-  ;;  (defun yas/org-very-safe-expand ()
-  ;;    (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))
-  ;;  (yas/expand)
-  ;; (add-to-list 'org-tab-first-hook 'yas/org-very-safe-expand)
-  ;;(make-variable-buffer-local 'yas/trigger-key)
-  ;;(setq yas/trigger-key [tab])
-  ;;(define-key yas/keymap [tab] 'yas/next-field)
-  (message "ii: dotspacemacs/user-config END")
   )
-;; ‘yasnippet.el’
-;;      The way Org mode binds the ‘<TAB>’ key (binding to ‘[tab]’ instead
-;;      of ‘"\t"’) overrules YASnippet’s access to this key.  The following
-;;      code fixed this problem:
-
-;;           (add-hook 'org-mode-hook
-;;                     (lambda ()
-;;                       (setq-local yas/trigger-key [tab])
-;;                       (define-key yas/keymap [tab] 'yas/next-field-or-maybe-expand)))
-
-;;      The latest version of YASnippet does not play well with Org mode.
-;;      If the above code does not fix the conflict, start by defining the
-;;      following function:
-
-;;           (defun yas/org-very-safe-expand ()
-;;             (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))
-
-;;      Then, tell Org mode to use that function:
-
-;;           (add-hook 'org-mode-hook
-;;                     (lambda ()
-;;                       (make-variable-buffer-local 'yas/trigger-key)
-;;                       (setq yas/trigger-key [tab])
-;;                       (add-to-list 'org-tab-first-hook 'yas/org-very-safe-expand)
-;;                       (define-key yas/keymap [tab] 'yas/next-field)))
 
