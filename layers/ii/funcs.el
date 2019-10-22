@@ -87,6 +87,16 @@
   (setq current-tmate-ssh nil)
   (setq current-tmate-sh nil)
   )
+(setenv "PATH" (concat user-home-directory "go/bin:" (getenv "PATH")))
+(defun ssh-find-agent ()
+  (interactive)
+  (setenv "SSH_AUTH_SOCK" (shell-command-to-string "\
+          . ~/.ssh/ssh-find-agent.sh ;\
+          ssh-find-agent | grep ssh- | tail -1 \
+          | tail -1 | awk '{print $2}' | awk -F= '{print $2}' \
+          | tr --delete '\n'"))
+  (message (getenv "SSH_AUTH_SOCK"))
+  )
 
 ;; https://www.wisdomandwonder.com/article/10630/how-fast-can-you-tangle-in-org-mode
 ;; (setq help/default-gc-cons-threshold gc-cons-threshold)
