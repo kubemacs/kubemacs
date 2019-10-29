@@ -28,6 +28,10 @@
 ;;   `ii/post-init-PACKAGE' to customize the package as it is loaded.
 
 ;;; Code:
+(defun ii/init-ob-shell ()
+  (use-package ob-shell)
+  ;;(require 'ob-shell)
+  )
 (defun ii/init-feature-mode ()
   (use-package feature-mode))
 (defun ii/init-ob-tmate ()
@@ -47,9 +51,13 @@
 (defun ii/pre-init-org ()
   (spacemacs|use-package-add-hook org
     :post-config (progn
+                   (setq org-enable-github-support t)
+                   (setq org-enable-bootstrap-support t)
+                   (setq org-enable-reveal-js-support t)
                    (add-to-list 'org-babel-load-languages '(go . t))
                    )))
 (defun ii/post-init-org ()
+  (require 'ob-shell)
   )
 
 
@@ -87,12 +95,15 @@
                          :fetcher github
                          :repo "ii/ob-tmate"))
     (ob-go :ensure t
-              :location (recipe
-                         :fetcher github
-                         :repo "pope/ob-go"))
+           :location (recipe
+                      :fetcher github
+                      :repo "pope/ob-go"))
     (ob-sql-mode :ensure t)
+    (ob-shell :ensure t
+              :location built-in)
     ;;(org-checklist :ensure t)
-    (org-checklist :location built-in)
+    (org-checklist :ensure t
+                   :location built-in)
     ;; This should go as a layer dependency for org via
 
     ;; (org :variables
