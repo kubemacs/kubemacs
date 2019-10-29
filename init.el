@@ -13,7 +13,7 @@
 ;; Loading spacemacs
 ;;(setq debug-on-signal t)
 ;;(setq gc-cons-threshold 402653184 gc-cons-percentage 0.6)
-(defconst emacs-start-time (current-time))
+;; (defconst emacs-start-time (current-time))
 ;;(setq dotspacemacs-enable-server t)
 ;; https://stackoverflow.com/questions/19806176/in-emacs-how-do-i-make-a-local-variable-safe-to-be-set-in-a-file-for-all-possibl
 (load-file (concat spacemacs-start-directory "init.el"))
