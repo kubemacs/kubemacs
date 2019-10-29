@@ -97,6 +97,13 @@
           | tr --delete '\n'"))
   (message (getenv "SSH_AUTH_SOCK"))
   )
+(with-eval-after-load "org"
+  ;; (add-to-list 'org-src-lang-modes '("go-mode" . sql))
+  (add-to-list 'org-structure-template-alist
+		           `("g" . "src go")))
+;(add-to-list 'org-structure-template-alist
+;		         `("ii"
+;		           . "src ii-mode"))
 
 ;; https://www.wisdomandwonder.com/article/10630/how-fast-can-you-tangle-in-org-mode
 ;; (setq help/default-gc-cons-threshold gc-cons-threshold)

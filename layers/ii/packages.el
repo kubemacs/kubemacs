@@ -40,6 +40,17 @@
   (use-package ob-sql-mode))
 (defun ii/init-xclip ()
   (use-package xclip))
+(defun ii/init-org-checklist ()
+  (use-package org-checklist))
+(defun ii/init-ob-go ()
+  (use-package ob-go))
+(defun ii/pre-init-org ()
+  (spacemacs|use-package-add-hook org
+    :post-config (progn
+                   (add-to-list 'org-babel-load-languages '(go . t))
+                   )))
+(defun ii/post-init-org ()
+  )
 
 
 (defconst ii-packages
@@ -75,8 +86,21 @@
               :location (recipe
                          :fetcher github
                          :repo "ii/ob-tmate"))
+    (ob-go :ensure t
+              :location (recipe
+                         :fetcher github
+                         :repo "pope/ob-go"))
     (ob-sql-mode :ensure t)
-    (ox-gfm :ensure t)
+    ;;(org-checklist :ensure t)
+    (org-checklist :location built-in)
+    ;; This should go as a layer dependency for org via
+
+    ;; (org :variables
+    ;;      org-enable-github-support t
+    ;;      org-enable-bootstrap-support t
+    ;;      org-enable-reveal-js-support t
+    ;;      )
+    ;;  (ox-gfm :ensure t)
     ;; oer-reveal
     ;; (org-protocol-capture-html :location (recipe
     ;;                                       :fetcher github

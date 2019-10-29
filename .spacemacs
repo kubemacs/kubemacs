@@ -452,6 +452,7 @@ This function is called immediately after `dotspacemacs/init', before layer
 configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
+  (setq custom-file (expand-file-name "~/.emacs.d/customizations"))
   )
 
 (defun dotspacemacs/user-load ()
@@ -469,3 +470,5 @@ Put your configuration code here, except for variables that should be set
 before packages are loaded."
   )
 
+;; Do not write anything past this comment. This is where Emacs will
+;; auto-generate custom variable definitions.
