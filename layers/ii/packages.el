@@ -34,6 +34,8 @@
   (use-package ob-tmate))
 (defun ii/init-ob-sql-mode ()
   (use-package ob-sql-mode))
+(defun ii/init-ox-gfm ()
+  (use-package ox-gfm))
 (defun ii/init-s ()
   (use-package ob-sql-mode))
 (defun ii/init-xclip ()
@@ -74,6 +76,7 @@
                          :fetcher github
                          :repo "ii/ob-tmate"))
     (ob-sql-mode :ensure t)
+    (ox-gfm :ensure t)
     ;; oer-reveal
     ;; (org-protocol-capture-html :location (recipe
     ;;                                       :fetcher github

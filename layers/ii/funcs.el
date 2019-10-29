@@ -119,3 +119,5 @@
 ;;  ;; https://www.emacswiki.org/emacs/TimeStamp
 ;;  time-stamp-pattern "10/#+UPDATED: needs time-local formatted regexp"
 ;;  )
+
+(when (version<= "9.2" (org-version)) (require 'org-tempo))
