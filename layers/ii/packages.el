@@ -48,6 +48,8 @@
   (use-package org-checklist))
 (defun ii/init-ob-go ()
   (use-package ob-go))
+(defun ii/init-osc52e ()
+  (use-package osc52e))
 (defun ii/pre-init-org ()
   (spacemacs|use-package-add-hook org
     :post-config (progn
@@ -101,6 +103,14 @@
     (ob-sql-mode :ensure t)
     (ob-shell :ensure t
               :location built-in)
+    ;; FIXME: likely a way to ask for this layer dir directly
+    (osc52e :ensure t
+            :location "~/.emacs.d/layers/ii/osc52e")
+            ;;:location ,(expand-file-name (concat (car dotspacemacs-configuration-layer-path) "ii/osc52e")))
+            ;; :location (recipe
+            ;;            :fetcher git
+            ;;            :url "https://gist.github.com/49eabc1978fe3d6dedb3ca5674a16ece.git"
+            ;;            ))
     ;;(org-checklist :ensure t)
     (org-checklist :ensure t
                    :location built-in)
