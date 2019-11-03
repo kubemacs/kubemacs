@@ -61,6 +61,18 @@
 (defun ii/post-init-org ()
   (require 'ob-shell)
   )
+(defun ii/post-init-yasnippet ()
+  ;; TODO do this within let for local var
+  (add-to-list 'yas-snippet-dirs (expand-file-name
+                                  "snippets"
+                                  (configuration-layer/get-layer-local-dir
+                                   'ii))
+               t)
+  (yas-load-directory (expand-file-name
+                       "snippets"
+                       (configuration-layer/get-layer-local-dir
+                        'ii)))
+  )
 
 
 (defconst ii-packages
@@ -183,6 +195,7 @@
     ;; company-mode
     ;; markdown-mode
     ;; (zmq :ensure t)
+    yasnippet
     )
   "The list of Lisp packages required by the ii layer.
 

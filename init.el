@@ -4,8 +4,7 @@
 ;; (setenv "SPACEMACSDIR" iimacs-dir)
 
 ;; your .spacemacs will reside here
-(setq dotspacemacs-filepath (concat iimacs-dir ".spacemacs"))
-
+(setq dotspacemacs-filepath (concat iimacs-dir ".spacemacs-" user-login-name)) ;; per user?
 ;; This is some minor advice to add our layers folder and ii layer itself
 ;; by running these two fnuctions just before the configurationd and loading of layers
 
