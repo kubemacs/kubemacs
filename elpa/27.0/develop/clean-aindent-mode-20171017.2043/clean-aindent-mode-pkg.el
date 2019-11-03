@@ -1,2 +1,0 @@
-;;; Generated package description from /zfs/home/hh/.emacs.d/spacemacs/elpa/27.0/develop/clean-aindent-mode-20171017.2043/clean-aindent-mode.el  -*- no-byte-compile: t -*-
-(define-package "clean-aindent-mode" "20171017.2043" "Simple indent and unindent, trims indent white-space" 'nil :commit "a97bcae8f43a9ff64e95473e4ef0d8bafe829211" :keywords '("indentation" "whitespace" "backspace") :authors '(("peter marinov" . "efravia@gmail.com")) :maintainer '("peter marinov" . "efravia@gmail.com") :url "https://github.com/pmarinov/clean-aindent-mode")

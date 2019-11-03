@@ -1,2 +1,0 @@
-;;; Generated package description from /zfs/home/hh/.emacs.d/spacemacs/elpa/27.0/develop/ob-tmate-20181128.1712/ob-tmate.el  -*- no-byte-compile: t -*-
-(define-package "ob-tmate" "20181128.1712" "Babel Support for Interactive Terminal" '((emacs "25.1") (seq "2.3") (s "1.9.0")) :authors '(("Allard Hendriksen")) :maintainer '("Allard Hendriksen") :keywords '("literate programming" "interactive shell" "tmate") :url "https://github.com/ahendriksen/ob-tmate")

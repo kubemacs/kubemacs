@@ -1,2 +1,0 @@
-;;; Generated package description from /zfs/home/hh/.emacs.d/spacemacs/elpa/27.0/develop/packed-20180318.1729/packed.el  -*- no-byte-compile: t -*-
-(define-package "packed" "20180318.1729" "package manager agnostic Emacs Lisp package utilities" '((emacs "24.3")) :commit "f350cc446c65b85bcc213265cd6dcadee1568762" :keywords '("compile" "convenience" "lisp" "package" "library") :authors '(("Jonas Bernoulli" . "jonas@bernoul.li")) :maintainer '("Jonas Bernoulli" . "jonas@bernoul.li") :url "https://github.com/emacscollective/packed")

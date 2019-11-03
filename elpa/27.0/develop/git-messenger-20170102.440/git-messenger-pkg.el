@@ -1,2 +1,0 @@
-;;; Generated package description from /zfs/home/hh/.emacs.d/spacemacs/elpa/27.0/develop/git-messenger-20170102.440/git-messenger.el  -*- no-byte-compile: t -*-
-(define-package "git-messenger" "20170102.440" "Pop up last commit information of current line" '((emacs "24.3") (popup "0.5.0")) :commit "83815915eb8c1cb47443ff34bca3fecf7d2edf3a" :authors '(("Syohei YOSHIDA" . "syohex@gmail.com")) :maintainer '("Syohei YOSHIDA" . "syohex@gmail.com") :url "https://github.com/syohex/emacs-git-messenger")

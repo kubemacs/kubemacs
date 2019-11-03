@@ -28,7 +28,7 @@ This function should only modify configuration layer settings."
 
    ;; List of additional paths where to look for configuration layers.
    ;; Paths must have a trailing slash (i.e. `~/.mycontribs/')
-   dotspacemacs-configuration-layer-path '("~/.emacs.d/layers/")
+   dotspacemacs-configuration-layer-path '()
 
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
@@ -54,7 +54,6 @@ This function should only modify configuration layer settings."
      ;; syntax-checking
      treemacs
      ;; version-control
-     ii
      )
 
    ;; List of additional packages that will be installed without being
@@ -452,7 +451,6 @@ This function is called immediately after `dotspacemacs/init', before layer
 configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
-  (setq custom-file (expand-file-name "~/.emacs.d/customizations"))
   )
 
 (defun dotspacemacs/user-load ()

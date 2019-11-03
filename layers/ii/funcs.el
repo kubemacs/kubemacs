@@ -8,6 +8,7 @@
 (put 'org-use-property-inheritance 'safe-local-variable (lambda (_) t))
 (put 'org-file-dir 'safe-local-variable (lambda (_) t))
 (put 'eval 'safe-local-variable (lambda (_) t))
+(setenv "PATH" (concat user-home-directory "go/bin:" (getenv "PATH")))
 ;; LINE : COLUMN number in bottom right
 ;;(spaceline-toggle-line-column-on)
 ;; Gutter on left displays number for each line
@@ -90,7 +91,6 @@
   (setq current-tmate-ssh nil)
   (setq current-tmate-sh nil)
   )
-(setenv "PATH" (concat user-home-directory "go/bin:" (getenv "PATH")))
 (defun ssh-find-agent ()
   (interactive)
   (setenv "SSH_AUTH_SOCK" (shell-command-to-string "\
