@@ -48,6 +48,8 @@
   (use-package org-checklist))
 (defun ii/init-ob-go ()
   (use-package ob-go))
+(defun ii/init-ob-async ()
+  (use-package ob-async))
 (defun ii/init-osc52e ()
   (use-package osc52e))
 (defun ii/pre-init-org ()
@@ -126,6 +128,7 @@
     ;;(org-checklist :ensure t)
     (org-checklist :ensure t
                    :location built-in)
+    (ob-async :ensure t)
     ;; This should go as a layer dependency for org via
 
     ;; (org :variables

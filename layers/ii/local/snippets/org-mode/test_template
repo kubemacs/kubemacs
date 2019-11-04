@@ -180,17 +180,6 @@ Continue making tests this way:
 ** TODO put my tasks here
 
 * Footnotes
-** Local Variables
-
-Force this instance of emacs to use the apisnoop server-name.
-This allows us to tangle from the emacsclient cli.
-
-# Local Variables:
-# eval: (setq server-name "apisnoop")
-# eval: (server-force-delete)
-# eval: (server-start)
-# End:
- 
 ** Test the Test
 *** build e2e.test
  #+BEGIN_SRC shell :results silent
