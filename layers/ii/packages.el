@@ -52,30 +52,46 @@
   (use-package ob-async))
 (defun ii/init-osc52e ()
   (use-package osc52e))
+(setq ob-async-pre-execute-src-block-hook nil)
+(defun ii/post-init-ob-async ()
+  (add-hook 'ob-async-pre-execute-src-block-hook
+            '(lambda ()
+               (require 'org)
+               (require 'ob-shell)
+               (add-to-list 'org-babel-load-languages '(shell . t))
+               )))
 (defun ii/pre-init-org ()
   (spacemacs|use-package-add-hook org
     :post-config (progn
                    (setq org-enable-github-support t)
                    (setq org-enable-bootstrap-support t)
                    (setq org-enable-reveal-js-support t)
-                   (add-to-list 'org-babel-load-languages '(go . t))
+                   (add-to-list 'org-babel-load-languages
+                                '(go . t))
+                   ;;(add-to-list 'org-babel-load-languages
+                   ;;             '(sh . t))
+                   (add-to-list 'org-babel-load-languages
+                                '(shell . t))
+                   (add-to-list 'org-babel-load-languages
+                                '(emacs-lisp . t))
                    )))
 (defun ii/post-init-org ()
   (require 'ob-shell)
   )
 (defun ii/post-init-yasnippet ()
   ;; TODO do this within let for local var
-  (add-to-list 'yas-snippet-dirs (expand-file-name
-                                  "snippets"
-                                  (configuration-layer/get-layer-local-dir
-                                   'ii))
-               t)
-  (yas-load-directory (expand-file-name
-                       "snippets"
-                       (configuration-layer/get-layer-local-dir
-                        'ii)))
-  )
-
+  (spacemacs|use-package-add-hook yasnippet
+    :post-config (progn
+                   (add-to-list 'yas-snippet-dirs (expand-file-name
+                                                   "snippets"
+                                                   (configuration-layer/get-layer-local-dir
+                                                    'ii))
+                                t)
+                   (yas-load-directory (expand-file-name
+                                        "snippets"
+                                        (configuration-layer/get-layer-local-dir
+                                         'ii)))
+  )))
 
 (defconst ii-packages
   '(
@@ -128,7 +144,11 @@
     ;;(org-checklist :ensure t)
     (org-checklist :ensure t
                    :location built-in)
-    (ob-async :ensure t)
+    (ob-async :ensure t
+              :location (recipe
+                         :fetcher github
+                         :repo "astahlman/ob-async"
+                         ))
     ;; This should go as a layer dependency for org via
 
     ;; (org :variables
