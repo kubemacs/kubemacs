@@ -58,7 +58,9 @@
             '(lambda ()
                (require 'org)
                (require 'ob-shell)
+               ;;(require 'ob-sql-mode)
                (add-to-list 'org-babel-load-languages '(shell . t))
+               ;;(add-to-list 'org-babel-load-languages '(sql-mode . t))
                )))
 (defun ii/pre-init-org ()
   (spacemacs|use-package-add-hook org
@@ -72,6 +74,8 @@
                    ;;             '(sh . t))
                    (add-to-list 'org-babel-load-languages
                                 '(shell . t))
+                   (add-to-list 'org-babel-load-languages
+                                '(sql-mode . t))
                    (add-to-list 'org-babel-load-languages
                                 '(emacs-lisp . t))
                    )))
