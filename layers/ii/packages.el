@@ -52,6 +52,10 @@
   (use-package ob-async))
 (defun ii/init-osc52e ()
   (use-package osc52e))
+(defun ii/post-init-osc52e ()
+  (require 'osc52e)
+  (osc52-set-cut-function)
+  )
 (setq ob-async-pre-execute-src-block-hook nil)
 (defun ii/post-init-ob-async ()
   (add-hook 'ob-async-pre-execute-src-block-hook
