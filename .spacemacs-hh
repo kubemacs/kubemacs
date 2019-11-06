@@ -53,6 +53,52 @@ This function should only modify configuration layer settings."
      ;; spell-checking
      ;; syntax-checking
      treemacs
+     (lsp :variables
+          lsp-navigation 'both
+          lsp-ui-doc-enable t
+          lsp-ui-doc-position 'top
+          lsp-ui-doc-alignment 'frame
+                                        ; lsp-ui-doc-border 'white
+          lsp-ui-doc-use-childframe t
+          lsp-ui-doc-use-webkit t
+          lsp-ui-doc-delay 0.2
+          lsp-ui-doc-include-signature nil
+          lsp-ui-sideline-show-symbol t
+          lsp-ui-remap-xref-keybindings t
+          lsp-ui-sideline-enable t
+          lsp-prefer-flymake nil
+          lsp-print-io t
+          )
+     (org :variables
+          org-enable-github-support t
+          org-enable-bootstrap-support t
+          org-enable-reveal-js-support t
+          org-enable-hugo-support t
+          org-enable-org-journal-support t
+          org-projectile-file "TODO.org"
+          org-journal-dir "~/org/journal/"
+          org-journal-file-format "%Y-%m-%d"
+          org-journal-date-prefix "#+TITLE: "
+          org-journal-date-format "%A, %B %d %Y"
+          org-journal-time-prefix "* "
+          org-journal-time-format "")
+     (mu4e :variables
+           mu4e-enable-mode-line nil
+           mu4e-enable-notifications nil
+           mu4e-drafts-folder "/[Gmail].Drafts"
+           mu4e-sent-folder   "/[Gmail].Sent Mail"
+           mu4e-trash-folder  "/[Gmail].Bin"
+           mu4e-maildir-shortcuts
+           '( ("/INBOX"               . ?i)
+              ("/[Gmail].Sent Mail"   . ?s)
+              ("/[Gmail].Bin"       . ?t)
+              ("/[Gmail].All Mail"    . ?a))
+           )
+     (auto-completion :variables
+                      auto-completion-private-snippets-directory (expand-file-name "~/.emacs.d/snippets")
+                      auto-completion-enable-sort-by-usage t
+                      auto-completion-enable-snippets-in-popup t
+                      auto-completion-enable-help-tooltip t)
      ;; version-control
      )
 
@@ -64,6 +110,7 @@ This function should only modify configuration layer settings."
    ;; '(your-package :location "~/path/to/your-package/")
    ;; Also include the dependencies as they will not be resolved automatically.
    dotspacemacs-additional-packages '(
+                                      (org-capture-pop-frame)
                                       (org-protocol
                                        :ensure t
                                        :location built-in)
@@ -76,8 +123,7 @@ This function should only modify configuration layer settings."
                                        :config (progn
                                          (message "org-protocol-capture-html LOADED")
                                          )
-                                       )
-                                      )
+                                       ))
 
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -203,7 +249,13 @@ It should only modify the values of Spacemacs settings."
    ;; Press `SPC T n' to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
    dotspacemacs-themes '(spacemacs-dark
-                         spacemacs-light)
+                         spacemacs-light
+                         solarized-light
+                         solarized-dark
+                         monokai
+                         zenburn
+                         leuven
+                         )
 
    ;; Set the theme for the Spaceline. Supported themes are `spacemacs',
    ;; `all-the-icons', `custom', `doom', `vim-powerline' and `vanilla'. The
@@ -219,10 +271,14 @@ It should only modify the values of Spacemacs settings."
    dotspacemacs-colorize-cursor-according-to-state t
 
    ;; Default font or prioritized list of fonts.
-   dotspacemacs-default-font '("Source Code Pro"
+   dotspacemacs-default-font '(
+                               "Source Code Pro"
                                :size 10.0
+                               ;; "Pragmata TT" ;; not installed that often
+                               ;; :size 26
                                :weight normal
-                               :width normal)
+                               :width normal
+                               :powerline-scale 1.1)
 
    ;; The leader key (default "SPC")
    dotspacemacs-leader-key "SPC"
@@ -372,7 +428,16 @@ It should only modify the values of Spacemacs settings."
    ;;   :size-limit-kb 1000)
    ;; When used in a plist, `visual' takes precedence over `relative'.
    ;; (default nil)
-   dotspacemacs-line-numbers nil
+   ;; dotspacemacs-line-numbers t
+   dotspacemacs-line-numbers '(; :visual t
+                               ; :relative nil
+                               :disabled-for-modes dired-mode
+                               doc-view-mode
+                               markdown-mode
+                               org-mode
+                               pdf-view-mode
+                               text-mode
+                               :size-limit-kb 5000)
 
    ;; Code folding method. Possible values are `evil' and `origami'.
    ;; (default 'evil)
@@ -480,6 +545,35 @@ This function is called at the very end of Spacemacs startup, after layer
 configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
+  ;; (spacemacs/toggle-line-numbers-on)
+  (global-set-key (kbd "C-=") 'text-scale-increase)
+  (global-set-key (kbd "C-+") 'text-scale-increase)
+  (global-set-key (kbd "C--") 'text-scale-decrease)
+  (global-set-key (kbd "C-0") 'text-scale-mode)
+  (setq browse-url-browser-function (quote browse-url-generic))
+  (setq browse-url-generic-program "firefox")
+  (setq command-log-mode-is-global t)
+  (setq fancy-battery-mode t)
+  (setq org-confirm-babel-evaluate nil)
+                                        ;(setq dotspacemacs-line-numbers ’(:relative nil
+  ;;(setq dotspacemacs-line-numbers t)
+  ;; (spacemacs/set-leader-keys "SPC" 'avy-goto-char-timer)
+  ;; dvorak avy keys
+  (setq avy-keys (quote (97 111 101 117 100 104 116 110 115)))
+  (setq message-send-mail-function 'smtpmail-send-it
+        smtpmail-starttls-credentials
+        '(("smtp.gmail.com" 587 nil nil))
+        smtpmail-default-smtp-server "smtp.gmail.com"
+        smtpmail-smtp-server "smtp.gmail.com"
+        smtpmail-smtp-service 587
+        smtpmail-debug-info t)
+  (require 'org-capture)
+  (require 'ansi-color)
+  (defun display-ansi-colors ()
+    (interactive)
+    (ansi-color-apply-on-region (point-min) (point-max)))
+
+  (require 'org-capture-pop-frame)
   (require 'org-protocol)
   (require 'org-protocol-capture-html)
   (setq org-capture-templates
@@ -491,6 +585,10 @@ before packages are loaded."
   Source: %u, %c
 
   %i" :empty-lines 1)
+          ("t" "TODO"
+           entry (file+headline "~/org/TODO.org" "Inbox")
+           "* TODO [#A] %?\nSCHEDULED: %(org-insert-time-stamp (org-read-date nil t \"+0d\"))\n%a\n"
+           )
           ("p" "Paragraph" entry
            (file+headline "~/ii/org/agenda/notes.org" "Inbox")
            "* [[%:link][%:description]] %^G

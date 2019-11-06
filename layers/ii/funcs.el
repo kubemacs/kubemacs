@@ -11,10 +11,6 @@
 (setenv "PATH" (concat user-home-directory "go/bin:" (getenv "PATH")))
 (setq dotspacemacs-enable-server t)
 (setq dotspacemacs-persistent-server t)
-;; LINE : COLUMN number in bottom right
-;;(spaceline-toggle-line-column-on)
-;; Gutter on left displays number for each line
-;;(spacemacs/toggle-line-numbers-on)
 (defun runs-and-exits-zero (program &rest args)
   "Run PROGRAM with ARGS and return the exit code."
   (with-temp-buffer
