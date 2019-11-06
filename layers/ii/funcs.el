@@ -8,6 +8,8 @@
 (put 'org-use-property-inheritance 'safe-local-variable (lambda (_) t))
 (put 'org-file-dir 'safe-local-variable (lambda (_) t))
 (put 'eval 'safe-local-variable (lambda (_) t))
+(setq dotspacemacs-enable-server t)
+(setq dotspacemacs-persistent-server t)
 ;; LINE : COLUMN number in bottom right
 ;;(spaceline-toggle-line-column-on)
 ;; Gutter on left displays number for each line

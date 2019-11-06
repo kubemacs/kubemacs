@@ -37,3 +37,5 @@
 ;; fix for strange load state bug when using dumper
 ;; (define-key evil-insert-state-map (kbd "ESC") 'evil-normal-state)
 
+;; https://medium.com/@bobbypriambodo/blazingly-fast-spacemacs-with-persistent-server-92260f2118b7
+(evil-leader/set-key "q q" 'spacemacs/frame-killer)
