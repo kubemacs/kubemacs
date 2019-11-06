@@ -63,7 +63,21 @@ This function should only modify configuration layer settings."
    ;; To use a local version of a package, use the `:location' property:
    ;; '(your-package :location "~/path/to/your-package/")
    ;; Also include the dependencies as they will not be resolved automatically.
-   dotspacemacs-additional-packages '()
+   dotspacemacs-additional-packages '(
+                                      (org-protocol
+                                       :ensure t
+                                       :location built-in)
+                                      (org-protocol-capture-html
+                                       :ensure t
+                                       :location (recipe
+                                                  :fetcher github
+                                                  :repo "alphapapa/org-protocol-capture-html"
+                                                  :commit "23a1336")
+                                       :config (progn
+                                         (message "org-protocol-capture-html LOADED")
+                                         )
+                                       )
+                                      )
 
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -466,6 +480,32 @@ This function is called at the very end of Spacemacs startup, after layer
 configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
+  (require 'org-protocol)
+  (require 'org-protocol-capture-html)
+  (setq org-capture-templates
+        '(
+          ("w" "Default template" entry
+           (file+headline "~/org/capture.org" "Notes")
+           "* %^{Title}
+
+  Source: %u, %c
+
+  %i" :empty-lines 1)
+          ("p" "Paragraph" entry
+           (file+headline "~/ii/org/agenda/notes.org" "Inbox")
+           "* [[%:link][%:description]] %^G
+Time: %u
+ #+BEGIN_QUOTE
+%:initial
+#+END_QUOTE
+
+
+%?")
+          ("L" "Capture a Link" entry
+           (file+headline "~/ii/org/agenda/notes.org" "Inbox")
+           "* %? [[%:link][%:description]]
+Captured On: %U"))
+        )
   )
 
 ;; Do not write anything past this comment. This is where Emacs will
