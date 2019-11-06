@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: conf template 
-# key:  conf_tix
+# key:  conf
 # --
 
 #+TITLE: Ticket $1 : $2

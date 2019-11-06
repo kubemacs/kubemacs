@@ -1,0 +1,409 @@
+# -*- mode: snippet -*-
+# name: testing template again
+# key: test!
+# --
+
+#+TITLE: Test...
+#+AUTHOR: ii team
+#+INCLUDE: "config.org"
+#+TODO: TODO(t) NEXT(n) IN-PROGRESS(i) BLOCKED(b) | TADA(d)
+#+ARCHIVE: archive/setup.archive.org::
+#+PROPERTY: header-args:sql-mode+ :results silent
+
+
+* Purpose
+ Write about the intended purpose of this test...
+* Documentation
+[[https://kubernetes.io/docs/reference/kubernetes-api/][Kubernetes API Reference Docs]]
+
+[[https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/conformance-tests.md#conformance-test-requirements][Conformance Test Requirement Docs]]
+
+* The Test
+
+NOTE: This is where the test code goes. It is useful to seperate it into 
+blocks which can be evaluted independently.
+
+NOTE: =, ,= or =C-c C-c= while between ~go~ *BEGIN_SRC* and *END_SRC* will
+execute the code and place the results below. (Requires ob-go) 
+
+
+The preamble contains imports and framework boilerplate/setup:
+#+NAME: go-k8s-preamble
+#+begin_src go  package main
+
+  import (
+    "fmt"
+    "flag"
+    "os"
+    "time"
+    "k8s.io/client-go/kubernetes"
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+    "k8s.io/api/core/v1"
+    "k8s.io/client-go/tools/clientcmd"
+  )
+
+  func main() {
+    kubeconfig := flag.String("kubeconfig",
+    fmt.Sprintf("%v/%v/%v", os.Getenv("HOME"), ".kube", "config"),
+      "(optional) absolute path to the kubeconfig file")
+    flag.Parse()
+    ns := ""
+    config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+    if err != nil {
+      fmt.Println(err)
+    }
+    cs, err := kubernetes.NewForConfig(config)
+    if err != nil {
+      fmt.Println(err)
+    }
+    
+    // ensure all tests can run
+    time.Sleep(0)
+    fmt.Sprintf("&v", v1.Container{})
+#+end_src
+
+Tail end of the package. Typically just a closing curly brace.
+#+NAME: go-k8s-postamble
+#+begin_src go
+  }
+#+end_src
+
+Put the meat of a test in a block of its own sandwiched between the pre/post-ambles:
+#+NAME: list Pods
+#+begin_src go :noweb yes :tangle ~/go/src/k8s.io/kubernetes/test/e2e/framework/list_pods.go
+      <<go-k8s-preamble>>
+      list, err := cs.CoreV1().Pods(ns).List(metav1.ListOptions{})
+      for i := 0; i < len(list.Items); i++ {
+        fmt.Println(i, list.Items[i])
+      }
+      fmt.Println("\ntotal:", len(list.Items))
+      if err != nil {
+        fmt.Println(err)
+      }
+      <<go-k8s-postamble>>
+#+end_src
+
+#+RESULTS: list Pods
+#+begin_example
+0 {{ } {nginx-7bb7cd8db5-8bgq8 nginx-7bb7cd8db5- default /api/v1/namespaces/default/pods/nginx-7bb7cd8db5-8bgq8 6e2e1b75-e44a-4419-b4ba-1144fb6bf526 821899 0 2019-10-23 13:32:32 +1300 NZDT <nil> <nil> map[pod-template-hash:7bb7cd8db5 run:nginx] map[] [{apps/v1 ReplicaSet nginx-7bb7cd8db5 8048085d-c94a-4107-8843-a02be4907836 0xc000400b2a 0xc000400b2b}] []  []} {[{default-token-8zcrp {nil nil nil nil nil &SecretVolumeSource{SecretName:default-token-8zcrp,Items:[]KeyToPath{},DefaultMode:*420,Optional:nil,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}}] [] [{nginx nginx [] []  [] [] [] {map[] map[]} [{default-token-8zcrp true /var/run/secrets/kubernetes.io/serviceaccount  <nil> }] [] nil nil nil nil /dev/termination-log File Always nil false false false}] [] Always 0xc000400bd0 <nil> ClusterFirst map[] default default <nil> kind-caleb-control-plane false false false <nil> &PodSecurityContext{SELinuxOptions:nil,RunAsUser:nil,RunAsNonRoot:nil,SupplementalGroups:[],FSGroup:nil,RunAsGroup:nil,Sysctls:[]Sysctl{},WindowsOptions:nil,} []   nil default-scheduler [{node.kubernetes.io/not-ready Exists  NoExecute 0xc000400c60} {node.kubernetes.io/unreachable Exists  NoExecute 0xc000400c80}] []  0xc000400c90 nil [] <nil> 0xc000400c94 <nil> map[] []} {Running [{Initialized True 0001-01-01 00:00:00 +0000 UTC 2019-10-23 13:32:32 +1300 NZDT  } {Ready True 0001-01-01 00:00:00 +0000 UTC 2019-10-29 06:47:32 +1300 NZDT  } {ContainersReady True 0001-01-01 00:00:00 +0000 UTC 2019-10-29 06:47:32 +1300 NZDT  } {PodScheduled True 0001-01-01 00:00:00 +0000 UTC 2019-10-23 13:32:32 +1300 NZDT  }]    172.17.0.2 10.244.0.55 [] 2019-10-23 13:32:32 +1300 NZDT [] [{nginx {nil &ContainerStateRunning{StartedAt:2019-10-29 06:47:30 +1300 NZDT,} nil} {nil nil &ContainerStateTerminated{ExitCode:128,Signal:0,Reason:StartError,Message:failed to start containerd task "838bcd597e31f252b6c7896d6310c781a2f65fd6ab18f93ebf557338d10048e4": cannot start a stopped process: unknown,StartedAt:1970-01-01 12:00:00 +1200 NZST,FinishedAt:2019-10-29 06:47:13 +1300 NZDT,ContainerID:containerd://838bcd597e31f252b6c7896d6310c781a2f65fd6ab18f93ebf557338d10048e4,}} true 3 docker.io/library/nginx:latest docker.io/library/nginx@sha256:922c815aa4df050d4df476e92daed4231f466acc8ee90e0e774951b0fd7195a4 containerd://7d9914b109be755bef517d8b341583897832f75fe2626785feb1c5e25418a385 <nil>}] BestEffort []}}
+1 {{ } {coredns-5c98db65d4-m6vpt coredns-5c98db65d4- kube-system /api/v1/namespaces/kube-system/pods/coredns-5c98db65d4-m6vpt b8dd5c3c-d5fc-426f-91ab-7f923ae4282b 822024 0 2019-10-21 14:52:57 +1300 NZDT <nil> <nil> map[k8s-app:kube-dns pod-template-hash:5c98db65d4] map[] [{apps/v1 ReplicaSet coredns-5c98db65d4 a4bc224d-bbaf-4536-8156-7a1fae5d53fa 0xc000400e07 0xc000400e08}] []  []} {[{config-volume {nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil &ConfigMapVolumeSource{LocalObjectReference:LocalObjectReference{Name:coredns,},Items:[]KeyToPath{KeyToPath{Key:Corefile,Path:Corefile,Mode:nil,},},DefaultMode:*420,Optional:nil,} nil nil nil nil nil nil nil nil nil}} {coredns-token-lmrc5 {nil nil nil nil nil &SecretVolumeSource{SecretName:coredns-token-lmrc5,Items:[]KeyToPath{},DefaultMode:*420,Optional:nil,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}}] [] [{coredns k8s.gcr.io/coredns:1.3.1 [] [-conf /etc/coredns/Corefile]  [{dns 0 53 UDP } {dns-tcp 0 53 TCP } {metrics 0 9153 TCP }] [] [] {map[memory:{{178257920 0} {<nil>} 170Mi BinarySI}] map[cpu:{{100 -3} {<nil>} 100m DecimalSI} memory:{{73400320 0} {<nil>} 70Mi BinarySI}]} [{config-volume true /etc/coredns  <nil> } {coredns-token-lmrc5 true /var/run/secrets/kubernetes.io/serviceaccount  <nil> }] [] &Probe{Handler:Handler{Exec:nil,HTTPGet:&HTTPGetAction{Path:/health,Port:{0 8080 },Host:,Scheme:HTTP,HTTPHeaders:[]HTTPHeader{},},TCPSocket:nil,},InitialDelaySeconds:60,TimeoutSeconds:5,PeriodSeconds:10,SuccessThreshold:1,FailureThreshold:5,} &Probe{Handler:Handler{Exec:nil,HTTPGet:&HTTPGetAction{Path:/health,Port:{0 8080 },Host:,Scheme:HTTP,HTTPHeaders:[]HTTPHeader{},},TCPSocket:nil,},InitialDelaySeconds:0,TimeoutSeconds:1,PeriodSeconds:10,SuccessThreshold:1,FailureThreshold:3,} nil nil /dev/termination-log File IfNotPresent &SecurityContext{Capabilities:&Capabilities{Add:[NET_BIND_SERVICE],Drop:[all],},Privileged:nil,SELinuxOptions:nil,RunAsUser:nil,RunAsNonRoot:nil,ReadOnlyRootFilesystem:*true,AllowPrivilegeEscalation:*false,RunAsGroup:nil,ProcMount:nil,WindowsOptions:nil,} false false false}] [] Always 0xc000400fc0 <nil> Default map[beta.kubernetes.io/os:linux] coredns coredns <nil> kind-caleb-control-plane false false false <nil> &PodSecurityContext{SELinuxOptions:nil,RunAsUser:nil,RunAsNonRoot:nil,SupplementalGroups:[],FSGroup:nil,RunAsGroup:nil,Sysctls:[]Sysctl{},WindowsOptions:nil,} []   nil default-scheduler [{CriticalAddonsOnly Exists   <nil>} {node-role.kubernetes.io/master   NoSchedule <nil>} {node.kubernetes.io/not-ready Exists  NoExecute 0xc000401070} {node.kubernetes.io/unreachable Exists  NoExecute 0xc000401090}] [] system-cluster-critical 0xc0004010a0 nil [] <nil> 0xc0004010a4 <nil> map[] []} {Running [{Initialized True 0001-01-01 00:00:00 +0000 UTC 2019-10-21 14:53:09 +1300 NZDT  } {Ready True 0001-01-01 00:00:00 +0000 UTC 2019-10-29 06:48:09 +1300 NZDT  } {ContainersReady True 0001-01-01 00:00:00 +0000 UTC 2019-10-29 06:48:09 +1300 NZDT  } {PodScheduled True 0001-01-01 00:00:00 +0000 UTC 2019-10-21 14:53:09 +1300 NZDT  }]    172.17.0.2 10.244.0.2 [] 2019-10-21 14:53:09 +1300 NZDT [] [{coredns {nil &ContainerStateRunning{StartedAt:2019-10-29 06:48:02 +1300 NZDT,} nil} {nil nil &ContainerStateTerminated{ExitCode:2,Signal:0,Reason:Error,Message:,StartedAt:2019-10-29 06:47:31 +1300 NZDT,FinishedAt:2019-10-29 06:47:32 +1300 NZDT,ContainerID:containerd://ef3e84831203f22ac2fc530134a9ca93569471fc84f0ba52548f6306d943c327,}} true 5 k8s.gcr.io/coredns:1.3.1 sha256:eb516548c180f8a6e0235034ccee2428027896af16a509786da13022fe95fe8c containerd://56de074353ccc2a6cd957a9dcfa289db6b8d238ce1331a74921f2445c53da1ff <nil>}] Burstable []}}
+2 {{ } {coredns-5c98db65d4-mdbn4 coredns-5c98db65d4- kube-system /api/v1/namespaces/kube-system/pods/coredns-5c98db65d4-mdbn4 34092674-31af-49bb-b544-8eb662a972f3 821925 0 2019-10-21 14:52:57 +1300 NZDT <nil> <nil> map[k8s-app:kube-dns pod-template-hash:5c98db65d4] map[] [{apps/v1 ReplicaSet coredns-5c98db65d4 a4bc224d-bbaf-4536-8156-7a1fae5d53fa 0xc0004011f7 0xc0004011f8}] []  []} {[{config-volume {nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil &ConfigMapVolumeSource{LocalObjectReference:LocalObjectReference{Name:coredns,},Items:[]KeyToPath{KeyToPath{Key:Corefile,Path:Corefile,Mode:nil,},},DefaultMode:*420,Optional:nil,} nil nil nil nil nil nil nil nil nil}} {coredns-token-lmrc5 {nil nil nil nil nil &SecretVolumeSource{SecretName:coredns-token-lmrc5,Items:[]KeyToPath{},DefaultMode:*420,Optional:nil,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}}] [] [{coredns k8s.gcr.io/coredns:1.3.1 [] [-conf /etc/coredns/Corefile]  [{dns 0 53 UDP } {dns-tcp 0 53 TCP } {metrics 0 9153 TCP }] [] [] {map[memory:{{178257920 0} {<nil>} 170Mi BinarySI}] map[cpu:{{100 -3} {<nil>} 100m DecimalSI} memory:{{73400320 0} {<nil>} 70Mi BinarySI}]} [{config-volume true /etc/coredns  <nil> } {coredns-token-lmrc5 true /var/run/secrets/kubernetes.io/serviceaccount  <nil> }] [] &Probe{Handler:Handler{Exec:nil,HTTPGet:&HTTPGetAction{Path:/health,Port:{0 8080 },Host:,Scheme:HTTP,HTTPHeaders:[]HTTPHeader{},},TCPSocket:nil,},InitialDelaySeconds:60,TimeoutSeconds:5,PeriodSeconds:10,SuccessThreshold:1,FailureThreshold:5,} &Probe{Handler:Handler{Exec:nil,HTTPGet:&HTTPGetAction{Path:/health,Port:{0 8080 },Host:,Scheme:HTTP,HTTPHeaders:[]HTTPHeader{},},TCPSocket:nil,},InitialDelaySeconds:0,TimeoutSeconds:1,PeriodSeconds:10,SuccessThreshold:1,FailureThreshold:3,} nil nil /dev/termination-log File IfNotPresent &SecurityContext{Capabilities:&Capabilities{Add:[NET_BIND_SERVICE],Drop:[all],},Privileged:nil,SELinuxOptions:nil,RunAsUser:nil,RunAsNonRoot:nil,ReadOnlyRootFilesystem:*true,AllowPrivilegeEscalation:*false,RunAsGroup:nil,ProcMount:nil,WindowsOptions:nil,} false false false}] [] Always 0xc0004013b0 <nil> Default map[beta.kubernetes.io/os:linux] coredns coredns <nil> kind-caleb-control-plane false false false <nil> &PodSecurityContext{SELinuxOptions:nil,RunAsUser:nil,RunAsNonRoot:nil,SupplementalGroups:[],FSGroup:nil,RunAsGroup:nil,Sysctls:[]Sysctl{},WindowsOptions:nil,} []   nil default-scheduler [{CriticalAddonsOnly Exists   <nil>} {node-role.kubernetes.io/master   NoSchedule <nil>} {node.kubernetes.io/not-ready Exists  NoExecute 0xc000401460} {node.kubernetes.io/unreachable Exists  NoExecute 0xc000401480}] [] system-cluster-critical 0xc000401490 nil [] <nil> 0xc000401494 <nil> map[] []} {Running [{Initialized True 0001-01-01 00:00:00 +0000 UTC 2019-10-21 14:53:09 +1300 NZDT  } {Ready True 0001-01-01 00:00:00 +0000 UTC 2019-10-29 06:47:37 +1300 NZDT  } {ContainersReady True 0001-01-01 00:00:00 +0000 UTC 2019-10-29 06:47:37 +1300 NZDT  } {PodScheduled True 0001-01-01 00:00:00 +0000 UTC 2019-10-21 14:53:09 +1300 NZDT  }]    172.17.0.2 10.244.0.3 [] 2019-10-21 14:53:09 +1300 NZDT [] [{coredns {nil &ContainerStateRunning{StartedAt:2019-10-29 06:47:35 +1300 NZDT,} nil} {nil nil &ContainerStateTerminated{ExitCode:2,Signal:0,Reason:Error,Message:,StartedAt:2019-10-29 06:47:13 +1300 NZDT,FinishedAt:2019-10-29 06:47:13 +1300 NZDT,ContainerID:containerd://e24f08870ba135bfd7d26784e2ab46abbba28aafb106459ef037a90adc7702f8,}} true 4 k8s.gcr.io/coredns:1.3.1 sha256:eb516548c180f8a6e0235034ccee2428027896af16a509786da13022fe95fe8c containerd://b6af138da6e9d9ae0b231d0cfec68df88a699a39cdef871fa64c4127f75a7fa1 <nil>}] Burstable []}}
+3 {{ } {etcd-kind-caleb-control-plane  kube-system /api/v1/namespaces/kube-system/pods/etcd-kind-caleb-control-plane 8ca3415f-87bb-4a38-853f-c517a3e6714b 821909 0 2019-10-21 14:54:04 +1300 NZDT <nil> <nil> map[component:etcd tier:control-plane] map[kubernetes.io/config.hash:100323da9c0ffc53f7d1fbced4df47bd kubernetes.io/config.mirror:100323da9c0ffc53f7d1fbced4df47bd kubernetes.io/config.seen:2019-10-21T01:52:10.567205745Z kubernetes.io/config.source:file] [] []  []} {[{etcd-certs {&HostPathVolumeSource{Path:/etc/kubernetes/pki/etcd,Type:*DirectoryOrCreate,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}} {etcd-data {&HostPathVolumeSource{Path:/var/lib/etcd,Type:*DirectoryOrCreate,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}}] [] [{etcd k8s.gcr.io/etcd:3.3.10 [etcd --advertise-client-urls=https://172.17.0.2:2379 --cert-file=/etc/kubernetes/pki/etcd/server.crt --client-cert-auth=true --data-dir=/var/lib/etcd --initial-advertise-peer-urls=https://172.17.0.2:2380 --initial-cluster=kind-caleb-control-plane=https://172.17.0.2:2380 --key-file=/etc/kubernetes/pki/etcd/server.key --listen-client-urls=https://127.0.0.1:2379,https://172.17.0.2:2379 --listen-peer-urls=https://172.17.0.2:2380 --name=kind-caleb-control-plane --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt --peer-client-cert-auth=true --peer-key-file=/etc/kubernetes/pki/etcd/peer.key --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt --snapshot-count=10000 --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt] []  [] [] [] {map[] map[]} [{etcd-data false /var/lib/etcd  <nil> } {etcd-certs false /etc/kubernetes/pki/etcd  <nil> }] [] &Probe{Handler:Handler{Exec:&ExecAction{Command:[/bin/sh -ec ETCDCTL_API=3 etcdctl --endpoints=https://[127.0.0.1]:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key get foo],},HTTPGet:nil,TCPSocket:nil,},InitialDelaySeconds:15,TimeoutSeconds:15,PeriodSeconds:10,SuccessThreshold:1,FailureThreshold:8,} nil nil nil /dev/termination-log File IfNotPresent nil false false false}] [] Always 0xc0004016f0 <nil> ClusterFirst map[]   <nil> kind-caleb-control-plane true false false <nil> &PodSecurityContext{SELinuxOptions:nil,RunAsUser:nil,RunAsNonRoot:nil,SupplementalGroups:[],FSGroup:nil,RunAsGroup:nil,Sysctls:[]Sysctl{},WindowsOptions:nil,} []   nil default-scheduler [{ Exists  NoExecute <nil>}] [] system-cluster-critical 0xc000401778 nil [] <nil> 0xc00040177c <nil> map[] []} {Running [{Initialized True 0001-01-01 00:00:00 +0000 UTC 2019-10-21 14:52:31 +1300 NZDT  } {Ready True 0001-01-01 00:00:00 +0000 UTC 2019-10-29 06:47:21 +1300 NZDT  } {ContainersReady True 0001-01-01 00:00:00 +0000 UTC 2019-10-29 06:47:21 +1300 NZDT  } {PodScheduled True 0001-01-01 00:00:00 +0000 UTC 2019-10-21 14:52:31 +1300 NZDT  }]    172.17.0.2 172.17.0.2 [] 2019-10-21 14:52:31 +1300 NZDT [] [{etcd {nil &ContainerStateRunning{StartedAt:2019-10-29 06:47:21 +1300 NZDT,} nil} {nil nil &ContainerStateTerminated{ExitCode:137,Signal:0,Reason:Error,Message:,StartedAt:2019-10-29 06:46:53 +1300 NZDT,FinishedAt:2019-10-29 06:47:08 +1300 NZDT,ContainerID:containerd://e2c59221cf70d37edd7d69208a9ef3435c5a88085501444245301287328aee8c,}} true 4 k8s.gcr.io/etcd:3.3.10 sha256:2c4adeb21b4ff8ed3309d0e42b6b4ae39872399f7b37e0856e673b13c4aba13d containerd://f94d0ba3ff73b8378d164e0e73e20646224a8e8c0d24aae81b95f04f29608758 <nil>}] BestEffort []}}
+4 {{ } {kindnet-rgg56 kindnet- kube-system /api/v1/namespaces/kube-system/pods/kindnet-rgg56 b684a640-7d92-4965-bf1e-b4ecb07b8ce9 822013 0 2019-10-21 14:52:57 +1300 NZDT <nil> <nil> map[app:kindnet controller-revision-hash:7bd5df99b6 k8s-app:kindnet pod-template-generation:1 tier:node] map[] [{apps/v1 DaemonSet kindnet 5a4c57be-5db4-4513-83f1-c6a17999b24a 0xc000401900 0xc000401901}] []  []} {[{cni-cfg {&HostPathVolumeSource{Path:/etc/cni/net.d,Type:*,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}} {kindnet-token-mrwmh {nil nil nil nil nil &SecretVolumeSource{SecretName:kindnet-token-mrwmh,Items:[]KeyToPath{},DefaultMode:*420,Optional:nil,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}}] [] [{kindnet-cni kindest/kindnetd:0.5.0 [] []  [] [] [{HOST_IP  &EnvVarSource{FieldRef:&ObjectFieldSelector{APIVersion:v1,FieldPath:status.hostIP,},ResourceFieldRef:nil,ConfigMapKeyRef:nil,SecretKeyRef:nil,}} {POD_IP  &EnvVarSource{FieldRef:&ObjectFieldSelector{APIVersion:v1,FieldPath:status.podIP,},ResourceFieldRef:nil,ConfigMapKeyRef:nil,SecretKeyRef:nil,}} {POD_SUBNET 10.244.0.0/16 nil}] {map[cpu:{{100 -3} {<nil>} 100m DecimalSI} memory:{{52428800 0} {<nil>} 50Mi BinarySI}] map[cpu:{{100 -3} {<nil>} 100m DecimalSI} memory:{{52428800 0} {<nil>} 50Mi BinarySI}]} [{cni-cfg false /etc/cni/net.d  <nil> } {kindnet-token-mrwmh true /var/run/secrets/kubernetes.io/serviceaccount  <nil> }] [] nil nil nil nil /dev/termination-log File IfNotPresent &SecurityContext{Capabilities:&Capabilities{Add:[NET_RAW NET_ADMIN],Drop:[],},Privileged:*false,SELinuxOptions:nil,RunAsUser:nil,RunAsNonRoot:nil,ReadOnlyRootFilesystem:nil,AllowPrivilegeEscalation:nil,RunAsGroup:nil,ProcMount:nil,WindowsOptions:nil,} false false false}] [] Always 0xc000401a78 <nil> ClusterFirst map[] kindnet kindnet <nil> kind-caleb-control-plane true false false <nil> &PodSecurityContext{SELinuxOptions:nil,RunAsUser:nil,RunAsNonRoot:nil,SupplementalGroups:[],FSGroup:nil,RunAsGroup:nil,Sysctls:[]Sysctl{},WindowsOptions:nil,} []   &Affinity{NodeAffinity:&NodeAffinity{RequiredDuringSchedulingIgnoredDuringExecution:&NodeSelector{NodeSelectorTerms:[]NodeSelectorTerm{NodeSelectorTerm{MatchExpressions:[]NodeSelectorRequirement{},MatchFields:[]NodeSelectorRequirement{NodeSelectorRequirement{Key:metadata.name,Operator:In,Values:[kind-caleb-control-plane],},},},},},PreferredDuringSchedulingIgnoredDuringExecution:[]PreferredSchedulingTerm{},},PodAffinity:nil,PodAntiAffinity:nil,} default-scheduler [{ Exists  NoSchedule <nil>} {node.kubernetes.io/not-ready Exists  NoExecute <nil>} {node.kubernetes.io/unreachable Exists  NoExecute <nil>} {node.kubernetes.io/disk-pressure Exists  NoSchedule <nil>} {node.kubernetes.io/memory-pressure Exists  NoSchedule <nil>} {node.kubernetes.io/pid-pressure Exists  NoSchedule <nil>} {node.kubernetes.io/unschedulable Exists  NoSchedule <nil>} {node.kubernetes.io/network-unavailable Exists  NoSchedule <nil>}] []  0xc000401ba8 nil [] <nil> 0xc000401bac <nil> map[] []} {Running [{Initialized True 0001-01-01 00:00:00 +0000 UTC 2019-10-21 14:52:57 +1300 NZDT  } {Ready True 0001-01-01 00:00:00 +0000 UTC 2019-10-29 06:48:03 +1300 NZDT  } {ContainersReady True 0001-01-01 00:00:00 +0000 UTC 2019-10-29 06:48:03 +1300 NZDT  } {PodScheduled True 0001-01-01 00:00:00 +0000 UTC 2019-10-21 14:52:57 +1300 NZDT  }]    172.17.0.2 172.17.0.2 [] 2019-10-21 14:52:57 +1300 NZDT [] [{kindnet-cni {nil &ContainerStateRunning{StartedAt:2019-10-29 06:48:03 +1300 NZDT,} nil} {nil nil &ContainerStateTerminated{ExitCode:2,Signal:0,Reason:Error,Message:,StartedAt:2019-10-29 06:47:32 +1300 NZDT,FinishedAt:2019-10-29 06:47:33 +1300 NZDT,ContainerID:containerd://5e855269e1f453fbc10192734b4768c0ebd217d22d600325f5a59c95cc8e5a63,}} true 5 docker.io/kindest/kindnetd:0.5.0 sha256:ef97cccdfdb5048fe112cf868b2779e06dea11b0d742aad14d4bea690f653549 containerd://0a98023ae676781e81aa3a03c668cff66101e1ae29390ad8d9aae46d929d0511 <nil>}] Guaranteed []}}
+5 {{ } {kube-apiserver-kind-caleb-control-plane  kube-system /api/v1/namespaces/kube-system/pods/kube-apiserver-kind-caleb-control-plane c3490e9a-1c74-421e-9473-55cb119b534a 821919 0 2019-10-21 14:53:48 +1300 NZDT <nil> <nil> map[component:kube-apiserver tier:control-plane] map[kubernetes.io/config.hash:91b2e99ecc7b6188cb25e3376b4e4f21 kubernetes.io/config.mirror:91b2e99ecc7b6188cb25e3376b4e4f21 kubernetes.io/config.seen:2019-10-21T01:52:10.567210314Z kubernetes.io/config.source:file] [] []  []} {[{ca-certs {&HostPathVolumeSource{Path:/etc/ssl/certs,Type:*DirectoryOrCreate,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}} {etc-ca-certificates {&HostPathVolumeSource{Path:/etc/ca-certificates,Type:*DirectoryOrCreate,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}} {k8s-certs {&HostPathVolumeSource{Path:/etc/kubernetes/pki,Type:*DirectoryOrCreate,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}} {usr-local-share-ca-certificates {&HostPathVolumeSource{Path:/usr/local/share/ca-certificates,Type:*DirectoryOrCreate,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}} {usr-share-ca-certificates {&HostPathVolumeSource{Path:/usr/share/ca-certificates,Type:*DirectoryOrCreate,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}}] [] [{kube-apiserver k8s.gcr.io/kube-apiserver:v1.15.0 [kube-apiserver --advertise-address=172.17.0.2 --allow-privileged=true --authorization-mode=Node,RBAC --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key] []  [] [] [] {map[] map[cpu:{{250 -3} {<nil>} 250m DecimalSI}]} [{ca-certs true /etc/ssl/certs  <nil> } {etc-ca-certificates true /etc/ca-certificates  <nil> } {k8s-certs true /etc/kubernetes/pki  <nil> } {usr-local-share-ca-certificates true /usr/local/share/ca-certificates  <nil> } {usr-share-ca-certificates true /usr/share/ca-certificates  <nil> }] [] &Probe{Handler:Handler{Exec:nil,HTTPGet:&HTTPGetAction{Path:/healthz,Port:{0 6443 },Host:172.17.0.2,Scheme:HTTPS,HTTPHeaders:[]HTTPHeader{},},TCPSocket:nil,},InitialDelaySeconds:15,TimeoutSeconds:15,PeriodSeconds:10,SuccessThreshold:1,FailureThreshold:8,} nil nil nil /dev/termination-log File IfNotPresent nil false false false}] [] Always 0xc000401e78 <nil> ClusterFirst map[]   <nil> kind-caleb-control-plane true false false <nil> &PodSecurityContext{SELinuxOptions:nil,RunAsUser:nil,RunAsNonRoot:nil,SupplementalGroups:[],FSGroup:nil,RunAsGroup:nil,Sysctls:[]Sysctl{},WindowsOptions:nil,} []   nil default-scheduler [{ Exists  NoExecute <nil>}] [] system-cluster-critical 0xc000401f08 nil [] <nil> 0xc000401f0c <nil> map[] []} {Running [{Initialized True 0001-01-01 00:00:00 +0000 UTC 2019-10-21 14:52:31 +1300 NZDT  } {Ready True 0001-01-01 00:00:00 +0000 UTC 2019-10-29 06:47:28 +1300 NZDT  } {ContainersReady True 0001-01-01 00:00:00 +0000 UTC 2019-10-29 06:47:28 +1300 NZDT  } {PodScheduled True 0001-01-01 00:00:00 +0000 UTC 2019-10-21 14:52:31 +1300 NZDT  }]    172.17.0.2 172.17.0.2 [] 2019-10-21 14:52:31 +1300 NZDT [] [{kube-apiserver {nil &ContainerStateRunning{StartedAt:2019-10-29 06:47:28 +1300 NZDT,} nil} {nil nil &ContainerStateTerminated{ExitCode:137,Signal:0,Reason:Error,Message:,StartedAt:2019-10-29 06:46:53 +1300 NZDT,FinishedAt:2019-10-29 06:47:13 +1300 NZDT,ContainerID:containerd://58b7853667eebe22a982030bdc650e6c06f81abd6eaedfcf0077d13c32f96851,}} true 3 k8s.gcr.io/kube-apiserver:v1.15.0 sha256:28bdc6f28a8d9b7ea12e35e46e7cb071946c0ba6bddf59d905aee4a1cd9c8b1b containerd://552ba660f363ec8c0f8c86c198f3f96cabb4be79a411aefce52ba0d12e1ddfef <nil>}] Burstable []}}
+6 {{ } {kube-controller-manager-kind-caleb-control-plane  kube-system /api/v1/namespaces/kube-system/pods/kube-controller-manager-kind-caleb-control-plane f212d9e2-b986-432d-a52f-62327dd39d48 821917 0 2019-10-21 14:54:01 +1300 NZDT <nil> <nil> map[component:kube-controller-manager tier:control-plane] map[kubernetes.io/config.hash:b79c044a446de8f70cac387cebe6388f kubernetes.io/config.mirror:b79c044a446de8f70cac387cebe6388f kubernetes.io/config.seen:2019-10-21T01:52:10.567211709Z kubernetes.io/config.source:file] [] []  []} {[{ca-certs {&HostPathVolumeSource{Path:/etc/ssl/certs,Type:*DirectoryOrCreate,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}} {etc-ca-certificates {&HostPathVolumeSource{Path:/etc/ca-certificates,Type:*DirectoryOrCreate,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}} {k8s-certs {&HostPathVolumeSource{Path:/etc/kubernetes/pki,Type:*DirectoryOrCreate,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}} {kubeconfig {&HostPathVolumeSource{Path:/etc/kubernetes/controller-manager.conf,Type:*FileOrCreate,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}} {usr-local-share-ca-certificates {&HostPathVolumeSource{Path:/usr/local/share/ca-certificates,Type:*DirectoryOrCreate,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}} {usr-share-ca-certificates {&HostPathVolumeSource{Path:/usr/share/ca-certificates,Type:*DirectoryOrCreate,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}}] [] [{kube-controller-manager k8s.gcr.io/kube-controller-manager:v1.15.0 [kube-controller-manager --allocate-node-cidrs=true --authentication-kubeconfig=/etc/kubernetes/controller-manager.conf --authorization-kubeconfig=/etc/kubernetes/controller-manager.conf --bind-address=127.0.0.1 --client-ca-file=/etc/kubernetes/pki/ca.crt --cluster-cidr=10.244.0.0/16 --cluster-signing-cert-file=/etc/kubernetes/pki/ca.crt --cluster-signing-key-file=/etc/kubernetes/pki/ca.key --controllers=*,bootstrapsigner,tokencleaner --enable-hostpath-provisioner=true --kubeconfig=/etc/kubernetes/controller-manager.conf --leader-elect=true --node-cidr-mask-size=24 --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --root-ca-file=/etc/kubernetes/pki/ca.crt --service-account-private-key-file=/etc/kubernetes/pki/sa.key --use-service-account-credentials=true] []  [] [] [] {map[] map[cpu:{{200 -3} {<nil>} 200m DecimalSI}]} [{ca-certs true /etc/ssl/certs  <nil> } {etc-ca-certificates true /etc/ca-certificates  <nil> } {k8s-certs true /etc/kubernetes/pki  <nil> } {kubeconfig true /etc/kubernetes/controller-manager.conf  <nil> } {usr-local-share-ca-certificates true /usr/local/share/ca-certificates  <nil> } {usr-share-ca-certificates true /usr/share/ca-certificates  <nil> }] [] &Probe{Handler:Handler{Exec:nil,HTTPGet:&HTTPGetAction{Path:/healthz,Port:{0 10252 },Host:127.0.0.1,Scheme:HTTP,HTTPHeaders:[]HTTPHeader{},},TCPSocket:nil,},InitialDelaySeconds:15,TimeoutSeconds:15,PeriodSeconds:10,SuccessThreshold:1,FailureThreshold:8,} nil nil nil /dev/termination-log File IfNotPresent nil false false false}] [] Always 0xc0000482b0 <nil> ClusterFirst map[]   <nil> kind-caleb-control-plane true false false <nil> &PodSecurityContext{SELinuxOptions:nil,RunAsUser:nil,RunAsNonRoot:nil,SupplementalGroups:[],FSGroup:nil,RunAsGroup:nil,Sysctls:[]Sysctl{},WindowsOptions:nil,} []   nil default-scheduler [{ Exists  NoExecute <nil>}] [] system-cluster-critical 0xc000048338 nil [] <nil> 0xc00004833c <nil> map[] []} {Running [{Initialized True 0001-01-01 00:00:00 +0000 UTC 2019-10-21 14:52:31 +1300 NZDT  } {Ready True 0001-01-01 00:00:00 +0000 UTC 2019-10-29 06:47:26 +1300 NZDT  } {ContainersReady True 0001-01-01 00:00:00 +0000 UTC 2019-10-29 06:47:26 +1300 NZDT  } {PodScheduled True 0001-01-01 00:00:00 +0000 UTC 2019-10-21 14:52:31 +1300 NZDT  }]    172.17.0.2 172.17.0.2 [] 2019-10-21 14:52:31 +1300 NZDT [] [{kube-controller-manager {nil &ContainerStateRunning{StartedAt:2019-10-29 06:47:25 +1300 NZDT,} nil} {nil nil &ContainerStateTerminated{ExitCode:137,Signal:0,Reason:Error,Message:,StartedAt:2019-10-29 06:46:53 +1300 NZDT,FinishedAt:2019-10-29 06:47:13 +1300 NZDT,ContainerID:containerd://22c8ba4ba5fe0bd7694d24f1eb1fa8889969a64aded55ebd90e980427186ada1,}} true 4 k8s.gcr.io/kube-controller-manager:v1.15.0 sha256:4ccdc592ea9c4c743994bef5b0563cb47bd5133c240bc9b49dd56f16afdcc829 containerd://5ae94dcbf69b32be82207b71af86af88a9451e22a4909956a9570f5c59d5cbc6 <nil>}] Burstable []}}
+7 {{ } {kube-proxy-95f4w kube-proxy- kube-system /api/v1/namespaces/kube-system/pods/kube-proxy-95f4w 2a6968a7-a146-40ba-ba7b-e7a61fd99b02 389 0 2019-10-21 14:52:57 +1300 NZDT <nil> <nil> map[controller-revision-hash:7bdbc788b8 k8s-app:kube-proxy pod-template-generation:1] map[] [{apps/v1 DaemonSet kube-proxy fb82b14e-91c4-4116-9cd9-03f36f5b9899 0xc0000484a9 0xc0000484aa}] []  []} {[{kube-proxy {nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil &ConfigMapVolumeSource{LocalObjectReference:LocalObjectReference{Name:kube-proxy,},Items:[]KeyToPath{},DefaultMode:*420,Optional:nil,} nil nil nil nil nil nil nil nil nil}} {xtables-lock {&HostPathVolumeSource{Path:/run/xtables.lock,Type:*FileOrCreate,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}} {lib-modules {&HostPathVolumeSource{Path:/lib/modules,Type:*,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}} {kube-proxy-token-nxqgb {nil nil nil nil nil &SecretVolumeSource{SecretName:kube-proxy-token-nxqgb,Items:[]KeyToPath{},DefaultMode:*420,Optional:nil,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}}] [] [{kube-proxy k8s.gcr.io/kube-proxy:v1.15.0 [/usr/local/bin/kube-proxy --config=/var/lib/kube-proxy/config.conf --hostname-override=$(NODE_NAME)] []  [] [] [{NODE_NAME  &EnvVarSource{FieldRef:&ObjectFieldSelector{APIVersion:v1,FieldPath:spec.nodeName,},ResourceFieldRef:nil,ConfigMapKeyRef:nil,SecretKeyRef:nil,}}] {map[] map[]} [{kube-proxy false /var/lib/kube-proxy  <nil> } {xtables-lock false /run/xtables.lock  <nil> } {lib-modules true /lib/modules  <nil> } {kube-proxy-token-nxqgb true /var/run/secrets/kubernetes.io/serviceaccount  <nil> }] [] nil nil nil nil /dev/termination-log File IfNotPresent &SecurityContext{Capabilities:nil,Privileged:*true,SELinuxOptions:nil,RunAsUser:nil,RunAsNonRoot:nil,ReadOnlyRootFilesystem:nil,AllowPrivilegeEscalation:nil,RunAsGroup:nil,ProcMount:nil,WindowsOptions:nil,} false false false}] [] Always 0xc000048668 <nil> ClusterFirst map[beta.kubernetes.io/os:linux] kube-proxy kube-proxy <nil> kind-caleb-control-plane true false false <nil> &PodSecurityContext{SELinuxOptions:nil,RunAsUser:nil,RunAsNonRoot:nil,SupplementalGroups:[],FSGroup:nil,RunAsGroup:nil,Sysctls:[]Sysctl{},WindowsOptions:nil,} []   &Affinity{NodeAffinity:&NodeAffinity{RequiredDuringSchedulingIgnoredDuringExecution:&NodeSelector{NodeSelectorTerms:[]NodeSelectorTerm{NodeSelectorTerm{MatchExpressions:[]NodeSelectorRequirement{},MatchFields:[]NodeSelectorRequirement{NodeSelectorRequirement{Key:metadata.name,Operator:In,Values:[kind-caleb-control-plane],},},},},},PreferredDuringSchedulingIgnoredDuringExecution:[]PreferredSchedulingTerm{},},PodAffinity:nil,PodAntiAffinity:nil,} default-scheduler [{CriticalAddonsOnly Exists   <nil>} { Exists   <nil>} {node.kubernetes.io/not-ready Exists  NoExecute <nil>} {node.kubernetes.io/unreachable Exists  NoExecute <nil>} {node.kubernetes.io/disk-pressure Exists  NoSchedule <nil>} {node.kubernetes.io/memory-pressure Exists  NoSchedule <nil>} {node.kubernetes.io/pid-pressure Exists  NoSchedule <nil>} {node.kubernetes.io/unschedulable Exists  NoSchedule <nil>} {node.kubernetes.io/network-unavailable Exists  NoSchedule <nil>}] [] system-node-critical 0xc0000487b8 nil [] <nil> 0xc0000487bc <nil> map[] []} {Running [{Initialized True 0001-01-01 00:00:00 +0000 UTC 2019-10-21 14:52:57 +1300 NZDT  } {Ready True 0001-01-01 00:00:00 +0000 UTC 2019-10-21 14:52:58 +1300 NZDT  } {ContainersReady True 0001-01-01 00:00:00 +0000 UTC 2019-10-21 14:52:58 +1300 NZDT  } {PodScheduled True 0001-01-01 00:00:00 +0000 UTC 2019-10-21 14:52:57 +1300 NZDT  }]    172.17.0.2 172.17.0.2 [] 2019-10-21 14:52:57 +1300 NZDT [] [{kube-proxy {nil &ContainerStateRunning{StartedAt:2019-10-21 14:52:58 +1300 NZDT,} nil} {nil nil nil} true 0 k8s.gcr.io/kube-proxy:v1.15.0 sha256:241709fdde11b50175f296c6c88c103ceb845dea69f27b350bebfc04c60a3155 containerd://685ac57192425ba0ee89f645ab455a47a620dcdb8b1d279ecc788822b2d8cd41 <nil>}] BestEffort []}}
+8 {{ } {kube-scheduler-kind-caleb-control-plane  kube-system /api/v1/namespaces/kube-system/pods/kube-scheduler-kind-caleb-control-plane ef0343c2-0fb4-4d52-9a6a-7af62121407c 821913 0 2019-10-21 14:53:53 +1300 NZDT <nil> <nil> map[component:kube-scheduler tier:control-plane] map[kubernetes.io/config.hash:31d9ee8b7fb12e797dc981a8686f6b2b kubernetes.io/config.mirror:31d9ee8b7fb12e797dc981a8686f6b2b kubernetes.io/config.seen:2019-10-21T01:52:10.56721284Z kubernetes.io/config.source:file] [] []  []} {[{kubeconfig {&HostPathVolumeSource{Path:/etc/kubernetes/scheduler.conf,Type:*FileOrCreate,} nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil}}] [] [{kube-scheduler k8s.gcr.io/kube-scheduler:v1.15.0 [kube-scheduler --bind-address=127.0.0.1 --kubeconfig=/etc/kubernetes/scheduler.conf --leader-elect=true] []  [] [] [] {map[] map[cpu:{{100 -3} {<nil>} 100m DecimalSI}]} [{kubeconfig true /etc/kubernetes/scheduler.conf  <nil> }] [] &Probe{Handler:Handler{Exec:nil,HTTPGet:&HTTPGetAction{Path:/healthz,Port:{0 10251 },Host:127.0.0.1,Scheme:HTTP,HTTPHeaders:[]HTTPHeader{},},TCPSocket:nil,},InitialDelaySeconds:15,TimeoutSeconds:15,PeriodSeconds:10,SuccessThreshold:1,FailureThreshold:8,} nil nil nil /dev/termination-log File IfNotPresent nil false false false}] [] Always 0xc000048a28 <nil> ClusterFirst map[]   <nil> kind-caleb-control-plane true false false <nil> &PodSecurityContext{SELinuxOptions:nil,RunAsUser:nil,RunAsNonRoot:nil,SupplementalGroups:[],FSGroup:nil,RunAsGroup:nil,Sysctls:[]Sysctl{},WindowsOptions:nil,} []   nil default-scheduler [{ Exists  NoExecute <nil>}] [] system-cluster-critical 0xc000048ab8 nil [] <nil> 0xc000048abc <nil> map[] []} {Running [{Initialized True 0001-01-01 00:00:00 +0000 UTC 2019-10-21 14:52:31 +1300 NZDT  } {Ready True 0001-01-01 00:00:00 +0000 UTC 2019-10-29 06:47:25 +1300 NZDT  } {ContainersReady True 0001-01-01 00:00:00 +0000 UTC 2019-10-29 06:47:25 +1300 NZDT  } {PodScheduled True 0001-01-01 00:00:00 +0000 UTC 2019-10-21 14:52:31 +1300 NZDT  }]    172.17.0.2 172.17.0.2 [] 2019-10-21 14:52:31 +1300 NZDT [] [{kube-scheduler {nil &ContainerStateRunning{StartedAt:2019-10-29 06:47:25 +1300 NZDT,} nil} {nil nil &ContainerStateTerminated{ExitCode:137,Signal:0,Reason:Error,Message:,StartedAt:2019-10-29 06:46:50 +1300 NZDT,FinishedAt:2019-10-29 06:47:10 +1300 NZDT,ContainerID:containerd://9a17705abbb9b76cbeb691db28457e54d950c1e96d95cebc965025fd4a06ad06,}} true 4 k8s.gcr.io/kube-scheduler:v1.15.0 sha256:e855173d0e51ed7a6094e1564c8284cade41299596d18e991cbf814241f52bae containerd://777f6c5a2c9ae9801efe0931891a0d097d26f5c9fb91272530673a41f34dd5fa <nil>}] Burstable []}}
+
+total: 9
+#+end_example
+
+
+Continue making tests this way:
+#+NAME: list, create, list, delete Pods
+#+begin_src go :noweb yes :tangle ~/go/src/k8s.io/kubernetes/test/e2e/framework/list_create_list_delete_pods.go
+    <<go-k8s-preamble>>
+    ns = "default"
+    // list pods
+    list, err := cs.CoreV1().Pods(ns).List(metav1.ListOptions{})
+    fmt.Println("Pod count", len(list.Items))
+
+    fmt.Println("Creating a new Pod")
+    // create a new pod
+    _, err = cs.CoreV1().Pods(ns).Create(&v1.Pod{
+      ObjectMeta: metav1.ObjectMeta{
+        Name: "nginx-test",
+      },
+      Spec: v1.PodSpec{
+        Containers: []v1.Container{
+          {
+            Name:  "nginx-test",
+            Image: "docker.io/nginx:latest",
+            Ports: []v1.ContainerPort{
+              {
+                ContainerPort: 8080,
+              },
+            },
+          },
+        },
+      },
+    })
+    if err != nil {
+      fmt.Println(err)
+    }
+    fmt.Println("New Pod created")
+
+    time.Sleep(3 * time.Second)
+
+    // list pods
+    list, err = cs.CoreV1().Pods(ns).List(metav1.ListOptions{})
+    if err != nil {
+      fmt.Println(err)
+    }
+    fmt.Println("Pod count:", len(list.Items))
+
+    time.Sleep(3 * time.Second)
+
+    fmt.Println("Deleting Pod")
+    // delete the newly created pods
+    err = cs.CoreV1().Pods(ns).Delete("nginx-test", &metav1.DeleteOptions{})
+    if err != nil {
+      fmt.Println(err)
+    }
+
+    time.Sleep(3 * time.Second)
+
+    list, err = cs.CoreV1().Pods(ns).List(metav1.ListOptions{})
+    fmt.Println("Pod count", len(list.Items))
+  <<go-k8s-postamble>>
+#+end_src
+
+* TADA [0%] Conformance Requirements
+  :PROPERTIES:
+  :RESET_CHECK_BOXES: t
+  :LOGGING: nil
+  :END:
+- [ ] it tests only GA, non-optional features or APIs (e.g., no alpha or beta endpoints, no feature flags required, no deprecated features)
+- [ ] it does not require direct access to kubelet's API to pass (nor does it require indirect access via the API server node proxy endpoint); it MAY use the kubelet API for debugging purposes upon failure
+- [ ] it works for all providers (e.g., no SkipIfProviderIs/SkipUnlessProviderIs calls)
+- [ ] it is non-privileged (e.g., does not require root on nodes, access to raw network interfaces, or cluster admin permissions)
+- [ ] it works without access to the public internet (short of whatever is required to pre-pull images for conformance tests)
+- [ ] it works without non-standard filesystem permissions granted to pods
+- [ ] it does not rely on any binaries that would not be required for the linux kernel or kubelet to run (e.g., can't rely on git)
+- [ ] where possible, it does not depend on outputs that change based on OS (nslookup, ping, chmod, ls)
+- [ ] any container images used within the test support all architectures for which kubernetes releases are built
+- [ ] it passes against the appropriate versions of kubernetes as spelled out in the conformance test version skew policy
+- [ ] it is stable and runs consistently (e.g., no flakes), and has been running for at least two weeks
+- [ ] new conformance tests or updates to conformance tests for additional scenarios are only allowed before code freeze dates set by the release team to allow enough soak time of the changes and gives folks a chance to kick the tires either in the community CI or their own infrastructure to make sure the tests are robust
+- [ ] it has a name that is a literal string
+* Open Tasks
+** TODO put my tasks here
+
+* Footnotes
+** Test the Test
+*** build e2e.test
+ #+BEGIN_SRC shell :results silent
+   # :async yes
+   (
+   time make -j $(nproc) GOGCFLAGS="-N -l -v" WHAT=test/e2e/e2e.test
+   ) 2>&1
+   :
+ #+END_SRC
+  [[file:research/getting-started.org::*run%20e2e.test%20against%20our%20kind%20cluster][Focus test suite on your test and run]]
+
+*** Focus Test suite on your test and run
+   
+ #+BEGIN_SRC tmate shell
+   cd ~/go/src/k8s.io/kubernetes
+   (
+   export KUBECONFIG=$(kind get kubeconfig-path --name=kind-$USER)
+   time ./bazel-bin/test/e2e/e2e.test \
+        --ginkgo.focus='should let Kubelet delete 10 pods per node with in 1 minute' \
+        -v=2 \
+        --provider=skeleton #\
+        #| sed -r "s/\x1B\[(([0-9]+)(;[0-9]+)*)?[m,K,H,f,J]//g" # remove ANSI codes
+   ) 2>&1
+   :
+ #+END_SRC
+
+** Connect to cluster's apisnoop
+   Depending on the state of your cluster, you can follow one of the below paths.
+*** Cluster already up, apisnoop applied.
+   Your steps are as simple as forwarding your local port to your cluster, and connecting this org file to this process.
+
+- [ ] Setup Port-Forwarding from us to sharing to the cluster
+
+  We'll need to port forward.  We do this as a tmate, as the prompt will remain open for as long as the forwarding is up.
+  #+BEGIN_SRC tmate 
+    export GOOGLE_APPLICATION_CREDENTIALS=$HOME/.gcreds.json
+    export K8S_NAMESPACE="apisnoop-$USER"
+    kubectl config set-context $(kubectl config current-context) --namespace=${K8S_NAMESPACE} 2>&1 > /dev/null
+    POSTGRES_POD=$(kubectl get pod --selector=io.apisnoop.db=postgres -o name | sed s:pod/::)
+    POSTGRES_PORT=$(kubectl get pod ${POSTGRES_POD} --template='{{(index (index .spec.containers 0).ports 0).containerPort}}{{"\n"}}')
+    kubectl port-forward $POSTGRES_POD $(id -u)1:$POSTGRES_PORT
+  #+END_SRC
+- [ ] Connect Org to our apisnoop db
+  #+NAME: ReConnect org to postgres
+  #+BEGIN_SRC emacs-lisp :results silent
+    (if (get-buffer "*SQL: postgres:data*")
+        (with-current-buffer "*SQL: postgres:data*"
+          (kill-buffer)))
+    (sql-connect "apisnoop" (concat "*SQL: postgres:data*"))
+  #+END_SRC
+- [ ] Test it all works
+  #+BEGIN_SRC sql-mode  
+   select * from stable_endpoint_stats;
+  #+END_SRC
+
+  #+RESULTS:
+  #+begin_src sql-mode
+           job         |    date    | total_endpoints | test_hits | conf_hits | percent_tested | percent_conf_tested 
+  ---------------------+------------+-----------------+-----------+-----------+----------------+---------------------
+   1188637253832806405 | 2019-10-28 |             430 |       167 |       114 |          38.84 |               26.51
+  (1 row)
+
+  #+end_src
+    b
+*** Cluster up, but need to apply apisnoop
+- [ ] Grab cluster info, to ensure it is up.
+
+  #+BEGIN_SRC shell
+  kubectl cluster-info
+  #+END_SRC
+
+  #+RESULTS:
+  #+begin_EXAMPLE
+  Kubernetes master is running at https://127.0.0.1:40329
+  KubeDNS is running at https://127.0.0.1:40329/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+  To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+  #+end_EXAMPLE
+
+  In your minibuffer you should see something like:
+
+  : Kubernetes master is running at https://127.0.0.1:40067
+  : KubeDNS is running at https://127.0.0.1:40067/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+  : To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+  
+- [ ] Deploy Apisnoop
+  #+begin_src shell
+    kubectl create namespace apisnoop-$USER
+    kubectl apply -f https://raw.githubusercontent.com/cncf/apisnoop/master/apps/raiinbow.yaml --namespace=apisnoop-$USER
+  #+end_src
+
+  #+RESULTS:
+  #+begin_EXAMPLE
+  namespace/apisnoop-zz created
+  service/hasura created
+  service/postgres created
+  deployment.extensions/hasura created
+  deployment.extensions/postgres created
+  #+end_EXAMPLE
+
+  #+begin_src shell
+  kubectl get pods --namespace=apisnoop-$USER
+  #+end_src
+
+  #+RESULTS:
+  #+begin_EXAMPLE
+  NAME                        READY   STATUS    RESTARTS   AGE
+  hasura-7b5d5f8d74-2dpmw     1/1     Running   1          2m20s
+  postgres-667fcfddcd-n9bwq   1/1     Running   0          2m20s
+  #+end_EXAMPLE
+
+- [ ] Setup Port-Forwarding from us to sharing to the cluster
+
+  We'll need to port forward.  We do this as a tmate, as the prompt will remain open for as long as the forwarding is up.
+  #+BEGIN_SRC tmate 
+    export GOOGLE_APPLICATION_CREDENTIALS=$HOME/.gcreds.json
+    export K8S_NAMESPACE="apisnoop-$USER"
+    kubectl config set-context $(kubectl config current-context) --namespace=${K8S_NAMESPACE} 2>&1 > /dev/null
+    POSTGRES_POD=$(kubectl get pod --selector=io.apisnoop.db=postgres -o name | sed s:pod/::)
+    POSTGRES_PORT=$(kubectl get pod ${POSTGRES_POD} --template='{{(index (index .spec.containers 0).ports 0).containerPort}}{{"\n"}}')
+    kubectl port-forward $POSTGRES_POD $(id -u)1:$POSTGRES_PORT
+  #+END_SRC
+- [ ] Connect Org to our apisnoop db
+  #+NAME: ReConnect org to postgres
+  #+BEGIN_SRC emacs-lisp :results silent
+    (if (get-buffer "*SQL: postgres:data*")
+        (with-current-buffer "*SQL: postgres:data*"
+          (kill-buffer)))
+    (sql-connect "apisnoop" (concat "*SQL: postgres:data*"))
+  #+END_SRC
+- [ ] Load swagger if needed.
+  Once connected, run the below command to see the size of your tables.  You should have two tables: bucket_job_swagger and raw_audit_event.
+  Sometimes the swagger does not load properly, if so you'll see it's size is 8192 bytes.  It should be closer to 1832kb.
+
+  #+BEGIN_SRC sql-mode  
+  \dt+
+  #+END_SRC
+
+  #+RESULTS:
+  #+begin_src sql-mode
+                             List of relations
+   Schema |        Name        | Type  |  Owner   |  Size   | Description 
+  --------+--------------------+-------+----------+---------+-------------
+   public | bucket_job_swagger | table | apisnoop | 1832 kB | 
+   public | raw_audit_event    | table | apisnoop | 405 MB  | 
+  (2 rows)
+
+  #+end_src
+  
+  If it is not laoded, you can do it manually like so
+  #+begin_src sql-mode
+    select * from load_bucket_job_swagger_via_curl('ci-kubernetes-e2e-gci-gce','1188637253832806405');
+  #+end_src
+  
+  Then rematerialize yr views
+  #+begin_src sql-mode
+    REFRESH MATERIALIZED VIEW api_operation_material;
+    REFRESH MATERIALIZED VIEW api_operation_parameter_material;
+  #+end_src
+  
+  You can test it all worked by viewing endpint stats.  These shoudl not show 0 for any column.
+  
+  #+begin_src sql-mode
+  select * from stable_endpoint_stats; 
+  #+end_src
+
+  #+RESULTS:
+  #+begin_src sql-mode
+           job         |    date    | total_endpoints | test_hits | conf_hits | percent_tested | percent_conf_tested 
+  ---------------------+------------+-----------------+-----------+-----------+----------------+---------------------
+   1188637253832806405 | 2019-10-28 |             430 |       167 |       114 |          38.84 |               26.51
+  (1 row)
+
+  #+end_src
+  
+*** Cluster is not up
+    you'll be using your right eye for a decent protion of it, so make sure it is up.  You can do =spc spc normal-mode= if you need to grab the ssh link again.
+    
+- [ ] Check your user is correct and we are attached to right eye.
+ /bonus: this also ensures code blocks are working!/
+ 
+ #+begin_src tmate :results silent
+ echo "You are connected, $USER!"
+ #+end_src
+
+- [ ] create cluster using kind
+ You can build from source or use the upstream images https://hub.docker.com/r/kindest/node/tags
+ 
+ #+BEGIN_SRC tmate
+ # kind delete cluster --name=kind-$USER 
+ kind create cluster --image kindest/node:v1.15.0 --name=kind-$USER 2>&1
+ #+END_SRC
+
+ 
+- [ ] Set your KUBECONFIG to point to a new cluster
+  TODO: [[*Set the env but don't copy to .kube/config -- Look into "contexts"][Set the env but don't copy to .kube/config -- Look into "contexts"]] 
+  
+ #+BEGIN_SRC shell :results silent
+ # Because we use multiple shells for org-mode, we need this cluster to be the default everywhere for this user
+ # export KUBECONFIG="$(kind get kubeconfig-path --name="kind-$USER")"
+ mkdir -p ~/.kube/
+ cp "$(kind get kubeconfig-path --name="kind-$USER")" ~/.kube/config
+ #+END_SRC
+
+- [ ] Grab cluster info, to ensure it is up.
+
+  #+BEGIN_SRC shell
+  kubectl cluster-info
+  #+END_SRC
+
+  #+RESULTS:
+  #+begin_EXAMPLE
+  Kubernetes master is running at https://127.0.0.1:40329
+  KubeDNS is running at https://127.0.0.1:40329/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+  To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+  #+end_EXAMPLE
+
+  In your minibuffer you should see something like:
+
+  : Kubernetes master is running at https://127.0.0.1:40067
+  : KubeDNS is running at https://127.0.0.1:40067/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+  : To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+  
+  From here,  continue by following the steps in the preceding heading.

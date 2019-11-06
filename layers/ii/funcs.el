@@ -9,6 +9,8 @@
 (put 'org-file-dir 'safe-local-variable (lambda (_) t))
 (put 'eval 'safe-local-variable (lambda (_) t))
 (setenv "PATH" (concat user-home-directory "go/bin:" (getenv "PATH")))
+(setq dotspacemacs-enable-server t)
+(setq dotspacemacs-persistent-server t)
 ;; LINE : COLUMN number in bottom right
 ;;(spaceline-toggle-line-column-on)
 ;; Gutter on left displays number for each line

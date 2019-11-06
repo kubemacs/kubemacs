@@ -4,8 +4,7 @@
 ;; (setenv "SPACEMACSDIR" iimacs-dir)
 
 ;; your .spacemacs will reside here
-(setq dotspacemacs-filepath (concat iimacs-dir ".spacemacs"))
-
+(setq dotspacemacs-filepath (concat iimacs-dir ".spacemacs-" user-login-name)) ;; per user?
 ;; This is some minor advice to add our layers folder and ii layer itself
 ;; by running these two fnuctions just before the configurationd and loading of layers
 
@@ -37,3 +36,6 @@
 (load-file (concat spacemacs-start-directory "init.el"))
 ;; TODO fix for strange load state bug when using dumper
 ;; (define-key evil-insert-state-map (kbd "ESC") 'evil-normal-state)
+
+;; https://medium.com/@bobbypriambodo/blazingly-fast-spacemacs-with-persistent-server-92260f2118b7
+(evil-leader/set-key "q q" 'spacemacs/frame-killer)
