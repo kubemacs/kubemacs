@@ -1,0 +1,240 @@
+! save this file as ~/.Xdefaults
+! xrdb ~/.Xdefaults
+! xterm -e ssh remote@far.host tmate/emacs
+! xterm -e mosh remote@far.host tmate/emacs
+! and hopefully osc52e support works
+! Solarized color scheme for the X Window System
+!
+! http://ethanschoonover.com/solarized
+
+! Common
+
+#define S_yellow        #b58900
+#define S_orange        #cb4b16
+#define S_red           #dc322f
+#define S_magenta       #d33682
+#define S_violet        #6c71c4
+#define S_blue          #268bd2
+#define S_cyan          #2aa198
+#define S_green         #859900
+
+
+! Dark
+
+#define S_base03        #002b36
+#define S_base02        #073642
+#define S_base01        #586e75
+#define S_base00        #657b83
+#define S_base0         #839496
+#define S_base1         #93a1a1
+#define S_base2         #eee8d5
+#define S_base3         #fdf6e3
+
+
+! Light
+
+! #define S_base03        #fdf6e3
+! #define S_base02        #eee8d5
+! #define S_base01        #93a1a1
+! #define S_base00        #839496
+! #define S_base0         #657b83
+! #define S_base1         #586e75
+! #define S_base2         #073642
+! #define S_base3         #002b36
+
+
+! To only apply colors to your terminal, for example, prefix
+! the color assignment statement with its name. Example:
+!
+! URxvt*background:            S_base03
+
+
+XTerm*background:                       S_base03
+XTerm*foreground:                       S_base0
+
+XTerm*fading:                  40
+XTerm*fadeColor:               S_base03
+XTerm*cursorColor:             S_base1
+XTerm*pointerColorBackground:  S_base01
+XTerm*pointerColorForeground:  S_base1
+
+XTerm*color0:                  S_base02
+XTerm*color1:                  S_red
+XTerm*color2:                  S_green
+XTerm*color3:                  S_yellow
+XTerm*color4:                  S_blue
+XTerm*color5:                  S_magenta
+XTerm*color6:                  S_cyan
+XTerm*color7:                  S_base2
+XTerm*color9:                  S_orange
+XTerm*color8:                  S_base03
+XTerm*color10:                 S_base01
+XTerm*color11:                 S_base00
+XTerm*color12:                 S_base0
+XTerm*color13:                 S_violet
+XTerm*color14:                 S_base1
+XTerm*color15:                 S_base3
+
+
+*background:              S_base03
+*foreground:              S_base0
+*fading:                  40
+*fadeColor:               S_base03
+*cursorColor:             S_base1
+*pointerColorBackground:  S_base01
+*pointerColorForeground:  S_base1
+
+*color0:                  S_base02
+*color1:                  S_red
+*color2:                  S_green
+*color3:                  S_yellow
+*color4:                  S_blue
+*color5:                  S_magenta
+*color6:                  S_cyan
+*color7:                  S_base2
+*color9:                  S_orange
+*color8:                  S_base03
+*color10:                 S_base01
+*color11:                 S_base00
+*color12:                 S_base0
+*color13:                 S_violet
+*color14:                 S_base1
+*color15:                 S_base3
+
+Xft.dpi: 180
+Xft.autohint: 0
+Xft.lcdfilter:  lcddefault
+Xft.hintstyle:  hintfull
+Xft.hinting: 1
+Xft.antialias: 1
+Xft.rgba: rgb
+
+! fc-list :scalable=true:spacing=mono: family
+! Andale Mono
+! Source Code Pro,Source Code Pro Light
+! DejaVu Sans Mono
+! CMU Typewriter Text
+! Material Design Icons
+! Bitstream Vera Sans Mono
+! Source Code Pro,Source Code Pro ExtraLight
+! Source Code Pro,Source Code Pro Medium
+! PowerlineSymbols
+! Source Code Pro
+! Courier 10 Pitch
+! Liberation Mono
+! MathJax_Vector\-Bold
+! Cousine
+! Nimbus Mono L
+! Courier
+! Aerial Mono
+! Source Code Pro,Source Code Pro Black
+! Noto Mono
+! Inconsolata
+! Source Code Pro,Source Code Pro Semibold
+! Courier New
+! MathJax_Vector
+! FreeMono
+XTerm*faceName: Insconsolata
+XTerm*faceSize: 12
+
+*fontMenu.Label:  ii Customized Fonts
+*fontMenu*fontdefault*Label:    i
+*VT100.font:           10x14
+!*VT100.font:           7x12
+!*VT100.utf8Fonts.font:  -misc-fixed-medium-r-semicondensed--8-120-75-75-c-60-iso10646-1
+
+*fontMenu*font1*Label:  0
+*VT100.faceSize1:           5
+! *VT100.font1:           nil2
+! *IconFont:              nil2
+!*VT100.font1:           5x7
+!*VT100.utf8Fonts.font1: -misc-fixed-medium-r-normal--4-80-75-75-c-50-iso10646-1
+
+*fontMenu*font2*Label:  ii
+*VT100.faceSize2:           10
+!*VT100.font2:           6x10
+!*VT100.utf8Fonts.font2: -misc-fixed-medium-r-normal--8-80-75-75-c-50-iso10646-1
+
+*fontMenu*font3*Label:  iii
+*VT100.faceSize3:           14
+!*VT100.font3:           7x12
+!*VT100.utf8Fonts.font3: -misc-fixed-medium-r-normal--14-130-75-75-c-70-iso10646-1
+
+*fontMenu*font4*Label:  iiii
+*VT100.faceSize4:           18
+!*VT100.font4:           9x16
+!*VT100.utf8Fonts.font4: -misc-fixed-medium-r-normal--16-120-75-75-c-80-iso10646-1
+
+*fontMenu*font5*Label:  iiiii
+*VT100.faceSize5:           22
+!*VT100.font5:           10x20
+!*VT100.utf8Fonts.font5: -misc-fixed-medium-r-normal--18-120-100-100-c-90-iso10646-1
+
+*fontMenu*font6*Label:  iiiiii
+*VT100.faceSize6:           25
+!*VT100.font6:           20x40
+!*VT100.utf8Fonts.font6: -misc-fixed-medium-r-normal--20-200-75-75-c-100-iso10646-1
+*allowFontOps: true
+*allowTcapOps: true
+*allowTitleOps: true
+*allowWindowOps: true
+
+! xterm*faceName: Inconsolata:size=10:antialias=false
+
+! Xterm*faceSize1: 5
+! Xterm*faceSize2: 10
+! Xterm*faceSize3: 12 
+! Xterm*faceSize4: 15
+! Xterm*faceSize5: 20
+! Xterm*faceSize6: 25
+! Xterm*font1: Consolata
+! Xterm*font2: Consolata
+! Xterm*font3: Consolata
+! Xterm*font4: Consolata
+! Xterm*font5: Consolata
+! Xterm*font6: Consolata
+Xterm*hold: true
+
+XTerm*VT100.allowWindowOps: true
+XTerm*VT100.allowTitleOps: true
+XTerm*VT100.allowFontOps: true
+XTerm*disallowedWindowOps: 20,21,SetXprop
+!XTerm.vt100.translations: #override \n Ctrl <Key> minus: smaller-vt-font() \n Ctrl <Key> plus: larger-vt-font()
+! https://www.linuxsecrets.com/archlinux-wiki/wiki.archlinux.org/index.php/Xterm.html
+! http://futurile.net/2016/06/14/xterm-setup-and-truetype-font-configuration/
+XTerm*VT100.translations: #override Ctrl <Key>minus: smaller-vt-font() \n Ctrl <Key>plus: larger-vt-font() \n Ctrl <Key>0: set-vt-font(d) \n <Btn1Up>: select-end(PRIMARY, CLIPBOARD, CUT_BUFFER0) \n Ctrl Shift <Key>V: insert-selection(CLIPBOARD) \n Ctrl Shift <Key>C: copy-selection(CLIPBOARD) \n Meta <Btn1Up>: exec-formatted("google-chrome '%t'", PRIMARY) \n Meta <Key>slash: print-everything()
+!xterm*VT100.Translations: #override Ctrl Shift <Key>V: insert-selection(CLIPBOARD) \n Ctrl Shift <Key>C: copy-selection(CLIPBOARD)
+! XTerm*VT100*translations:       #override \
+!    <Key>BackSpace: string(0x7f)
+! emacs.font: Pragmata
+! https://www.linuxsecrets.com/archlinux-wiki/wiki.archlinux.org/index.php/Xterm.html
+!Xcursor.size: 64
+!XTerm*font: 12x24
+! XTerm*background:                       grey13
+! XTerm*foreground:                       grey75
+! XTerm*cursorColor:                      darkorange1
+XTerm*scrollBar:                        false
+XTerm*utf8:                            2
+XTerm*metaSendsEscape: true
+XTerm*eightBitInput: false
+XTerm*termName: xterm-color
+XTerm*ttyModes: erase ^?
+*VT100.modifyCursorKeys:0
+XTerm*backarrowKeyIsErase:      true
+
+
+! Only select text
+xterm*highlightSelection: true
+! Remove trailing spaces
+xterm*trimSelection: true
+! Lines of output that you can scroll back over
+xterm*saveLines: 10000
+xterm*scrollBar: false
+xterm*rightScrollBar: true
+
+! Do not scroll when there is new input e.g. tail -f /var/syslog
+xterm*scrollTtyOutput: false
+! https://lukas.zapletalovi.com/2013/07/hidden-gems-of-xterm.html
+XTerm*on3Clicks: regex ([[:alpha:]]+://)?([[:alnum:]!#+,./=?@_~-]|(%[[:xdigit:]][[:xdigit:]]))+
+
+XTerm*printerCommand: xterm -T History -e sh -c 'less -r <&3' 3<&0
