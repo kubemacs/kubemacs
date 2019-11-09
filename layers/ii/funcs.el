@@ -97,7 +97,7 @@
           | tail -1 | awk '{print $2}' | awk -F= '{print $2}' \
           | tr --delete '\n'"))
   (message (getenv "SSH_AUTH_SOCK"))
-  )
+  ))
 (with-eval-after-load "org"
   ;; (add-to-list 'org-src-lang-modes '("go-mode" . sql))
   (add-to-list 'org-structure-template-alist
