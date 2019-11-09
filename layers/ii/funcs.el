@@ -54,7 +54,10 @@
   ;; (gui-select-text tmate-sh)
   (setq current-tmate-sh tmate-sh) ;; since tmate-sh is buffer-local..
   ;;(setq current-tmate-ssh (concat "export IISOCK=" socket " ; rm -f $IISOCK ; ssh -tAX " ssh-user-host " -L $IISOCK:$IISOCK " tmate-sh))
-  (setq current-tmate-ssh (concat "ssh -tAX " ssh-user-host " " tmate-sh))
+  (if (string= (getenv "CLOUD_SHELL") "true")
+    (setq current-tmate-ssh (concat "ssh -tAX " ssh-user-host " " tmate-sh))
+    (setq current-tmate-ssh (concat "gcloud alpha cloud-shell ssh --ssh-flag=-t --command=" tmate-sh))
+    )
   (message "Trying to set via osc52")
   (osc52-interprogram-cut-function current-tmate-sh)
    (with-current-buffer (get-buffer-create "start-tmate-sh" )
