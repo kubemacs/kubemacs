@@ -55,7 +55,9 @@
   (setq current-tmate-sh tmate-sh) ;; since tmate-sh is buffer-local..
   ;;(setq current-tmate-ssh (concat "export IISOCK=" socket " ; rm -f $IISOCK ; ssh -tAX " ssh-user-host " -L $IISOCK:$IISOCK " tmate-sh))
   (setq current-tmate-ssh (concat "ssh -tAX " ssh-user-host " " tmate-sh))
-  (with-current-buffer (get-buffer-create "start-tmate-sh" )
+  (message "Trying to set via osc52")
+  (osc52-interprogram-cut-function current-tmate-sh)
+   (with-current-buffer (get-buffer-create "start-tmate-sh" )
     (insert-for-yank "You will need to copy this manually:\n\n" )
     (insert-for-yank
      (concat "\nTo open on another host, forward your iisocket by pasting:\n\n" current-tmate-ssh
