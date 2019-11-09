@@ -89,10 +89,10 @@
   (setq current-tmate-ssh nil)
   (setq current-tmate-sh nil)
   )
-(defun ssh-find-agent ()
+ (defun ssh-find-agent ()
   (interactive)
-  (setenv "SSH_AUTH_SOCK" (shell-command-to-string "\
-          . ~/.ssh/ssh-find-agent.sh ;\
+  (setenv "SSH_AUTH_SOCK" (shell-command-to-string (concat "\
+          . " (configuration-layer/get-layer-local-dir 'ii) "ssh-find-agent.sh ;\
           ssh-find-agent | grep ssh- | tail -1 \
           | tail -1 | awk '{print $2}' | awk -F= '{print $2}' \
           | tr --delete '\n'"))

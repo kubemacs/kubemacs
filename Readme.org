@@ -1,8 +1,8 @@
 #+TITLE: iimacs (people macros)
 * Setup
   #+begin_src shell
-    git clone --recursive https://gitlab.ii.coop/ii/tooling/iimacs.git ~/.emacs.d
-    emacs --batch -l ~/.emacs.d/dump-init.el -eval '(dump-emacs-portable (expand-file-name "~/.emacs.d/.cache/dumps/spacemacs.pdmp"))'
+    git clone --recursive https://github.com/iimacs/.emacs.d ~/.emacs.d
+    #emacs --batch -l ~/.emacs.d/dump-init.el -eval '(dump-emacs-portable (expand-file-name "~/.emacs.d/.cache/dumps/spacemacs.pdmp"))'
     cp ~/.emacs.d/iimacs /usr/local/bin # or other path
   #+end_src
 * Usage

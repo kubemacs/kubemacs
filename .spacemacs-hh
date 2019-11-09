@@ -32,7 +32,7 @@ This function should only modify configuration layer settings."
 
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(
+   '(html
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press `SPC f e R' (Vim style) or
@@ -53,6 +53,7 @@ This function should only modify configuration layer settings."
      ;; spell-checking
      ;; syntax-checking
      treemacs
+     emacs-reveal
      (lsp :variables
           lsp-navigation 'both
           lsp-ui-doc-enable t
@@ -248,13 +249,14 @@ It should only modify the values of Spacemacs settings."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press `SPC T n' to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(spacemacs-dark
+   dotspacemacs-themes '(
+                         leuven
+                         spacemacs-dark
                          spacemacs-light
                          solarized-light
                          solarized-dark
                          monokai
                          zenburn
-                         leuven
                          )
 
    ;; Set the theme for the Spaceline. Supported themes are `spacemacs',
@@ -537,6 +539,12 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
 This function is called only while dumping Spacemacs configuration. You can
 `require' or `load' the libraries of your choice that will be included in the
 dump."
+  (require 'org-capture)
+  (require 'ansi-color)
+  (require 'org-capture-pop-frame)
+  (require 'org-protocol)
+  (require 'org-protocol-capture-html)
+  (spacemacs/dump-modes '(org-mode go-mode))
   )
 
 (defun dotspacemacs/user-config ()
@@ -545,7 +553,14 @@ This function is called at the very end of Spacemacs startup, after layer
 configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
+  (require 'org-capture)
+  (require 'ansi-color)
+  (require 'org-capture-pop-frame)
+  (require 'org-protocol)
+  (require 'org-protocol-capture-html)
   ;; (spacemacs/toggle-line-numbers-on)
+  ;(dotspacemacs/user-load); just in case we haven't loaded
+  (setq org-reveal-root "https://cdn.jsdelivr.net/npm/reveal.js")
   (global-set-key (kbd "C-=") 'text-scale-increase)
   (global-set-key (kbd "C-+") 'text-scale-increase)
   (global-set-key (kbd "C--") 'text-scale-decrease)
@@ -567,15 +582,10 @@ before packages are loaded."
         smtpmail-smtp-server "smtp.gmail.com"
         smtpmail-smtp-service 587
         smtpmail-debug-info t)
-  (require 'org-capture)
-  (require 'ansi-color)
   (defun display-ansi-colors ()
     (interactive)
     (ansi-color-apply-on-region (point-min) (point-max)))
 
-  (require 'org-capture-pop-frame)
-  (require 'org-protocol)
-  (require 'org-protocol-capture-html)
   (setq org-capture-templates
         '(
           ("w" "Default template" entry
