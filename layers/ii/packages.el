@@ -1,4 +1,4 @@
-;;; packages.el --- ii layer packages file for Spacemacs.
+ ;;; packages.el --- ii layer packages file for Spacemacs.
 ;;
 ;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
 ;;
@@ -50,6 +50,9 @@
   (use-package ob-go))
 (defun ii/init-ob-async ()
   (use-package ob-async))
+(message "SETTING osc52-package-dir")
+(setq osc52e-package-dir (concat (configuration-layer/get-layer-local-dir 'ii) "osc52e"))
+
 (defun ii/init-osc52e ()
   (use-package osc52e))
 (defun ii/post-init-osc52e ()
@@ -84,7 +87,7 @@
                                 '(emacs-lisp . t))
                    )))
 (defun ii/post-init-org ()
-  (require 'ob-shell)
+ (require 'ob-shell)
   )
 (defun ii/post-init-yasnippet ()
   ;; TODO do this within let for local var
@@ -142,8 +145,9 @@
     (ob-shell :ensure t
               :location built-in)
     ;; FIXME: likely a way to ask for this layer dir directly
-    (osc52e :ensure t
-            :location "~/.emacs.d/layers/ii/osc52e")
+    ;;(list 'osc52e :ensure t
+    ;;        :location osc52e-package-dir
+    ;;    ))
             ;;:location ,(expand-file-name (concat (car dotspacemacs-configuration-layer-path) "ii/osc52e")))
             ;; :location (recipe
             ;;            :fetcher git
@@ -155,8 +159,7 @@
     (ob-async :ensure t
               :location (recipe
                          :fetcher github
-                         :repo "astahlman/ob-async"
-                         ))
+                         :repo "astahlman/ob-async"))
     ;; This should go as a layer dependency for org via
 
     ;; (org :variables
