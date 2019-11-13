@@ -28,7 +28,9 @@
 ;;   `emacs-reveal/post-init-PACKAGE' to customize the package as it is loaded.
 
 (defun emacs-reveal/init-emacs-reveal ()
-  (use-package emacs-reveal)
+  )
+(defun emacs-reveal/post-init-emacs-reveal ()
+  ;;(require 'emacs-reveal)
   )
 (defun emacs-reveal/init-org-re-reveal-ref ()
   (use-package org-re-reveal-ref)
@@ -40,9 +42,9 @@
 ;;; Code:
 
 (defconst emacs-reveal-packages
-  '(
+  `(
     (emacs-reveal
-     :location "~/.emacs.d/layers/emacs-reveal/local/emacs-reveal")
+     :location ,(concat (configuration-layer/get-layer-local-dir 'emacs-reveal) "emacs-reveal"))
     org-re-reveal-ref
     oer-reveal
     )

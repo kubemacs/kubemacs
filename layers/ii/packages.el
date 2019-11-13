@@ -54,7 +54,7 @@
 (setq osc52e-package-dir (concat (configuration-layer/get-layer-local-dir 'ii) "osc52e"))
 
 (defun ii/init-osc52e ()
-  (use-package osc52e))
+  )
 (defun ii/post-init-osc52e ()
   (require 'osc52e)
   (osc52-set-cut-function)
@@ -105,7 +105,7 @@
   )))
 
 (defconst ii-packages
-  '(
+  `(
     ;; async
     ;; closql
     ;; command-log-mode
@@ -145,9 +145,10 @@
     (ob-shell :ensure t
               :location built-in)
     ;; FIXME: likely a way to ask for this layer dir directly
-    ;;(list 'osc52e :ensure t
-    ;;        :location osc52e-package-dir
-    ;;    ))
+    (osc52e :ensure t
+             :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "osc52e")
+    ;;osc52e-package-dir
+       )
             ;;:location ,(expand-file-name (concat (car dotspacemacs-configuration-layer-path) "ii/osc52e")))
             ;; :location (recipe
             ;;            :fetcher git
