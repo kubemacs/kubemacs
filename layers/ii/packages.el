@@ -50,7 +50,6 @@
   (use-package ob-go))
 (defun ii/init-ob-async ()
   (use-package ob-async))
-(message "SETTING osc52-package-dir")
 (setq osc52e-package-dir (concat (configuration-layer/get-layer-local-dir 'ii) "osc52e"))
 
 (defun ii/init-osc52e ()

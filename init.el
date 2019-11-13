@@ -18,9 +18,8 @@
 	))
 (advice-add 'configuration-layer/discover-layers :before #'ii/add-spacemacs-layers-dir)
 
-;; Nice to have our own banners
+;; Advice choose-banner, as it's Nice to have control of our own banners
 (defun ii/reset-spacemacs-banner-directory ()
-  (message "MONKEYPATCHING BANNER DIRECTORY and Startup Icons")
   (setq spacemacs-banner-directory (expand-file-name (concat iimacs-dir "banners/")))
   (setq spacemacs-banner-official-png (expand-file-name (concat spacemacs-banner-directory "img/spacemacs.png")))
   (setq spacemacs-badge-official-png (expand-file-name (concat spacemacs-banner-directory "img/spacemacs-badge.png")))
