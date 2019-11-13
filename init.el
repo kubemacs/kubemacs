@@ -5,7 +5,7 @@
 (message "iimacs: LOADING")
 ;; your .spacemacs will reside here
 ;(setq dotspacemacs-filepath (concat iimacs-dir ".spacemacs-" user-login-name)) ;; per user?
-(setq qotspacemacs-filepath (concat "~/.iimacs")) ;; per user?
+(setq dotspacemacs-filepath (concat "~/.iimacs")) ;; per user?
 ;;(setq (concat "~/.emacs.d/.spacemacs-" user-login-name)) ;; per user?
 ;; This is some minor advice to add our layers folder and ii layer itself
 ;; by running these two fnuctions just before the configurationd and loading of layers
@@ -13,10 +13,28 @@
 ;; Calling this functions ensures the layers folder containing ii layer is in the path
 (defun ii/add-spacemacs-layers-dir (&optional refresh-index)
   ; TODO Append to Path rather than overwrite it
-  (setq dotspacemacs-configuration-layer-path (list
-						(concat iimacs-dir "layers/")
-						))
-  )
+  (setq dotspacemacs-configuration-layer-path
+	(list(concat iimacs-dir "layers/"))
+	))
+(advice-add 'configuration-layer/discover-layers :before #'ii/add-spacemacs-layers-dir)
+
+;; Nice to have our own banners
+(defun ii/reset-spacemacs-banner-directory ()
+  (message "MONKEYPATCHING BANNER DIRECTORY and Startup Icons")
+  (setq spacemacs-banner-directory (expand-file-name (concat iimacs-dir "banners/")))
+  (setq spacemacs-banner-official-png (expand-file-name (concat spacemacs-banner-directory "img/spacemacs.png")))
+  (setq spacemacs-badge-official-png (expand-file-name (concat spacemacs-banner-directory "img/spacemacs-badge.png")))
+  (setq spacemacs-purple-heart-png (expand-file-name (concat spacemacs-banner-directory "img/heart.png"))
+	 ))
+(advice-add 'spacemacs-buffer//choose-banner :before #'ii/reset-spacemacs-banner-directory)
+
+                                        ;(defadvice package-initialize (before spacemacs-buffer//get-banner-path)
+; (message "UPDATING BANNERS")
+; (setq spacemacs-banner-directory (expand-file-name (concat iimacs-dir "banners/"))
+;       ))
+  ;; (expand-file-name (concat spacemacs-banner-directory "img/spacemacs-badge.png"))
+  ;; "Purple heart emoji.")
+  ;; (expand-file-name (concat spacemacs-banner-directory "img/heart.png"))
 ;; It needs to be called before the configuration-layer/discover-layers funcion is loaded
 (advice-add 'configuration-layer/discover-layers :before #'ii/add-spacemacs-layers-dir)
 
@@ -41,4 +59,4 @@
 (message "iimacs: LOADED")
 
 ;; https://medium.com/@bobbypriambodo/blazingly-fast-spacemacs-with-persistent-server-92260f2118b7
-(evil-leader/set-key "q q" 'spacemacs/frame-killer)
+;(evil-leader/set-key "q q" 'spacemacs/frame-killer)
