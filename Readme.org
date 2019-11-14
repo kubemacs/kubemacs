@@ -115,6 +115,13 @@ This is done for all users, but has no impact unless ~/.iimacs.d exists
     EOF
   #+end_src
 
+** docker group
+  We need to login/logout in order for this to work OR use newgrp
+  #+name: add user to docker group
+  #+begin_src shell :results silent
+    sudo adduser $USER docker
+  #+end_src
+
 * Possibly use ~/.emacs.d/.spacemacs-hh
 You can have your own config, but I do a lot of work to keep mine happy.
 It's not a bad starting spot.

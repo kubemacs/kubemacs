@@ -9,6 +9,15 @@
 (put 'org-file-dir 'safe-local-variable (lambda (_) t))
 (put 'eval 'safe-local-variable (lambda (_) t))
 (setenv "PATH" (concat user-home-directory "go/bin:" (getenv "PATH")))
+(setq dotspacemacs-line-numbers '(; :visual t
+                                        ; :relative nil
+                                  :disabled-for-modes dired-mode
+                                        ;doc-view-mode
+                                        ;markdown-mode
+                                        ;org-mode
+                                        ;pdf-view-mode
+                                        ;text-mode
+                                                      :size-limit-kb 5000))
 (setq dotspacemacs-enable-server t)
 (setq dotspacemacs-persistent-server t)
 (defun runs-and-exits-zero (program &rest args)
