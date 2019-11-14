@@ -21,7 +21,7 @@
 ## emacs 26.X<a id="sec-1-2"></a>
 
 ```shell
-apt install -y emacs #>26.0
+sudo apt install -y emacs #>26.0
 ```
 
 ## kubectl / google-cloud-sdk<a id="sec-1-3"></a>
@@ -31,24 +31,24 @@ echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.clou
     | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
 curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
     | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-apt update 
-apt install -y kubectl google-cloud-sdk
+sudo apt update 
+sudo apt install -y kubectl google-cloud-sdk
 ```
 
 ## golang 1.13<a id="sec-1-4"></a>
 
 ```shell
-add-apt-repository --yes ppa:longsleep/golang-backports
-apt update
-apt install -y golang golang-1.13
+sudo add-apt-repository --yes ppa:longsleep/golang-backports
+sudo apt update
+sudo apt install -y golang golang-1.13
 ```
 
 ## kind 0.5.1<a id="sec-1-5"></a>
 
 ```shell
-curl -Lo /usr/local/bin/kind \
+sudo curl -Lo /usr/local/bin/kind \
      https://github.com/kubernetes-sigs/kind/releases/download/v0.5.1/kind-$(uname)-amd64
-chmod +x /usr/local/bin/kind
+sudo chmod +x /usr/local/bin/kind
 ```
 
 # Get your terminal + emacs working<a id="sec-2"></a>
@@ -56,7 +56,7 @@ chmod +x /usr/local/bin/kind
 ## clone down iimacs .emacs.d into your system<a id="sec-2-1"></a>
 
 ```shell
-cd ~/
+cd ~/ # do as your own user
 # mv ~/.emacs.d ~/.emacs.d.before-ii
 git clone --recursive https://github.com/iimacs/.emacs.d ~/.iimacs.d
 ```
@@ -69,6 +69,8 @@ curl https://storage.googleapis.com/apisnoop/dev/iitoolbox-spacemacs-0.6.tgz \
 ```
 
 ## ensure when you login, emacs can find .iimacs.d and tooling<a id="sec-2-3"></a>
+
+This is done for all users, but has no impact unless ~/.iimacs.d exists
 
 ```shell
 cat <<EOF | sudo tee /etc/profile.d/99-iimacs.sh
@@ -106,12 +108,14 @@ iimacs ~/path/to/orgfile
 
 ```shell
 #!/bin/bash
+#/usr/local/bin/apisnoop.sh
 xterm -T $USER@sharing.io -e \
     ssh -tA $USER@sharing.io bash -l \
     '~/ii/org/start_osc52_session.sh'  '~/ii/apisnoop/' &
 ```
 
 ```shell
+#/usr/local/bin/conformance-testing.sh
 #!/bin/bash
 xterm -T hh@sharing.io/conformance-testing -e \
       ssh -tA $USER@sharing.io bash -l \

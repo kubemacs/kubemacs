@@ -1,0 +1,54 @@
+# emacs 26.X
+
+sudo apt install -y emacs #>26.0
+
+# kubectl / google-cloud-sdk
+
+echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
+    | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+    | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+sudo apt update 
+sudo apt install -y kubectl google-cloud-sdk
+
+# golang 1.13
+
+sudo add-apt-repository --yes ppa:longsleep/golang-backports
+sudo apt update
+sudo apt install -y golang golang-1.13
+
+# kind 0.5.1
+
+sudo curl -Lo /usr/local/bin/kind \
+     https://github.com/kubernetes-sigs/kind/releases/download/v0.5.1/kind-$(uname)-amd64
+sudo chmod +x /usr/local/bin/kind
+
+# clone down iimacs .emacs.d into your system
+#   #+name: git clone --recursive ~/.emacs.d
+
+cd ~/ # do as your own user
+# mv ~/.emacs.d ~/.emacs.d.before-ii
+git clone --recursive https://github.com/iimacs/.emacs.d ~/.iimacs.d
+
+# populate the cache
+
+curl https://storage.googleapis.com/apisnoop/dev/iitoolbox-spacemacs-0.6.tgz \
+    | tar xzfC - ~/.iimacs.d
+
+# ensure when you login, emacs can find .iimacs.d and tooling
+# This is done for all users, but has no impact unless ~/.iimacs.d exists
+
+cat <<EOF | sudo tee /etc/profile.d/99-iimacs.sh
+# Ensures the iitooling is avaliable and loaded by emacs
+export IIMACS=~/.iimacs.d
+export PATH=${IIMACS}/bin:${PATH}
+export EMACSLOADPATH=${IIMACS}:
+EOF
+
+# xterm font size and OS Code settings
+#   #+name: set xterm settings
+
+cp .emacs.d/.xterm-xdefaults ~/.Xdefaults
+# edit the above to your preferences ^^^
+# In particular the DPI is set to 180 for hidpi, 90 is good for older screens
+xrdb ~/.Xdefaults

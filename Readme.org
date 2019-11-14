@@ -1,9 +1,12 @@
 #+TITLE: iimacs (people macros)
 * Dependencies
+  :PROPERTIES:
+  :header-args: :noweb yes :tangle yes :comments org
+  :END:
 ** Ubuntu 19.10 (or similar)
 ** emacs 26.X
    #+begin_src shell
-     apt install -y emacs #>26.0
+     sudo apt install -y emacs #>26.0
    #+end_src
 ** kubectl / google-cloud-sdk
    #+begin_src shell
@@ -11,26 +14,29 @@
          | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
      curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
          | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-     apt update 
-     apt install -y kubectl google-cloud-sdk
+     sudo apt update 
+     sudo apt install -y kubectl google-cloud-sdk
    #+end_src
 ** golang 1.13
    #+begin_src shell
-     add-apt-repository --yes ppa:longsleep/golang-backports
-     apt update
-     apt install -y golang golang-1.13
+     sudo add-apt-repository --yes ppa:longsleep/golang-backports
+     sudo apt update
+     sudo apt install -y golang golang-1.13
    #+end_src
 ** kind 0.5.1
    #+begin_src shell
-     curl -Lo /usr/local/bin/kind \
+     sudo curl -Lo /usr/local/bin/kind \
           https://github.com/kubernetes-sigs/kind/releases/download/v0.5.1/kind-$(uname)-amd64
-     chmod +x /usr/local/bin/kind
+     sudo chmod +x /usr/local/bin/kind
    #+end_src
 * Get your terminal + emacs working
+  :PROPERTIES:
+  :header-args: :noweb yes :tangle yes :comments org
+  :END:
 ** clone down iimacs .emacs.d into your system
   #+name: git clone --recursive ~/.emacs.d
   #+begin_src shell
-  cd ~/
+  cd ~/ # do as your own user
   # mv ~/.emacs.d ~/.emacs.d.before-ii
   git clone --recursive https://github.com/iimacs/.emacs.d ~/.iimacs.d
   #+end_src
@@ -40,6 +46,7 @@
          | tar xzfC - ~/.iimacs.d
    #+end_src
 ** ensure when you login, emacs can find .iimacs.d and tooling
+This is done for all users, but has no impact unless ~/.iimacs.d exists
    #+begin_src shell
    cat <<EOF | sudo tee /etc/profile.d/99-iimacs.sh
    # Ensures the iitooling is avaliable and loaded by emacs
@@ -70,15 +77,17 @@ It's not a bad starting spot.
   #+end_src
 ** run xterm
    #+name: apisnoop.sh 
-   #+begin_src shell :tangle /usr/local/bin/apisnoop.sh
+   #+begin_src shell :tangle no
      #!/bin/bash
+     #/usr/local/bin/apisnoop.sh
      xterm -T $USER@sharing.io -e \
          ssh -tA $USER@sharing.io bash -l \
          '~/ii/org/start_osc52_session.sh'  '~/ii/apisnoop/' &
    #+end_src
 
    #+name: conformance-testing.sh
-   #+begin_src shell :tangle /usr/local/bin/conformance-testing.sh
+     #+begin_src shell :tangle no
+     #/usr/local/bin/conformance-testing.sh
      #!/bin/bash
      xterm -T hh@sharing.io/conformance-testing -e \
            ssh -tA $USER@sharing.io bash -l \

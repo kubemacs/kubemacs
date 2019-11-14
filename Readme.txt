@@ -35,7 +35,7 @@ Table of Contents
 ──────────────
 
   ┌────
-  │ apt install -y emacs #>26.0
+  │ sudo apt install -y emacs #>26.0
   └────
 
 
@@ -47,8 +47,8 @@ Table of Contents
   │     | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
   │ curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
   │     | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-  │ apt update 
-  │ apt install -y kubectl google-cloud-sdk
+  │ sudo apt update 
+  │ sudo apt install -y kubectl google-cloud-sdk
   └────
 
 
@@ -56,9 +56,9 @@ Table of Contents
 ───────────────
 
   ┌────
-  │ add-apt-repository --yes ppa:longsleep/golang-backports
-  │ apt update
-  │ apt install -y golang golang-1.13
+  │ sudo add-apt-repository --yes ppa:longsleep/golang-backports
+  │ sudo apt update
+  │ sudo apt install -y golang golang-1.13
   └────
 
 
@@ -66,9 +66,9 @@ Table of Contents
 ──────────────
 
   ┌────
-  │ curl -Lo /usr/local/bin/kind \
+  │ sudo curl -Lo /usr/local/bin/kind \
   │      https://github.com/kubernetes-sigs/kind/releases/download/v0.5.1/kind-$(uname)-amd64
-  │ chmod +x /usr/local/bin/kind
+  │ sudo chmod +x /usr/local/bin/kind
   └────
 
 
@@ -79,7 +79,7 @@ Table of Contents
 ───────────────────────────────────────────────
 
   ┌────
-  │ cd ~/
+  │ cd ~/ # do as your own user
   │ # mv ~/.emacs.d ~/.emacs.d.before-ii
   │ git clone --recursive https://github.com/iimacs/.emacs.d ~/.iimacs.d
   └────
@@ -97,6 +97,8 @@ Table of Contents
 2.3 ensure when you login, emacs can find .iimacs.d and tooling
 ───────────────────────────────────────────────────────────────
 
+  This is done for all users, but has no impact unless ~/.iimacs.d
+  exists
   ┌────
   │ cat <<EOF | sudo tee /etc/profile.d/99-iimacs.sh
   │ # Ensures the iitooling is avaliable and loaded by emacs
@@ -141,12 +143,14 @@ Table of Contents
 
   ┌────
   │ #!/bin/bash
+  │ #/usr/local/bin/apisnoop.sh
   │ xterm -T $USER@sharing.io -e \
   │     ssh -tA $USER@sharing.io bash -l \
   │     '~/ii/org/start_osc52_session.sh'  '~/ii/apisnoop/' &
   └────
 
   ┌────
+  │ #/usr/local/bin/conformance-testing.sh
   │ #!/bin/bash
   │ xterm -T hh@sharing.io/conformance-testing -e \
   │       ssh -tA $USER@sharing.io bash -l \
