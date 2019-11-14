@@ -23,6 +23,39 @@ sudo curl -Lo /usr/local/bin/kind \
      https://github.com/kubernetes-sigs/kind/releases/download/v0.5.1/kind-$(uname)-amd64
 sudo chmod +x /usr/local/bin/kind
 
+# tmate 2.3.1
+
+curl -L \
+ https://github.com/tmate-io/tmate/releases/download/2.3.1/tmate-2.3.1-static-linux-amd64.tar.gz \
+ | sudo tar xvfzC - /usr/local/bin --strip-components 1
+
+# ripgrep 0.10.0
+
+sudo apt install -y ripgrep
+
+# xterm
+
+sudo apt install -y xterm xtermcontrol
+
+# docker
+
+sudo apt-get remove docker docker-engine docker.io containerd runc
+sudo apt-get install \
+     apt-transport-https \
+     ca-certificates \
+     curl \
+     gnupg-agent \
+     software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository \
+     "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   disco \
+   stable"
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io0
+export DOCKER_VERSION=5:19.03.3~3-0~ubuntu-disco
+sudo apt-get install docker-ce=$DOCKER_VERISON docker-ce-cli=$DOCKER_VERSION containerd.io
+
 # clone down iimacs .emacs.d into your system
 #   #+name: git clone --recursive ~/.emacs.d
 
@@ -52,3 +85,13 @@ cp .emacs.d/.xterm-xdefaults ~/.Xdefaults
 # edit the above to your preferences ^^^
 # In particular the DPI is set to 180 for hidpi, 90 is good for older screens
 xrdb ~/.Xdefaults
+
+# tmate settings (including ESC timout)
+#   #+name: set tmux settings
+
+cat <<EOF >> ~/.tmate.conf
+set -s escape-time 0
+set-option -g set-clipboard on
+set-option -g mouse on
+set-option -g history-limit 50000
+EOF

@@ -1,7 +1,7 @@
 #+TITLE: iimacs (people macros)
 * Dependencies
   :PROPERTIES:
-  :header-args: :noweb yes :tangle yes :comments org
+  :header-args: :noweb yes :tangle yes :comments org :eval never
   :END:
 ** Ubuntu 19.10 (or similar)
 ** emacs 26.X
@@ -43,6 +43,28 @@
    #+begin_src shell
      sudo apt install -y xterm xtermcontrol
    #+end_src
+** docker
+   #+begin_src shell :tangle docker.sh
+     sudo apt-get remove docker docker-engine docker.io containerd runc
+     sudo apt-get install \
+          apt-transport-https \
+          ca-certificates \
+          curl \
+          gnupg-agent \
+          software-properties-common
+     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+     sudo add-apt-repository \
+          "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+        disco \
+        stable"
+     sudo apt-get update
+     sudo apt-get install docker-ce docker-ce-cli containerd.io
+     #export DOCKER_VERSION=5:19.03.3~3-0~ubuntu-disco
+     #sudo apt-get install docker-ce=$DOCKER_VERISON docker-ce-cli=$DOCKER_VERSION containerd.io
+   #+end_src
+
+   #+RESULTS:
+
 * Get your terminal + emacs working
   :PROPERTIES:
   :header-args: :noweb yes :tangle yes :comments org
@@ -68,6 +90,11 @@ This is done for all users, but has no impact unless ~/.iimacs.d exists
    export PATH=${IIMACS}/bin:${PATH}
    export EMACSLOADPATH=${IIMACS}:
    EOF
+   #+end_src
+** ensure when you login, emacs can find .iimacs.d and tooling
+This is done for all users, but has no impact unless ~/.iimacs.d exists
+   #+begin_src shell
+   sudo adduser $USER docker
    #+end_src
 ** xterm font size and OS Code settings
   #+name: set xterm settings
