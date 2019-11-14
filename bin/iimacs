@@ -1,4 +1,4 @@
 #!/bin/sh
 emacsclient -a '' -tty -s ${EMACSSOCKETNAME:-server} $*
 #emacs --dump-file ~/.emacs.d/.cache/dumps/spacemacs.pdmp -nw $* || \
-#emacs --force-dump -nw $*
+    #emacs --force-dump -nw $*
