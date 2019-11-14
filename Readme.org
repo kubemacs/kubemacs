@@ -1,11 +1,86 @@
 #+TITLE: iimacs (people macros)
-* Setup
+* Dependencies
+** Ubuntu 19.10 (or similar)
+** emacs 26.X
+   #+begin_src shell
+     apt install -y emacs #>26.0
+   #+end_src
+** kubectl / google-cloud-sdk
+   #+begin_src shell
+     echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
+         | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+         | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+     apt update 
+     apt install -y kubectl google-cloud-sdk
+   #+end_src
+** golang 1.13
+   #+begin_src shell
+     add-apt-repository --yes ppa:longsleep/golang-backports
+     apt update
+     apt install -y golang golang-1.13
+   #+end_src
+** kind 0.5.1
+   #+begin_src shell
+     curl -Lo /usr/local/bin/kind \
+          https://github.com/kubernetes-sigs/kind/releases/download/v0.5.1/kind-$(uname)-amd64
+     chmod +x /usr/local/bin/kind
+   #+end_src
+* Get your terminal + emacs working
+** clone down iimacs .emacs.d into your system
+  #+name: git clone --recursive ~/.emacs.d
   #+begin_src shell
-    git clone --recursive https://github.com/iimacs/.emacs.d ~/.emacs.d
-    #emacs --batch -l ~/.emacs.d/dump-init.el -eval '(dump-emacs-portable (expand-file-name "~/.emacs.d/.cache/dumps/spacemacs.pdmp"))'
-    cp ~/.emacs.d/iimacs /usr/local/bin # or other path
+  cd ~/
+  # mv ~/.emacs.d ~/.emacs.d.before-ii
+  git clone --recursive https://github.com/iimacs/.emacs.d ~/.iimacs.d
   #+end_src
+** populate the cache
+   #+begin_src shell
+     curl https://storage.googleapis.com/apisnoop/dev/iitoolbox-spacemacs-0.6.tgz \
+         | tar xzfC - ~/.iimacs.d
+   #+end_src
+** ensure when you login, emacs can find .iimacs.d and tooling
+   #+begin_src shell
+   cat <<EOF | sudo tee /etc/profile.d/99-iimacs.sh
+   # Ensures the iitooling is avaliable and loaded by emacs
+   export IIMACS=~/.iimacs.d
+   export PATH=${IIMACS}/bin:${PATH}
+   export EMACSLOADPATH=${IIMACS}:
+   EOF
+   #+end_src
+** xterm font size and OS Code settings
+  #+name: set xterm settings
+  #+begin_src shell
+  cp .emacs.d/.xterm-xdefaults ~/.Xdefaults
+  # edit the above to your preferences ^^^
+  # In particular the DPI is set to 180 for hidpi, 90 is good for older screens
+  xrdb ~/.Xdefaults
+  #+end_src
+* Possibly use ~/.emacs.d/.spacemacs-hh
+You can have your own config, but I do a lot of work to keep mine happy.
+It's not a bad starting spot.
+  #+name: .spacemacs-$USER
+  #+begin_src shell
+    cp ~/.emacs.d/.spacemacs-hh ~/.emacs.d/.spacemacs-$USER
+  #+end_src
+
 * Usage
   #+begin_src shell
     iimacs ~/path/to/orgfile
   #+end_src
+** run xterm
+   #+name: apisnoop.sh 
+   #+begin_src shell :tangle /usr/local/bin/apisnoop.sh
+     #!/bin/bash
+     xterm -T $USER@sharing.io -e \
+         ssh -tA $USER@sharing.io bash -l \
+         '~/ii/org/start_osc52_session.sh'  '~/ii/apisnoop/' &
+   #+end_src
+
+   #+name: conformance-testing.sh
+   #+begin_src shell :tangle /usr/local/bin/conformance-testing.sh
+     #!/bin/bash
+     xterm -T hh@sharing.io/conformance-testing -e \
+           ssh -tA $USER@sharing.io bash -l \
+           '~/ii/org/start_osc52_session.sh'  '~/ii/conformance-testing/' &
+   #+end_src
