@@ -29,6 +29,20 @@
           https://github.com/kubernetes-sigs/kind/releases/download/v0.5.1/kind-$(uname)-amd64
      sudo chmod +x /usr/local/bin/kind
    #+end_src
+** tmate 2.3.1
+   #+begin_src shell
+  curl -L \
+   https://github.com/tmate-io/tmate/releases/download/2.3.1/tmate-2.3.1-static-linux-amd64.tar.gz \
+   | sudo tar xvfzC - /usr/local/bin --strip-components 1
+   #+end_src
+** ripgrep 0.10.0
+   #+begin_src shell
+     sudo apt install -y ripgrep
+   #+end_src
+** xterm
+   #+begin_src shell
+     sudo apt install -y xterm xtermcontrol
+   #+end_src
 * Get your terminal + emacs working
   :PROPERTIES:
   :header-args: :noweb yes :tangle yes :comments org
@@ -63,6 +77,17 @@ This is done for all users, but has no impact unless ~/.iimacs.d exists
   # In particular the DPI is set to 180 for hidpi, 90 is good for older screens
   xrdb ~/.Xdefaults
   #+end_src
+** tmate settings (including ESC timout)
+  #+name: set tmux settings
+  #+begin_src shell :results silent
+    cat <<EOF >> ~/.tmate.conf
+    set -s escape-time 0
+    set-option -g set-clipboard on
+    set-option -g mouse on
+    set-option -g history-limit 50000
+    EOF
+  #+end_src
+
 * Possibly use ~/.emacs.d/.spacemacs-hh
 You can have your own config, but I do a lot of work to keep mine happy.
 It's not a bad starting spot.
