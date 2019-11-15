@@ -1,4 +1,6 @@
+(configuration-layer/declare-layer 'auto-completion)
 (configuration-layer/declare-layer 'yaml)
+(configuration-layer/declare-layer 'html)
 (configuration-layer/declare-layer 'org)
 (configuration-layer/declare-layer 'go)
 (configuration-layer/declare-layer 'git)

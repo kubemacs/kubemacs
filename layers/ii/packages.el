@@ -1,4 +1,4 @@
- ;;; packages.el --- ii layer packages file for Spacemacs.
+;;; packages.el --- ii layer packages file for Spacemacs.
 ;;
 ;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
 ;;
@@ -108,10 +108,23 @@
 (defun ii/post-init-org ()
  (require 'ob-shell)
   )
+(defun ii/post-init-auto-completion ()
+  ;; TODO do this within let for local var
+  (spacemacs|use-package-add-hook auto-completion
+    :post-config (progn
+                   (setq
+                    auto-completion-enable-sort-by-usage t
+                    auto-completion-enable-help-tooltip t)
+                    )
+                   ))
 (defun ii/post-init-yasnippet ()
   ;; TODO do this within let for local var
   (spacemacs|use-package-add-hook yasnippet
     :post-config (progn
+                   (setq
+                    auto-completion-private-snippets-directory (expand-file-name (concat iimacs-dir "snippets"))
+                    auto-completion-enable-snippets-in-popup t
+                    )
                    (add-to-list 'yas-snippet-dirs (expand-file-name
                                                    "snippets"
                                                    (configuration-layer/get-layer-local-dir

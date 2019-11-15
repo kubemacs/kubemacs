@@ -6,6 +6,7 @@
 ;; your .spacemacs will reside here
 ;(setq dotspacemacs-filepath (concat iimacs-dir ".spacemacs-" user-login-name)) ;; per user?
 (setq dotspacemacs-filepath (concat "~/.iimacs")) ;; per user?
+;; we used several emacs server/daemons and they try to 'steal' the recentf from each other
 (setq recentf-save-file (concat user-emacs-directory ".cache/recentf." server-name )) ;; per server
 ;;(setq (concat "~/.emacs.d/.spacemacs-" user-login-name)) ;; per user?
 ;; This is some minor advice to add our layers folder and ii layer itself
