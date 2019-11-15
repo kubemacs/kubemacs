@@ -50,7 +50,6 @@
   (use-package ob-go))
 (defun ii/init-ob-async ()
   (use-package ob-async))
-(setq osc52e-package-dir (concat (configuration-layer/get-layer-local-dir 'ii) "osc52e"))
 
 (defun ii/init-osc52e ()
   )
@@ -91,9 +90,6 @@
 (defun ii/pre-init-org ()
   (spacemacs|use-package-add-hook org
     :post-config (progn
-                   (setq org-enable-github-support t)
-                   (setq org-enable-bootstrap-support t)
-                   (setq org-enable-reveal-js-support t)
                    (add-to-list 'org-babel-load-languages
                                 '(go . t))
                    ;;(add-to-list 'org-babel-load-languages
@@ -108,23 +104,10 @@
 (defun ii/post-init-org ()
  (require 'ob-shell)
   )
-(defun ii/post-init-auto-completion ()
-  ;; TODO do this within let for local var
-  (spacemacs|use-package-add-hook auto-completion
-    :post-config (progn
-                   (setq
-                    auto-completion-enable-sort-by-usage t
-                    auto-completion-enable-help-tooltip t)
-                    )
-                   ))
 (defun ii/post-init-yasnippet ()
   ;; TODO do this within let for local var
   (spacemacs|use-package-add-hook yasnippet
     :post-config (progn
-                   (setq
-                    auto-completion-private-snippets-directory (expand-file-name (concat iimacs-dir "snippets"))
-                    auto-completion-enable-snippets-in-popup t
-                    )
                    (add-to-list 'yas-snippet-dirs (expand-file-name
                                                    "snippets"
                                                    (configuration-layer/get-layer-local-dir
