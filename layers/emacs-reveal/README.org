@@ -31,8 +31,6 @@ file.
 ** OER Course on Operating Systems
   #+name: Oer Co
   #+begin_src shell
-  
-  cd /tmp
   git clone --recursive https://gitlab.com/oer/OS.git
   #+end_src
 
