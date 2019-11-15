@@ -15,9 +15,12 @@
     - [bookmarklet](#sec-5-1-1)
     - [capture template](#sec-5-1-2)
   - [org-capture-paragraph (oc-p)](#sec-5-2)
+    - [bookmarklet](#sec-5-2-1)
+    - [capture template](#sec-5-2-2)
   - [org-capture-link (oc-L)](#sec-5-3)
+    - [bookmarklet](#sec-5-3-1)
+    - [capture template](#sec-5-3-2)
 - [A bookmarklet to save the current title/link](#sec-6)
-- [Linux setup (Gnome)](#sec-7)
 
 
 # Description<a id="sec-1"></a>
@@ -129,9 +132,13 @@ javascript:location.href = 'org-protocol://capture-html?template=w&url=' + encod
 
 ## org-capture-paragraph (oc-p)<a id="sec-5-2"></a>
 
+### bookmarklet<a id="sec-5-2-1"></a>
+
 ```javascript
 javascript:location.href='org-protocol://capture?template=p&url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title)+'&body='+encodeURIComponent(window.getSelection())
 ```
+
+### capture template<a id="sec-5-2-2"></a>
 
 ```emacs-lisp
 (add-to-list 'org-capture-templates
@@ -150,9 +157,13 @@ Time: %u
 
 ## org-capture-link (oc-L)<a id="sec-5-3"></a>
 
+### bookmarklet<a id="sec-5-3-1"></a>
+
 ```javascript
 javascript:location.href='org-protocol://capture?template=L&url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title)+'?body='+encodeURIComponent(window.getSelection())
 ```
+
+### capture template<a id="sec-5-3-2"></a>
 
 ```emacs-lisp
 (add-to-list 'org-capture-templates
@@ -172,5 +183,3 @@ Similar to using `aol` to call **org-store-link** and later retrieval with `,il`
 ```javascript
 javascript:location.href='org-protocol://capture?template=p&url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title)+'?body='+encodeURIComponent(window.getSelection())
 ```
-
-# Linux setup (Gnome)<a id="sec-7"></a>

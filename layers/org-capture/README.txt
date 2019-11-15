@@ -25,9 +25,12 @@ Table of Contents
 ..... 1. bookmarklet
 ..... 2. capture template
 .. 2. org-capture-paragraph (oc-p)
+..... 1. bookmarklet
+..... 2. capture template
 .. 3. org-capture-link (oc-L)
+..... 1. bookmarklet
+..... 2. capture template
 6. A bookmarklet to save the current title/link
-7. Linux setup (Gnome)
 
 
 1 Description
@@ -208,9 +211,16 @@ selection into Emacs as org-mode content]
 5.2 org-capture-paragraph (oc-p)
 ────────────────────────────────
 
+5.2.1 bookmarklet
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
   ┌────
   │ javascript:location.href='org-protocol://capture?template=p&url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title)+'&body='+encodeURIComponent(window.getSelection())
   └────
+
+
+5.2.2 capture template
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   ┌────
   │ (add-to-list 'org-capture-templates
@@ -231,9 +241,16 @@ selection into Emacs as org-mode content]
 5.3 org-capture-link (oc-L)
 ───────────────────────────
 
+5.3.1 bookmarklet
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
   ┌────
   │ javascript:location.href='org-protocol://capture?template=L&url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title)+'?body='+encodeURIComponent(window.getSelection())
   └────
+
+
+5.3.2 capture template
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   ┌────
   │ (add-to-list 'org-capture-templates
@@ -255,7 +272,3 @@ selection into Emacs as org-mode content]
   ┌────
   │ javascript:location.href='org-protocol://capture?template=p&url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title)+'?body='+encodeURIComponent(window.getSelection())
   └────
-
-
-7 Linux setup (Gnome)
-═════════════════════

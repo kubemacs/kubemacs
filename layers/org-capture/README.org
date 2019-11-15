@@ -6,7 +6,6 @@
 #+TAGS: layer|web service
 
 # The maximum height of the logo should be 200 pixels.
-[[img/org-capture.png]]
 
 # TOC links should be GitHub style anchors.
 * Table of Contents                                        :TOC_4_gh:noexport:
@@ -27,7 +26,11 @@
     - [[#bookmarklet][bookmarklet]]
     - [[#capture-template][capture template]]
   - [[#org-capture-paragraph-oc-p][org-capture-paragraph (oc-p)]]
+    - [[#bookmarklet-1][bookmarklet]]
+    - [[#capture-template-1][capture template]]
   - [[#org-capture-link-oc-l][org-capture-link (oc-L)]]
+    - [[#bookmarklet-2][bookmarklet]]
+    - [[#capture-template-2][capture template]]
 - [[#a-bookmarklet-to-save-the-current-titlelink][A bookmarklet to save the current title/link]]
 
 * Description
@@ -105,7 +108,6 @@ The ones you want to use with org-protocol require
 ** org-capture-html (oc-H)
 *** bookmarklet
 This requires pandoc installed to convert the html into org-mode.
-[[javascript:location.href = 'org-protocol://capture-html?template=w&url=' + encodeURIComponent(location.href) + '&title=' + encodeURIComponent(document.title || "%5Buntitled page%5D") + '&body=' + encodeURIComponent(function () {var html = ""; if (typeof document.getSelection != "undefined") {var sel = document.getSelection(); if (sel.rangeCount) {var container = document.createElement("div"); for (var i = 0, len = sel.rangeCount; i < len; ++i) {container.appendChild(sel.getRangeAt(i).cloneContents());} html = container.innerHTML;}} else if (typeof document.selection != "undefined") {if (document.selection.type == "Text") {html = document.selection.createRange().htmlText;}} var relToAbs = function (href) {var a = document.createElement("a"); a.href = href; var abs = a.protocol + "//" + a.host + a.pathname + a.search + a.hash; a.remove(); return abs;}; var elementTypes = %5B%5B'a', 'href'%5D, %5B'img', 'src'%5D%5D; var div = document.createElement('div'); div.innerHTML = html; elementTypes.map(function(elementType) {var elements = div.getElementsByTagName(elementType%5B0%5D); for (var i = 0; i < elements.length; i++) {elements%5Bi%5D.setAttribute(elementType%5B1%5D, relToAbs(elements%5Bi%5D.getAttribute(elementType%5B1%5D)));}}); return div.innerHTML;}());][save this bookmark as oc-H]]
    #+name: oc-H
    #+begin_src javascript
      javascript:location.href = 'org-protocol://capture-html?template=w&url=' + encodeURIComponent(location.href) + '&title=' + encodeURIComponent(document.title || "[untitled page]") + '&body=' + encodeURIComponent(function () {var html = ""; if (typeof document.getSelection != "undefined") {var sel = document.getSelection(); if (sel.rangeCount) {var container = document.createElement("div"); for (var i = 0, len = sel.rangeCount; i < len; ++i) {container.appendChild(sel.getRangeAt(i).cloneContents());} html = container.innerHTML;}} else if (typeof document.selection != "undefined") {if (document.selection.type == "Text") {html = document.selection.createRange().htmlText;}} var relToAbs = function (href) {var a = document.createElement("a"); a.href = href; var abs = a.protocol + "//" + a.host + a.pathname + a.search + a.hash; a.remove(); return abs;}; var elementTypes = [['a', 'href'], ['img', 'src']]; var div = document.createElement('div'); div.innerHTML = html; elementTypes.map(function(elementType) {var elements = div.getElementsByTagName(elementType[0]); for (var i = 0; i < elements.length; i++) {elements[i].setAttribute(elementType[1], relToAbs(elements[i].getAttribute(elementType[1])));}}); return div.innerHTML;}());
@@ -125,12 +127,13 @@ This requires pandoc installed to convert the html into org-mode.
    #+end_src
 
 ** org-capture-paragraph (oc-p)
-[[javascript:location.href='org-protocol://capture?template=p&url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title)+'&body='+encodeURIComponent(window.getSelection())][save this link as bookmark called oc-p]]
+*** bookmarklet
    #+name: oc-p (paragraph) bookmarklet
    #+begin_src javascript
      javascript:location.href='org-protocol://capture?template=p&url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title)+'&body='+encodeURIComponent(window.getSelection())
    #+end_src
 
+*** capture template
    #+name: capture template p
    #+begin_src emacs-lisp
      (add-to-list 'org-capture-templates
@@ -147,12 +150,13 @@ This requires pandoc installed to convert the html into org-mode.
                   )
    #+end_src
 ** org-capture-link (oc-L)
-[[javascript:location.href='org-protocol://capture?template=L&url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title)+'?body='+encodeURIComponent(window.getSelection())][save this link as bookmark called oc-L]]
+*** bookmarklet
    #+name: oc-L (link) bookmarklet
    #+begin_src javascript
       javascript:location.href='org-protocol://capture?template=L&url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title)+'?body='+encodeURIComponent(window.getSelection())
    #+end_src
 
+*** capture template
    #+name: capture template L
    #+begin_src emacs-lisp
      (add-to-list 'org-capture-templates
@@ -166,7 +170,6 @@ This requires pandoc installed to convert the html into org-mode.
    #+end_src
 * A bookmarklet to save the current title/link
   Similar to using ~aol~ to call *org-store-link* and later retrieval with ~,il~ *org-insert-link*
-[[javascript:location.href='org-protocol://capture?template=p&url='+ encodeuricomponent(location.href)+'&title='+ encodeuricomponent(document.title)+'?body='+encodeuricomponent(window.getselection()][save this link as bookmark called os-L]]
   #+begin_src javascript
   javascript:location.href='org-protocol://capture?template=p&url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title)+'?body='+encodeURIComponent(window.getSelection())
   #+end_src
