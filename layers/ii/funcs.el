@@ -18,6 +18,7 @@
                                         ;pdf-view-mode
                                         ;text-mode
                                                       :size-limit-kb 5000))
+(global-visual-line-mode 1)
 (setq dotspacemacs-enable-server t)
 (setq dotspacemacs-persistent-server t)
 (defun runs-and-exits-zero (program &rest args)
