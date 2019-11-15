@@ -21,10 +21,7 @@
 This layer adds support for something.
 https://gitlab.com/oer/emacs-reveal/#emacs-reveal-for-daily-use
 ** Features:
-  - Autocomplete
-  - Lint
-  - Refactor
-  - ...
+  - export org to presentation
 
 * Install
 To use this configuration layer, add it to your =~/.spacemacs=. You will need to
