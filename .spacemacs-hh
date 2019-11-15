@@ -32,7 +32,7 @@ This function should only modify configuration layer settings."
 
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(html
+   '(
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press `SPC f e R' (Vim style) or
@@ -53,36 +53,8 @@ This function should only modify configuration layer settings."
      ;; spell-checking
      ;; syntax-checking
      treemacs
+     org-capture
      emacs-reveal
-     (lsp :variables
-          lsp-navigation 'both
-          lsp-ui-doc-enable t
-          lsp-ui-doc-position 'top
-          lsp-ui-doc-alignment 'frame
-                                        ; lsp-ui-doc-border 'white
-          lsp-ui-doc-use-childframe t
-          lsp-ui-doc-use-webkit t
-          lsp-ui-doc-delay 0.2
-          lsp-ui-doc-include-signature nil
-          lsp-ui-sideline-show-symbol t
-          lsp-ui-remap-xref-keybindings t
-          lsp-ui-sideline-enable t
-          lsp-prefer-flymake nil
-          lsp-print-io t
-          )
-     (org :variables
-          org-enable-github-support t
-          org-enable-bootstrap-support t
-          org-enable-reveal-js-support t
-          org-enable-hugo-support t
-          org-enable-org-journal-support t
-          org-projectile-file "TODO.org"
-          org-journal-dir "~/org/journal/"
-          org-journal-file-format "%Y-%m-%d"
-          org-journal-date-prefix "#+TITLE: "
-          org-journal-date-format "%A, %B %d %Y"
-          org-journal-time-prefix "* "
-          org-journal-time-format "")
      (mu4e :variables
            mu4e-enable-mode-line nil
            mu4e-enable-notifications nil
@@ -95,11 +67,6 @@ This function should only modify configuration layer settings."
               ("/[Gmail].Bin"       . ?t)
               ("/[Gmail].All Mail"    . ?a))
            )
-     (auto-completion :variables
-                      auto-completion-private-snippets-directory (expand-file-name "~/.emacs.d/snippets")
-                      auto-completion-enable-sort-by-usage t
-                      auto-completion-enable-snippets-in-popup t
-                      auto-completion-enable-help-tooltip t)
      ;; version-control
      )
 
@@ -110,21 +77,7 @@ This function should only modify configuration layer settings."
    ;; To use a local version of a package, use the `:location' property:
    ;; '(your-package :location "~/path/to/your-package/")
    ;; Also include the dependencies as they will not be resolved automatically.
-   dotspacemacs-additional-packages '(
-                                      (org-capture-pop-frame)
-                                      (org-protocol
-                                       :ensure t
-                                       :location built-in)
-                                      (org-protocol-capture-html
-                                       :ensure t
-                                       :location (recipe
-                                                  :fetcher github
-                                                  :repo "alphapapa/org-protocol-capture-html"
-                                                  :commit "23a1336")
-                                       :config (progn
-                                         (message "org-protocol-capture-html LOADED")
-                                         )
-                                       ))
+   dotspacemacs-additional-packages '()
 
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -430,16 +383,7 @@ It should only modify the values of Spacemacs settings."
    ;;   :size-limit-kb 1000)
    ;; When used in a plist, `visual' takes precedence over `relative'.
    ;; (default nil)
-   ;; dotspacemacs-line-numbers t
-   dotspacemacs-line-numbers '(; :visual t
-                               ; :relative nil
-                               :disabled-for-modes dired-mode
-                               ;doc-view-mode
-                               ;markdown-mode
-                               ;org-mode
-                               ;pdf-view-mode
-                               ;text-mode
-                               :size-limit-kb 5000)
+   dotspacemacs-line-numbers nil
 
    ;; Code folding method. Possible values are `evil' and `origami'.
    ;; (default 'evil)
@@ -539,12 +483,6 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
 This function is called only while dumping Spacemacs configuration. You can
 `require' or `load' the libraries of your choice that will be included in the
 dump."
-  (require 'org-capture)
-  (require 'ansi-color)
-  (require 'org-capture-pop-frame)
-  (require 'org-protocol)
-  (require 'org-protocol-capture-html)
-  (spacemacs/dump-modes '(org-mode go-mode))
   )
 
 (defun dotspacemacs/user-config ()
@@ -553,13 +491,6 @@ This function is called at the very end of Spacemacs startup, after layer
 configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
-  (require 'org-capture)
-  (require 'ansi-color)
-  (require 'org-capture-pop-frame)
-  (require 'org-protocol)
-  (require 'org-protocol-capture-html)
-  ;; (spacemacs/toggle-line-numbers-on)
-  ;(dotspacemacs/user-load); just in case we haven't loaded
   (setq org-reveal-root "https://cdn.jsdelivr.net/npm/reveal.js")
   (global-set-key (kbd "C-=") 'text-scale-increase)
   (global-set-key (kbd "C-+") 'text-scale-increase)
@@ -570,8 +501,6 @@ before packages are loaded."
   (setq command-log-mode-is-global t)
   ;; (setq fancy-battery-mode t)
   (setq org-confirm-babel-evaluate nil)
-                                        ;(setq dotspacemacs-line-numbers ’(:relative nil
-  ;;(setq dotspacemacs-line-numbers t)
   ;; (spacemacs/set-leader-keys "SPC" 'avy-goto-char-timer)
   ;; dvorak avy keys
   (setq avy-keys (quote (97 111 101 117 100 104 116 110 115)))
@@ -582,51 +511,11 @@ before packages are loaded."
         smtpmail-smtp-server "smtp.gmail.com"
         smtpmail-smtp-service 587
         smtpmail-debug-info t)
+  (require 'ansi-color)
   (defun display-ansi-colors ()
     (interactive)
     (ansi-color-apply-on-region (point-min) (point-max)))
-
-  (setq org-capture-templates
-        '(
-          ("w" "Default template" entry
-           (file+headline "~/org/capture.org" "Notes")
-           "* %^{Title}
-
-  Source: %u, %c
-
-  %i" :empty-lines 1)
-          ("t" "TODO"
-           entry (file+headline "~/org/TODO.org" "Inbox")
-           "* TODO [#A] %?\nSCHEDULED: %(org-insert-time-stamp (org-read-date nil t \"+0d\"))\n%a\n"
-           )
-          ("p" "Paragraph" entry
-           (file+headline "~/ii/org/agenda/notes.org" "Inbox")
-           "* [[%:link][%:description]] %^G
-Time: %u
- #+BEGIN_QUOTE
-%:initial
-#+END_QUOTE
-
-
-%?")
-          ("L" "Capture a Link" entry
-           (file+headline "~/ii/org/agenda/notes.org" "Inbox")
-           "* %? [[%:link][%:description]]
-Captured On: %U"))
-        )
   )
-;; javascript bookmarklets
 
-;; oc-L
-;; javascript:location.href='org-protocol://capture?template=L&url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title)+'?body='+encodeURIComponent(window.getSelection())
-
-;; oc-H
-;; javascript:location.href = 'org-protocol://capture-html?template=w&url=' + encodeURIComponent(location.href) + '&title=' + encodeURIComponent(document.title || "[untitled page]") + '&body=' + encodeURIComponent(function () {var html = ""; if (typeof document.getSelection != "undefined") {var sel = document.getSelection(); if (sel.rangeCount) {var container = document.createElement("div"); for (var i = 0, len = sel.rangeCount; i < len; ++i) {container.appendChild(sel.getRangeAt(i).cloneContents());} html = container.innerHTML;}} else if (typeof document.selection != "undefined") {if (document.selection.type == "Text") {html = document.selection.createRange().htmlText;}} var relToAbs = function (href) {var a = document.createElement("a"); a.href = href; var abs = a.protocol + "//" + a.host + a.pathname + a.search + a.hash; a.remove(); return abs;}; var elementTypes = [['a', 'href'], ['img', 'src']]; var div = document.createElement('div'); div.innerHTML = html; elementTypes.map(function(elementType) {var elements = div.getElementsByTagName(elementType[0]); for (var i = 0; i < elements.length; i++) {elements[i].setAttribute(elementType[1], relToAbs(elements[i].getAttribute(elementType[1])));}}); return div.innerHTML;}());
-
-;; oc-p (paragraph)
-;; javascript:location.href='org-protocol://capture?template=p&url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title)+'&body='+encodeURIComponent(window.getSelection())
-
-;; o-sl (org-store-link)... insert later with ,il
-;; javascript:location.href='org-protocol://store-link?url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title);
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
