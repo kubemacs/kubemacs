@@ -1,0 +1,172 @@
+#+TITLE: org-capture layer
+# Document tags are separated with "|" char
+# The example below contains 2 tags: "layer" and "web service"
+# Avaliable tags are listed in <spacemacs_root>/.ci/spacedoc-cfg.edn
+# under ":spacetools.spacedoc.config/valid-tags" section.
+#+TAGS: layer|web service
+
+# The maximum height of the logo should be 200 pixels.
+[[img/org-capture.png]]
+
+# TOC links should be GitHub style anchors.
+* Table of Contents                                        :TOC_4_gh:noexport:
+- [[#description][Description]]
+  - [[#features][Features:]]
+- [[#install][Install]]
+- [[#combined-concepts][Combined Concepts]]
+  - [[#the-org-manual-capture][The Org Manual: Capture]]
+  - [[#org-protocolel--intercept-calls-from-emacsclient-to-trigger-custom-actions][org-protocol.el – Intercept calls from emacsclient to trigger custom actions]]
+  -  [[#alphapapaorg-protocol-capture-html-capture-html-from-the-browser-selection-into-emacs-as-org-mode-content][alphapapa/org-protocol-capture-html: Capture HTML from the browser selection into Emacs as org-mode content]]
+- [[#configuration][Configuration]]
+  - [[#getting-your-browser-to-call-emacsclient-for-org-protocol-links][Getting your browser to call emacsclient for ~org-protocol://~ links]]
+    - [[#linux-setup-gnome][Linux setup (Gnome)]]
+    - [[#xdg-protocol-handler][xdg protocol handler]]
+  - [[#the-org-manual-capture-templates][The Org Manual: Capture templates]]
+- [[#mapping-bookmarklets-to-capture-templates][Mapping Bookmarklets to Capture Templates]]
+  - [[#org-capture-html-oc-h][org-capture-html (oc-H)]]
+    - [[#bookmarklet][bookmarklet]]
+    - [[#capture-template][capture template]]
+  - [[#org-capture-paragraph-oc-p][org-capture-paragraph (oc-p)]]
+  - [[#org-capture-link-oc-l][org-capture-link (oc-L)]]
+- [[#a-bookmarklet-to-save-the-current-titlelink][A bookmarklet to save the current title/link]]
+
+* Description
+This layer adds support for capturing urls, page titles, and selected content from your web browser via bookmarklets that call emacsclient with a special ~org-protocol://~ uri.
+
+** Features:
+  - Capture Current Page (Link + Page Title)
+  - Capture Selected Text 
+  - Capture Html (as org via pandoc)
+
+* Install
+To use this configuration layer, add it to your =~/.spacemacs=. You will need to
+add =org-capture= to the existing =dotspacemacs-configuration-layers= list in this
+file.
+* Combined Concepts
+** [[https://orgmode.org/manual/Capture.html#Capture][The Org Manual: Capture]]
+
+This is usually just used within emacs.
+
+   Capture lets you quickly store notes with little interruption of your work flow. Org's method for capturing new items is heavily inspired by John Wiegley's excellent Remember package.
+
+
+** [[https://orgmode.org/worg/org-contrib/org-protocol.html][org-protocol.el – Intercept calls from emacsclient to trigger custom actions]]
+
+This is what connects org-mode to the “outside world” using a MIME protocol handler. 
+
+   org-protocol intercepts calls from emacsclient to trigger custom actions without external dependencies. Only one protocol has to be configured with your external applications or the operating system, to trigger an arbitrary number of custom actions. Just register your custom sub-protocol and handler with the variable `org-protocol-protocol-alist'.
+
+**  [[https://github.com/alphapapa/org-protocol-capture-html][alphapapa/org-protocol-capture-html: Capture HTML from the browser selection into Emacs as org-mode content]]
+
+   org-protocol is awesome, but browsers do a pretty poor job of turning a page's HTML content into plain-text. However, Pandoc supports converting /from/ HTML /to/ org-mode, so we can use it to turn HTML into Org-mode content! It can even turn HTML tables into Org tables!
+
+* Configuration
+** Getting your browser to call emacsclient for ~org-protocol://~ links
+*** [[https://orgmode.org/worg/org-contrib/org-protocol.html#org4166fc4][Linux setup (Gnome)]]
+   #+begin_src shell
+     gconftool-2 -s /desktop/gnome/url-handlers/org-protocol/command '/usr/local/bin/emacsclient %s' --type String
+     gconftool-2 -s /desktop/gnome/url-handlers/org-protocol/enabled --type Boolean true
+   #+end_src
+*** xdg protocol handler
+Save the following to ~$HOME/.local/share/applications/org-protocol.desktop~
+    #+begin_src shell
+      [Desktop Entry]
+      Name=org-protocol
+      Exec=emacsclient %u
+      Type=Application
+      Terminal=false
+      Categories=System;
+      MimeType=x-scheme-handler/org-protocol;
+    #+end_src
+Then run the following:
+    #+begin_src shell
+      # On KDE:
+      kbuildsycoca4
+      # On GNOME:
+      update-desktop-database ~/.local/share/applications/
+    #+end_src
+
+** [[https://orgmode.org/manual/Capture-templates.html][The Org Manual: Capture templates]]
+
+ You can use templates for different types of capture items, and for different target locations.
+The ones you want to use with org-protocol require
+
+ #+begin_src emacs-lisp
+
+   (setq org-capture-templates
+         '(
+           ("t" "TODO"
+            entry (file+headline "~/org/TODO.org" "Inbox")
+            "* TODO [#A] %?\nSCHEDULED: %(org-insert-time-stamp (org-read-date nil t \"+0d\"))\n%a\n"
+            )
+           ))
+ #+end_src
+* Mapping Bookmarklets to Capture Templates
+** org-capture-html (oc-H)
+*** bookmarklet
+This requires pandoc installed to convert the html into org-mode.
+[[javascript:location.href = 'org-protocol://capture-html?template=w&url=' + encodeURIComponent(location.href) + '&title=' + encodeURIComponent(document.title || "%5Buntitled page%5D") + '&body=' + encodeURIComponent(function () {var html = ""; if (typeof document.getSelection != "undefined") {var sel = document.getSelection(); if (sel.rangeCount) {var container = document.createElement("div"); for (var i = 0, len = sel.rangeCount; i < len; ++i) {container.appendChild(sel.getRangeAt(i).cloneContents());} html = container.innerHTML;}} else if (typeof document.selection != "undefined") {if (document.selection.type == "Text") {html = document.selection.createRange().htmlText;}} var relToAbs = function (href) {var a = document.createElement("a"); a.href = href; var abs = a.protocol + "//" + a.host + a.pathname + a.search + a.hash; a.remove(); return abs;}; var elementTypes = %5B%5B'a', 'href'%5D, %5B'img', 'src'%5D%5D; var div = document.createElement('div'); div.innerHTML = html; elementTypes.map(function(elementType) {var elements = div.getElementsByTagName(elementType%5B0%5D); for (var i = 0; i < elements.length; i++) {elements%5Bi%5D.setAttribute(elementType%5B1%5D, relToAbs(elements%5Bi%5D.getAttribute(elementType%5B1%5D)));}}); return div.innerHTML;}());][save this bookmark as oc-H]]
+   #+name: oc-H
+   #+begin_src javascript
+     javascript:location.href = 'org-protocol://capture-html?template=w&url=' + encodeURIComponent(location.href) + '&title=' + encodeURIComponent(document.title || "[untitled page]") + '&body=' + encodeURIComponent(function () {var html = ""; if (typeof document.getSelection != "undefined") {var sel = document.getSelection(); if (sel.rangeCount) {var container = document.createElement("div"); for (var i = 0, len = sel.rangeCount; i < len; ++i) {container.appendChild(sel.getRangeAt(i).cloneContents());} html = container.innerHTML;}} else if (typeof document.selection != "undefined") {if (document.selection.type == "Text") {html = document.selection.createRange().htmlText;}} var relToAbs = function (href) {var a = document.createElement("a"); a.href = href; var abs = a.protocol + "//" + a.host + a.pathname + a.search + a.hash; a.remove(); return abs;}; var elementTypes = [['a', 'href'], ['img', 'src']]; var div = document.createElement('div'); div.innerHTML = html; elementTypes.map(function(elementType) {var elements = div.getElementsByTagName(elementType[0]); for (var i = 0; i < elements.length; i++) {elements[i].setAttribute(elementType[1], relToAbs(elements[i].getAttribute(elementType[1])));}}); return div.innerHTML;}());
+   #+end_src
+*** capture template
+   #+name: capture template W
+   #+begin_src emacs-lisp
+     (add-to-list 'org-capture-templates
+                  ("w" "Default template" entry
+                   (file+headline "~/org/capture.org" "Notes")
+                   "* %^{Title}
+
+       Source: %u, %c
+
+       %i" :empty-lines 1)
+     )
+   #+end_src
+
+** org-capture-paragraph (oc-p)
+[[javascript:location.href='org-protocol://capture?template=p&url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title)+'&body='+encodeURIComponent(window.getSelection())][save this link as bookmark called oc-p]]
+   #+name: oc-p (paragraph) bookmarklet
+   #+begin_src javascript
+     javascript:location.href='org-protocol://capture?template=p&url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title)+'&body='+encodeURIComponent(window.getSelection())
+   #+end_src
+
+   #+name: capture template p
+   #+begin_src emacs-lisp
+     (add-to-list 'org-capture-templates
+                  ("p" "Paragraph" entry
+                   (file+headline "~/ii/org/agenda/notes.org" "Inbox")
+                   "* [[%:link][%:description]] %^G
+     Time: %u
+      ,#+BEGIN_QUOTE
+     %:initial
+     ,#+END_QUOTE
+
+
+     %?")
+                  )
+   #+end_src
+** org-capture-link (oc-L)
+[[javascript:location.href='org-protocol://capture?template=L&url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title)+'?body='+encodeURIComponent(window.getSelection())][save this link as bookmark called oc-L]]
+   #+name: oc-L (link) bookmarklet
+   #+begin_src javascript
+      javascript:location.href='org-protocol://capture?template=L&url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title)+'?body='+encodeURIComponent(window.getSelection())
+   #+end_src
+
+   #+name: capture template L
+   #+begin_src emacs-lisp
+     (add-to-list 'org-capture-templates
+                  ("L" "Capture a Link" entry
+                   (file+headline "~/ii/org/agenda/notes.org" "Inbox")
+                   "* %? [[%:link][%:description]]
+     Captured On: %U")
+                  ;; javascript:location.href='org-protocol://store-link?url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title);
+                  )
+     )
+   #+end_src
+* A bookmarklet to save the current title/link
+  Similar to using ~aol~ to call *org-store-link* and later retrieval with ~,il~ *org-insert-link*
+[[javascript:location.href='org-protocol://capture?template=p&url='+ encodeuricomponent(location.href)+'&title='+ encodeuricomponent(document.title)+'?body='+encodeuricomponent(window.getselection()][save this link as bookmark called os-L]]
+  #+begin_src javascript
+  javascript:location.href='org-protocol://capture?template=p&url='+ encodeURIComponent(location.href)+'&title='+ encodeURIComponent(document.title)+'?body='+encodeURIComponent(window.getSelection())
+  #+end_src
