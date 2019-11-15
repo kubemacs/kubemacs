@@ -68,6 +68,26 @@
                (add-to-list 'org-babel-load-languages '(shell . t))
                ;;(add-to-list 'org-babel-load-languages '(sql-mode . t))
                )))
+(defun ii/pre-init-lsp ()
+  (spacemacs|use-package-add-hook lsp
+    :post-config (progn
+                   (setq
+                    lsp-navigation 'both
+                    lsp-ui-doc-enable t
+                    lsp-ui-doc-position 'top
+                    lsp-ui-doc-alignment 'frame
+                                        ; lsp-ui-doc-border 'white
+                    lsp-ui-doc-use-childframe t
+                    lsp-ui-doc-use-webkit t
+                    lsp-ui-doc-delay 0.2
+                    lsp-ui-doc-include-signature nil
+                    lsp-ui-sideline-show-symbol t
+                    lsp-ui-remap-xref-keybindings t
+                    lsp-ui-sideline-enable t
+                    lsp-prefer-flymake nil
+                    lsp-print-io t
+                    )
+                   )))
 (defun ii/pre-init-org ()
   (spacemacs|use-package-add-hook org
     :post-config (progn
