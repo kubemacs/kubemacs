@@ -3,10 +3,12 @@
 
 FROM iimacs/base
 
+ENV IIMACSVERSION=0.7
+
 # install some useful packages
 RUN apt update && \
     apt upgrade -y && \
-    apt install -y sudo wget acl docker docker-compose apt-transport-https build-essential zsh sqlite3 vim nano apt-utils rsync xterm
+    apt install -y sudo wget acl docker docker-compose apt-transport-https build-essential zsh sqlite3 vim nano apt-utils rsync xterm postgresql-client mariadb-client inotify-tools jq
 
 # install Kubernetes client and Google Cloud SDK
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
