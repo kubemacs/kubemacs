@@ -150,10 +150,13 @@
     ;; groovy-mode
     ;; jupyter
     ;; ob-async
+    ;; (ob-javascript
+    ;;           :location (recipe
+    ;;                      :fetcher github
+    ;;                      :repo "zweifisch/ob-javascript"))
     (ob-javascript
-              :location (recipe
-                         :fetcher github
-                         :repo "zweifisch/ob-javascript"))
+     :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "ob-javascript")
+     )
     (ob-tmate :ensure t
               :location (recipe
                          :fetcher github
