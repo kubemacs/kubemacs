@@ -65,8 +65,10 @@
             '(lambda ()
                (require 'org)
                (require 'ob-shell)
+               (require 'ob-javascript)
                ;;(require 'ob-sql-mode)
                (add-to-list 'org-babel-load-languages '(shell . t))
+               (add-to-list 'org-babel-load-languages '(javascript . t))
                ;;(add-to-list 'org-babel-load-languages '(sql-mode . t))
                )))
 (defun ii/pre-init-lsp ()
@@ -97,6 +99,8 @@
                    ;;(add-to-list 'org-babel-load-languages
                    ;;             '(sh . t))
                    (add-to-list 'org-babel-load-languages
+                                '(javascript . t))
+                   (add-to-list 'org-babel-load-languages
                                 '(shell . t))
                    (add-to-list 'org-babel-load-languages
                                 '(sql-mode . t))
@@ -104,7 +108,8 @@
                                 '(emacs-lisp . t))
                    )))
 (defun ii/post-init-org ()
- (require 'ob-shell)
+  (require 'ob-shell)
+ (require 'ob-javascript)
   )
 (defun ii/post-init-yasnippet ()
   ;; TODO do this within let for local var
