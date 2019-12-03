@@ -3,11 +3,9 @@
 # key:  testing
 # --
 
-#+TITLE: Test Writing: $1
-#+AUTHOR: $2
+#+TITLE: Test Writing Flow
+#+AUTHOR: ii team
 #+TODO: TODO(t) NEXT(n) IN-PROGRESS(i) BLOCKED(b) | DONE(d)
-#+ARCHIVE: archive/setup.archive.org::
-#+PROPERTY: header-args:sql-mode+ :results silent
 
 * TODO [0%] Cluster Setup
   :PROPERTIES:
@@ -46,7 +44,7 @@ You can do =spc spc normal-mode= if you need to grab the ssh address again.
     kind create cluster --name kind-$USER --config kind-cluster-config.yaml
   #+END_SRC
 ** TODO Set your KUBECONFIG to point to a new cluster
-  TODO: [[*Set the env but don't copy to .kube/config -- Look into "contexts"][Set the env but don't copy to .kube/config -- Look into "contexts"]] 
+   TODO: [[*Set the env but don't copy to .kube/config -- Look into "contexts"][Set the env but don't copy to .kube/config -- Look into "contexts"]] 
   
  #+BEGIN_SRC shell :results silent
  # Because we use multiple shells for org-mode, we need this cluster to be the
@@ -60,31 +58,22 @@ You can do =spc spc normal-mode= if you need to grab the ssh address again.
   kubectl cluster-info
   #+END_SRC
 
-  #+RESULTS:
-  #+begin_EXAMPLE
-  Kubernetes master is running at https://127.0.0.1:37537
-  KubeDNS is running at https://127.0.0.1:37537/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
-
-  To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
-  #+end_EXAMPLE
-
-  In the results block above you should see something like:
-
+  The results shown in your minibuffer should look something like:
   : Kubernetes master is running at https://127.0.0.1:40067
   : KubeDNS is running at https://127.0.0.1:40067/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
 
   : To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ** TODO Apply apisnoop
   #+begin_src shell
-    kubectl apply -f https://raw.githubusercontent.com/cncf/apisnoop/master/deployment/k8s/raiinbow.yaml --namespace=kube-system
+    kubectl apply -f ~/ii/apisnoop/deployment/k8s/raiinbow.yaml  --namespace=kube-system
   #+end_src
 
   #+RESULTS:
   #+begin_EXAMPLE
   service/hasura created
   service/postgres created
-  deployment.extensions/hasura created
-  deployment.extensions/postgres created
+  deployment.apps/hasura created
+  deployment.apps/postgres created
   deployment.apps/apisnoop-auditlogger created
   service/apisnoop-auditlogger created
   auditsink.auditregistration.k8s.io/auditlogger created
@@ -101,17 +90,17 @@ You can do =spc spc normal-mode= if you need to grab the ssh address again.
   #+RESULTS:
   #+begin_EXAMPLE
   NAME                                            READY   STATUS    RESTARTS   AGE
-  apisnoop-auditlogger-5b8bd798b6-d96xz           1/1     Running   0          4m31s
-  coredns-5c98db65d4-k2qjc                        1/1     Running   0          11m
-  coredns-5c98db65d4-qqbqs                        1/1     Running   0          11m
-  etcd-kind-zz-control-plane                      1/1     Running   0          10m
-  hasura-7757bf78dd-jntcr                         1/1     Running   2          4m31s
-  kindnet-9sgvr                                   1/1     Running   0          11m
-  kube-apiserver-kind-zz-control-plane            1/1     Running   0          10m
-  kube-controller-manager-kind-zz-control-plane   1/1     Running   0          10m
-  kube-proxy-7cdzw                                1/1     Running   0          11m
-  kube-scheduler-kind-zz-control-plane            1/1     Running   0          10m
-  postgres-5b4cc49b45-jrhgk                       1/1     Running   0          4m31s
+  apisnoop-auditlogger-5b8bd798b6-tz45d           1/1     Running   1          71s
+  coredns-5c98db65d4-bq7kc                        1/1     Running   0          80s
+  coredns-5c98db65d4-t69zt                        1/1     Running   0          80s
+  etcd-kind-zz-control-plane                      1/1     Running   0          40s
+  hasura-5d8f5d7dfc-8tb8b                         1/1     Running   1          71s
+  kindnet-cckcx                                   1/1     Running   0          80s
+  kube-apiserver-kind-zz-control-plane            1/1     Running   0          16s
+  kube-controller-manager-kind-zz-control-plane   1/1     Running   0          40s
+  kube-proxy-48dsn                                1/1     Running   0          80s
+  kube-scheduler-kind-zz-control-plane            1/1     Running   0          35s
+  postgres-6986f64497-npj4l                       1/1     Running   0          71s
   #+end_EXAMPLE
 ** TODO Setup Port-Forwarding from us to sharing to the cluster
 
@@ -142,50 +131,110 @@ You can do =spc spc normal-mode= if you need to grab the ssh address again.
   #+END_SRC
 ** TODO Check it all worked
 
-  Once the postgres pod has been up for at least three minutes, you can check if it all works.  Running this query should return numbers > 0 for each hits column.  
+  Once the postgres pod has been up for at least three minutes, you can check if it all works.  
 
-  If you get an error about ~relation stable_endpoint_stats not found~, the postgres pod, while running, hasn't fully popluated the data.  Give it a minute and try again.
+  Running ~\d+~ will list all the tables and views in your db, and their size.
+  First,you want to ensure that relations _are_ found.  IF not, something happened with postgres and you should check the logs (check out [[*footnotes]] for more info.)
   
-  If you get a table returned, but it contains 0's, the swagger.json likely did not load.  You can manually populate it, following [[the instructions in the footnotes]]
+  There should be about a dozen views, and two tables.  The table ~bucket_job_swagger~ should be about 3712kb.  The table ~raw_audit_event~ should be about 416mb.  If either show as 8192 bytes, it means no data loaded.  Check the Hasura logs in this case, to see if there was an issue with the migration.
 
-  #+begin_src sql-mode
-  select * from stable_endpoint_stats where job != 'live'; 
+  #+begin_src sql-mode :results silent
+  \d+
   #+end_src
 
-  #+RESULTS:
-  #+begin_src sql-mode
-           job         |    date    | total_endpoints | test_hits | conf_hits | percent_tested | percent_conf_tested 
-  ---------------------+------------+-----------------+-----------+-----------+----------------+---------------------
-   1188637253832806405 | 2019-10-28 |             430 |       167 |       114 |          38.84 |               26.51
-  (1 row)
+  #+NAME: example results
+  #+begin_example sql-mode
+                                            List of relations
+     Schema |               Name               |       Type        |  Owner   |  Size   | Description 
+    --------+----------------------------------+-------------------+----------+---------+-------------
+     public | api_operation_material           | materialized view | apisnoop | 3688 kB | 
+     public | api_operation_parameter_material | materialized view | apisnoop | 6016 kB | 
+     public | audit_event                      | view              | apisnoop | 0 bytes | 
+     public | bucket_job_swagger               | table             | apisnoop | 3712 kB | 
+     public | change_in_coverage               | view              | apisnoop | 0 bytes | 
+     public | change_in_tests                  | view              | apisnoop | 0 bytes | 
+     public | endpoint_coverage                | view              | apisnoop | 0 bytes | 
+     public | endpoints_hit_by_new_test        | view              | apisnoop | 0 bytes | 
+     public | projected_change_in_coverage     | view              | apisnoop | 0 bytes | 
+     public | raw_audit_event                  | table             | apisnoop | 419 MB  | 
+     public | stable_endpoint_stats            | view              | apisnoop | 0 bytes | 
+     public | untested_stable_core_endpoints   | view              | apisnoop | 0 bytes | 
+    (12 rows)
 
-  #+end_src
+  #+end_example
+** TODO Check current coverage
+   It can be useful to see the current level of testing according to your baseline audit log (by default the last successful test run on master).
+   
+   You can view this with the query:
+   #+NAME: stable endpoint stats
+   #+begin_src sql-mode
+   select * from stable_endpoint_stats where job != 'live'; 
+   #+end_src
+
+   #+RESULTS: stable endpoint stats
+   #+begin_src sql-mode
+            job         |    date    | total_endpoints | test_hits | conf_hits | percent_tested | percent_conf_tested 
+   ---------------------+------------+-----------------+-----------+-----------+----------------+---------------------
+    1201667258288443395 | 2019-12-03 |             438 |       183 |       129 |          41.78 |               29.45
+   (1 row)
+
+   #+end_src
 
 ** TODO Stand up, Stretch, and get a glass of water
    You did it! By hydration and pauses are important.  Take some you time, and drink a full glass of water!
 * Identify a Feature Using APISnoop
-
 You can run sql blocks directly in this org-mode to help isolate good endpoints to write a test for.
+For example, we have a query called ~untested_stable_core_endpoints~.  This shows details for endpoints that are part of GA kubernetes, are not deprecated, and are not tested.
 
-For an arbitrary example, here is a list of 50 untested, stable/core endpoints ordered by how often they are hit by useragents during the e2e test run.
+You can select all columns for this view or a subset, below we want to see the op_id, it's method and path, and its description to help with our test-writing.
 
-#+NAME: untested endpoints
+#+NAME: untested_stable_core_endpoints
 #+begin_src sql-mode
     SELECT
-      operation_id, other_hits
-      FROM endpoint_coverage
-     WHERE level = 'stable'
-       AND category = 'core'
-         AND test_hits = 0
-         AND job != 'live'
-         ORDER BY other_hits desc
-     LIMIT 50
+      operation_id,
+      k8s_action,
+      path,
+      description
+      FROM untested_stable_core_endpoints
+     ORDER BY operation_id desc
+     LIMIT 25
   ;
+#+end_src
+
+#+RESULTS: untested_stable_core_endpoints
+#+begin_src sql-mode
+                    operation_id                    | k8s_action |                                path                                 |                        description                        
+----------------------------------------------------+------------+---------------------------------------------------------------------+-----------------------------------------------------------
+ replaceCoreV1PersistentVolumeStatus                | put        | /api/v1/persistentvolumes/{name}/status                             | replace status of the specified PersistentVolume
+ replaceCoreV1PersistentVolume                      | put        | /api/v1/persistentvolumes/{name}                                    | replace the specified PersistentVolume
+ replaceCoreV1NamespaceStatus                       | put        | /api/v1/namespaces/{name}/status                                    | replace status of the specified Namespace
+ replaceCoreV1NamespaceFinalize                     | put        | /api/v1/namespaces/{name}/finalize                                  | replace finalize of the specified Namespace
+ replaceCoreV1NamespacedServiceStatus               | put        | /api/v1/namespaces/{namespace}/services/{name}/status               | replace status of the specified Service
+ replaceCoreV1NamespacedResourceQuotaStatus         | put        | /api/v1/namespaces/{namespace}/resourcequotas/{name}/status         | replace status of the specified ResourceQuota
+ replaceCoreV1NamespacedReplicationControllerStatus | put        | /api/v1/namespaces/{namespace}/replicationcontrollers/{name}/status | replace status of the specified ReplicationController
+ replaceCoreV1NamespacedPodTemplate                 | put        | /api/v1/namespaces/{namespace}/podtemplates/{name}                  | replace the specified PodTemplate
+ replaceCoreV1NamespacedPodStatus                   | put        | /api/v1/namespaces/{namespace}/pods/{name}/status                   | replace status of the specified Pod
+ replaceCoreV1NamespacedPersistentVolumeClaimStatus | put        | /api/v1/namespaces/{namespace}/persistentvolumeclaims/{name}/status | replace status of the specified PersistentVolumeClaim
+ replaceCoreV1NamespacedEvent                       | put        | /api/v1/namespaces/{namespace}/events/{name}                        | replace the specified Event
+ replaceCoreV1NamespacedEndpoints                   | put        | /api/v1/namespaces/{namespace}/endpoints/{name}                     | replace the specified Endpoints
+ readCoreV1PersistentVolumeStatus                   | get        | /api/v1/persistentvolumes/{name}/status                             | read status of the specified PersistentVolume
+ readCoreV1NodeStatus                               | get        | /api/v1/nodes/{name}/status                                         | read status of the specified Node
+ readCoreV1NamespaceStatus                          | get        | /api/v1/namespaces/{name}/status                                    | read status of the specified Namespace
+ readCoreV1NamespacedServiceStatus                  | get        | /api/v1/namespaces/{namespace}/services/{name}/status               | read status of the specified Service
+ readCoreV1NamespacedResourceQuotaStatus            | get        | /api/v1/namespaces/{namespace}/resourcequotas/{name}/status         | read status of the specified ResourceQuota
+ readCoreV1NamespacedReplicationControllerStatus    | get        | /api/v1/namespaces/{namespace}/replicationcontrollers/{name}/status | read status of the specified ReplicationController
+ readCoreV1NamespacedPodTemplate                    | get        | /api/v1/namespaces/{namespace}/podtemplates/{name}                  | read the specified PodTemplate
+ readCoreV1NamespacedPodStatus                      | get        | /api/v1/namespaces/{namespace}/pods/{name}/status                   | read status of the specified Pod
+ readCoreV1NamespacedPersistentVolumeClaimStatus    | get        | /api/v1/namespaces/{namespace}/persistentvolumeclaims/{name}/status | read status of the specified PersistentVolumeClaim
+ readCoreV1NamespacedEvent                          | get        | /api/v1/namespaces/{namespace}/events/{name}                        | read the specified Event
+ readCoreV1ComponentStatus                          | get        | /api/v1/componentstatuses/{name}                                    | read the specified ComponentStatus
+ patchCoreV1PersistentVolumeStatus                  | patch      | /api/v1/persistentvolumes/{name}/status                             | partially update status of the specified PersistentVolume
+ patchCoreV1PersistentVolume                        | patch      | /api/v1/persistentvolumes/{name}                                    | partially update the specified PersistentVolume
+(25 rows)
 
 #+end_src
 
-You can iterate over a query until you have a set of endpoints you'd like to write a test for.
-
+You can iterate over a query until you have a set of endpoints you'd like to write a test for, usually by adjusting the columns you view or by extending the where clause to filter more specifically.
 * Use API Reference to Lightly Document the Feature
  -  [[https://kubernetes.io/docs/reference/kubernetes-api/][Kubernetes API Reference Docs]]
 
@@ -217,7 +266,7 @@ You can iterate over a query until you have a set of endpoints you'd like to wri
       fmt.Println(err)
     }
   // make our work easier to find in the audit_event queries
-  config.UserAgent = "live-test-writing"
+  config.UserAgent = "live-test-pod-count"
   // creates the clientset
   clientset, _ := kubernetes.NewForConfig(config)
   // access the API to list pods
@@ -225,92 +274,26 @@ You can iterate over a query until you have a set of endpoints you'd like to wri
   fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
 #+end_src
 
-#+RESULTS:
-: There are 11 pods in the cluster
 
 * Verify with APISnoop
-  TODO: Add process for verifying that your test hits the endpoint you're targeting
   
-  #+NAME: endpoints hit by new test
-  #+begin_src sql-mode
-    CREATE VIEW "public"."endpoints_hit_by_new_test" AS
-     WITH live_testing_endpoints AS (
-       SELECT DISTINCT
-         operation_id,
-         count(1) as hits
-         FROM
-             audit_event
-        WHERE bucket = 'apisnoop'
-          AND useragent = 'live-test-writing'
-          GROUP BY operation_id
-       ), baseline AS  (
-       SELECT DISTINCT
-         operation_id,
-         test_hits,
-         conf_hits
-           FROM endpoint_coverage where bucket != 'apisnoop' 
-       )
-     SELECT DISTINCT
-       lte.operation_id,
-       b.test_hits as hit_by_ete,
-       lte.hits as hit_by_new_test
-         FROM live_testing_endpoints lte
-                JOIN baseline b ON (b.operation_id = lte.operation_id);
-  #+end_src
-
-   #+NAME: PROJECTED Change in Coverage
-   #+BEGIN_SRC sql-mode :results replace 
-     CREATE OR REPLACE VIEW "public"."projected_change_in_coverage" AS
-      with baseline as (
-        SELECT *
-          FROM
-              stable_endpoint_stats
-         WHERE job != 'live'
-      ), test as (
-        SELECT
-          count(1) as endpoints_hit
-          FROM
-              (
-                select
-                  operation_id
-          FROM audit_event
-           WHERE useragent = 'live-test-writing'
-          EXCEPT 
-          SELECT
-            operation_id
-          FROM
-              endpoint_coverage
-              WHERE test_hits > 0
-                    ) tested_endpoints
-      ), coverage as (
-        SELECT
-        baseline.test_hits as old_coverage,
-        (baseline.test_hits::int + test.endpoints_hit::int ) as new_coverage
-        from baseline, test
-      )
-      select
-        'test_coverage' as category,
-        baseline.total_endpoints,
-        coverage.old_coverage,
-        coverage.new_coverage,
-        (coverage.new_coverage - coverage.old_coverage) as change_in_number
-        from baseline, coverage
-               ;
-   #+END_SRC
-
+  As you run your test functions against the cluster, apisnoop logs all endpoints hit and puts it in the db with the bucket 'apisnoop' and the job 'live'.  
+  We use this to build a set of queries that show what endpoints are hit by your test (or other function), and what the projected change in coverage would be if this test was merged into the e2e testing suite.
+  
    #+begin_src sql-mode
-   select * from endpoints_hit_by_new_test;
+   select * from endpoints_hit_by_new_test where useragent like 'live%';
    #+end_src
 
    #+RESULTS:
    #+begin_src sql-mode
-            operation_id          | hit_by_ete | hit_by_new_test 
-   -------------------------------+------------+-----------------
-    listCoreV1PodForAllNamespaces |         32 |               2
+         useragent      |         operation_id          | hit_by_ete | hit_by_new_test 
+   ---------------------+-------------------------------+------------+-----------------
+    live-test-pod-count | listCoreV1PodForAllNamespaces |         32 |               1
    (1 row)
 
    #+end_src
-   
+
+   NOTE: for the projected change in coverage, your test functions must be configured with a useragent that starts with ~live-test~, otherwise endpoints hit by that test won't be counted as part of new coverage.
    #+begin_src sql-mode
    select * from projected_change_in_coverage;
    #+end_src
@@ -319,11 +302,11 @@ You can iterate over a query until you have a set of endpoints you'd like to wri
    #+begin_src sql-mode
       category    | total_endpoints | old_coverage | new_coverage | change_in_number 
    ---------------+-----------------+--------------+--------------+------------------
-    test_coverage |             430 |          167 |          167 |                0
+    test_coverage |             438 |          183 |          183 |                0
    (1 row)
 
    #+end_src
-   
+
 * Open Tasks
   Set any open tasks here, using org-todo
 ** DONE Live Your Best Life 
@@ -373,16 +356,23 @@ kubectl logs $POSTGRES_POD -f
 
 If either shows a size of ~8192 bytes~, you'll want to manually load it, refresh materialized views, then check again.
 
+if you want to load a particular bucket or job, you can name them as the first and second argument of these functions.
+e.g 
+: select * from load)swagger('ci-kubernetes-beta', 1122334344);
+will load that specific bucket/job combo.
+: select * from load_swagger('ci-kubernetes-beta');
+will load the latest successful test run for ~ci-kubernetes-beta~
+: select * from load_swagger('ci-kubernetes-beta', null, true);
+will load the latest successful test run for ~ci-kubernetes-beta~, but with bucket and job set to 'apisnoop/live' (used for testing).
 #+NAME: Manually load swaggers
 #+begin_src sql-mode
-  select * from load_bucket_job_swagger_via_curl('ci-kubernetes-e2e-gci-gce', '1188637253832806405');
-  -- create an apisnoop/live bucket/job by setting third argument(live) to true.
-  select * from load_bucket_job_swagger_via_curl('ci-kubernetes-e2e-gci-gce', '1188637253832806405', true);
+  select * from load_swagger();
+  select * from load_swagger(null, null, true);
 #+end_src
 
 #+NAME: Manually load audit events
 #+begin_src sql-mode
-  select * from load_audit_events('ci-kubernetes-e2e-gci-gce', '1188637253832806405');
+  select * from load_audit_events();
 #+end_src
 
 #+NAME: Refresh Materialized Views
