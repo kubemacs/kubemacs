@@ -3,12 +3,21 @@
 
 FROM iimacs/base
 
-ENV IIMACSVERSION=0.7
+ENV IIMACSVERSION=0.8 \
+    EMACSLOADPATH=/var/local/iimacs.d: 
+
+RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii
+
+ADD profile.d-iitoolbox.sh /etc/profile.d/iitoolbox.sh
+ADD simple-init.sh /usr/local/bin/simple-init.sh
+
+RUN mkdir -p /etc/sudoers.d && \
+    echo "%sudo    ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudo
 
 # install some useful packages
 RUN apt update && \
     apt upgrade -y && \
-    apt install -y sudo wget acl docker docker-compose apt-transport-https build-essential zsh sqlite3 vim nano apt-utils rsync xterm postgresql-client mariadb-client inotify-tools jq
+    apt install -y sudo wget acl docker docker-compose apt-transport-https build-essential zsh sqlite3 vim nano apt-utils rsync xterm postgresql-client mariadb-client inotify-tools jq python3-pip
 
 # install Kubernetes client and Google Cloud SDK
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
@@ -21,8 +30,16 @@ RUN add-apt-repository --yes ppa:longsleep/golang-backports && \
 	apt update && \
 	apt install -y golang golang-1.13
 
+# install nodejs
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
+    apt-get install -y nodejs
+
+# ensure that Python3 is default
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3 2
+
 # k8s kind
-RUN curl -Lo /usr/local/bin/kind https://github.com/kubernetes-sigs/kind/releases/download/v0.5.1/kind-$(uname)-amd64 && \
+RUN curl -Lo /usr/local/bin/kind https://github.com/kubernetes-sigs/kind/releases/download/v0.6.0/kind-$(uname)-amd64 && \
 	chmod +x /usr/local/bin/kind
 
 # get ssh-find-agent
@@ -33,4 +50,7 @@ RUN git clone --recursive https://github.com/iimacs/.emacs.d /var/local/iimacs.d
     cd /var/local/iimacs.d && \
     curl https://storage.googleapis.com/apisnoop/dev/iitoolbox-spacemacs-0.6.tgz | tar xzfC - /var/local/iimacs.d
 
-CMD ["/bin/bash"]
+RUN chgrp -R users /var/local/iimacs.d && \
+    chmod -R g+w /var/local/iimacs.d
+
+ENTRYPOINT ["/bin/bash"]
