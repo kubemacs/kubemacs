@@ -1,3 +1,4 @@
+;;(setq package-check-signature nil)
 ;; This folder should be ~/.emacs.d OR within your EMACS_LOAD_PATH
 ;; Set iimacs-dir to the folder containing this file
 (setq iimacs-dir (file-name-directory load-file-name))

@@ -36,6 +36,8 @@
   (use-package feature-mode))
 (defun ii/init-ob-tmate ()
   (use-package ob-tmate))
+(defun ii/init-ob-javascript ()
+  (use-package ob-javascript))
 (defun ii/init-ob-sql-mode ()
   (use-package ob-sql-mode))
 (defun ii/init-ox-gfm ()
@@ -63,8 +65,10 @@
             '(lambda ()
                (require 'org)
                (require 'ob-shell)
+               (require 'ob-javascript)
                ;;(require 'ob-sql-mode)
                (add-to-list 'org-babel-load-languages '(shell . t))
+               (add-to-list 'org-babel-load-languages '(javascript . t))
                ;;(add-to-list 'org-babel-load-languages '(sql-mode . t))
                )))
 (defun ii/pre-init-lsp ()
@@ -95,6 +99,8 @@
                    ;;(add-to-list 'org-babel-load-languages
                    ;;             '(sh . t))
                    (add-to-list 'org-babel-load-languages
+                                '(javascript . t))
+                   (add-to-list 'org-babel-load-languages
                                 '(shell . t))
                    (add-to-list 'org-babel-load-languages
                                 '(sql-mode . t))
@@ -102,7 +108,8 @@
                                 '(emacs-lisp . t))
                    )))
 (defun ii/post-init-org ()
- (require 'ob-shell)
+  (require 'ob-shell)
+ (require 'ob-javascript)
   )
 (defun ii/post-init-yasnippet ()
   ;; TODO do this within let for local var
@@ -148,6 +155,13 @@
     ;; groovy-mode
     ;; jupyter
     ;; ob-async
+    ;; (ob-javascript
+    ;;           :location (recipe
+    ;;                      :fetcher github
+    ;;                      :repo "zweifisch/ob-javascript"))
+    (ob-javascript
+     :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "ob-javascript")
+     )
     (ob-tmate :ensure t
               :location (recipe
                          :fetcher github
