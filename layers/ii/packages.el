@@ -109,7 +109,8 @@
                    )))
 (defun ii/post-init-org ()
   (require 'ob-shell)
- (require 'ob-javascript)
+  (require 'ob-javascript)
+  (require 'cal-iso)
   )
 (defun ii/post-init-yasnippet ()
   ;; TODO do this within let for local var
