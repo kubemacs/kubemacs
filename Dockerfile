@@ -3,7 +3,7 @@
 
 FROM iimacs/base
 
-ENV IIMACSVERSION=0.8 \
+ENV IIMACSVERSION=0.8.1 \
     EMACSLOADPATH=/var/local/iimacs.d: 
 
 RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii
@@ -17,7 +17,7 @@ RUN mkdir -p /etc/sudoers.d && \
 # install some useful packages
 RUN apt update && \
     apt upgrade -y && \
-    apt install -y sudo wget acl docker docker-compose apt-transport-https build-essential zsh sqlite3 vim nano apt-utils rsync xterm postgresql-client mariadb-client inotify-tools jq python3-pip
+    apt install -y sudo wget acl docker docker-compose apt-transport-https build-essential zsh sqlite3 vim nano apt-utils rsync xterm postgresql-client mariadb-client inotify-tools jq python3-pip xtermcontrol
 
 # install Kubernetes client and Google Cloud SDK
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
@@ -46,11 +46,13 @@ RUN curl -Lo /usr/local/bin/kind https://github.com/kubernetes-sigs/kind/release
 RUN curl https://gitlab.ii.coop/ii/tooling/ssh-find-agent/raw/master/ssh-find-agent.sh > /usr/local/bin/ssh-find-agent.sh && \
 	chmod +x /usr/local/bin/ssh-find-agent.sh
 
-RUN git clone --recursive https://github.com/iimacs/.emacs.d /var/local/iimacs.d && \
+RUN git clone --depth 1 --recursive https://github.com/iimacs/.emacs.d /var/local/iimacs.d && \
     cd /var/local/iimacs.d && \
     curl https://storage.googleapis.com/apisnoop/dev/iitoolbox-spacemacs-0.6.tgz | tar xzfC - /var/local/iimacs.d
 
 RUN chgrp -R users /var/local/iimacs.d && \
     chmod -R g+w /var/local/iimacs.d
 
+COPY osc52.sh /usr/local/bin/osc52.sh
+USER ii
 ENTRYPOINT ["/bin/bash"]
