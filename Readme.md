@@ -4,14 +4,28 @@
   - [kubectl / google-cloud-sdk](#sec-1-3)
   - [golang 1.13](#sec-1-4)
   - [kind 0.5.1](#sec-1-5)
-- [Get your terminal + emacs working](#sec-2)
-  - [clone down iimacs .emacs.d into your system](#sec-2-1)
-  - [populate the cache](#sec-2-2)
-  - [ensure when you login, emacs can find .iimacs.d and tooling](#sec-2-3)
-  - [xterm font size and OS Code settings](#sec-2-4)
-- [Possibly use ~/.emacs.d/.spacemacs-hh](#sec-3)
-- [Usage](#sec-4)
-  - [run xterm](#sec-4-1)
+  - [tmate 2.3.1](#sec-1-6)
+  - [ripgrep 0.10.0](#sec-1-7)
+  - [xterm](#sec-1-8)
+  - [docker](#sec-1-9)
+- [OS Specific](#sec-2)
+  - [OSX](#sec-2-1)
+    - [Installing brew](#sec-2-1-1)
+    - [Installing emacs via brew](#sec-2-1-2)
+    - [Ensuring the brew emacs version is found before the installed version](#sec-2-1-3)
+- [Ensure github keys are working](#sec-3)
+  - [generate a public<sub>private</sub> keypair](#sec-3-1)
+- [Get your terminal + emacs working](#sec-4)
+  - [clone down iimacs .emacs.d into your system](#sec-4-1)
+  - [populate the cache](#sec-4-2)
+  - [ensure when you login, emacs can find .iimacs.d and tooling](#sec-4-3)
+  - [ensure when you login, emacs can find .iimacs.d and tooling](#sec-4-4)
+  - [xterm font size and OS Code settings](#sec-4-5)
+  - [tmate settings (including ESC timout)](#sec-4-6)
+  - [docker group](#sec-4-7)
+- [Possibly use ~/.emacs.d/.spacemacs-hh](#sec-5)
+- [Usage](#sec-6)
+  - [run xterm](#sec-6-1)
 
 
 # Dependencies<a id="sec-1"></a>
@@ -51,9 +65,72 @@ sudo curl -Lo /usr/local/bin/kind \
 sudo chmod +x /usr/local/bin/kind
 ```
 
-# Get your terminal + emacs working<a id="sec-2"></a>
+## tmate 2.3.1<a id="sec-1-6"></a>
 
-## clone down iimacs .emacs.d into your system<a id="sec-2-1"></a>
+```shell
+curl -L \
+ https://github.com/tmate-io/tmate/releases/download/2.3.1/tmate-2.3.1-static-linux-amd64.tar.gz \
+ | sudo tar xvfzC - /usr/local/bin --strip-components 1
+```
+
+## ripgrep 0.10.0<a id="sec-1-7"></a>
+
+```shell
+sudo apt install -y ripgrep
+```
+
+## xterm<a id="sec-1-8"></a>
+
+```shell
+sudo apt install -y xterm xtermcontrol
+```
+
+## docker<a id="sec-1-9"></a>
+
+```shell
+sudo apt-get remove docker docker-engine docker.io containerd runc
+sudo apt-get install \
+     apt-transport-https \
+     ca-certificates \
+     curl \
+     gnupg-agent \
+     software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository \
+     "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   disco \
+   stable"
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+#export DOCKER_VERSION=5:19.03.3~3-0~ubuntu-disco
+#sudo apt-get install docker-ce=$DOCKER_VERISON docker-ce-cli=$DOCKER_VERSION containerd.io
+```
+
+# OS Specific<a id="sec-2"></a>
+
+## OSX<a id="sec-2-1"></a>
+
+### Installing brew<a id="sec-2-1-1"></a>
+
+### Installing emacs via brew<a id="sec-2-1-2"></a>
+
+### Ensuring the brew emacs version is found before the installed version<a id="sec-2-1-3"></a>
+
+```shell
+sudo ln -sf /usr/local/Cellar/emacs/26.3/bin/* /usr/local/bin/
+```
+
+# Ensure github keys are working<a id="sec-3"></a>
+
+## generate a public<sub>private</sub> keypair<a id="sec-3-1"></a>
+
+```shell
+ssh-key
+```
+
+# Get your terminal + emacs working<a id="sec-4"></a>
+
+## clone down iimacs .emacs.d into your system<a id="sec-4-1"></a>
 
 ```shell
 cd ~/ # do as your own user
@@ -61,14 +138,14 @@ cd ~/ # do as your own user
 git clone --recursive https://github.com/iimacs/.emacs.d ~/.iimacs.d
 ```
 
-## populate the cache<a id="sec-2-2"></a>
+## populate the cache<a id="sec-4-2"></a>
 
 ```shell
 curl https://storage.googleapis.com/apisnoop/dev/iitoolbox-spacemacs-0.6.tgz \
     | tar xzfC - ~/.iimacs.d
 ```
 
-## ensure when you login, emacs can find .iimacs.d and tooling<a id="sec-2-3"></a>
+## ensure when you login, emacs can find .iimacs.d and tooling<a id="sec-4-3"></a>
 
 This is done for all users, but has no impact unless ~/.iimacs.d exists
 
@@ -81,7 +158,15 @@ export EMACSLOADPATH=${IIMACS}:
 EOF
 ```
 
-## xterm font size and OS Code settings<a id="sec-2-4"></a>
+## ensure when you login, emacs can find .iimacs.d and tooling<a id="sec-4-4"></a>
+
+This is done for all users, but has no impact unless ~/.iimacs.d exists
+
+```shell
+sudo adduser $USER docker
+```
+
+## xterm font size and OS Code settings<a id="sec-4-5"></a>
 
 ```shell
 cp .emacs.d/.xterm-xdefaults ~/.Xdefaults
@@ -90,7 +175,26 @@ cp .emacs.d/.xterm-xdefaults ~/.Xdefaults
 xrdb ~/.Xdefaults
 ```
 
-# Possibly use ~/.emacs.d/.spacemacs-hh<a id="sec-3"></a>
+## tmate settings (including ESC timout)<a id="sec-4-6"></a>
+
+```shell
+cat <<EOF >> ~/.tmate.conf
+set -s escape-time 0
+set-option -g set-clipboard on
+set-option -g mouse on
+set-option -g history-limit 50000
+EOF
+```
+
+## docker group<a id="sec-4-7"></a>
+
+We need to login/logout in order for this to work OR use newgrp
+
+```shell
+sudo adduser $USER docker
+```
+
+# Possibly use ~/.emacs.d/.spacemacs-hh<a id="sec-5"></a>
 
 You can have your own config, but I do a lot of work to keep mine happy. It's not a bad starting spot.
 
@@ -98,13 +202,13 @@ You can have your own config, but I do a lot of work to keep mine happy. It's no
 cp ~/.emacs.d/.spacemacs-hh ~/.emacs.d/.spacemacs-$USER
 ```
 
-# Usage<a id="sec-4"></a>
+# Usage<a id="sec-6"></a>
 
 ```shell
 iimacs ~/path/to/orgfile
 ```
 
-## run xterm<a id="sec-4-1"></a>
+## run xterm<a id="sec-6-1"></a>
 
 ```shell
 #!/bin/bash

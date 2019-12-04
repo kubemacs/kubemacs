@@ -1,4 +1,11 @@
 #+TITLE: iimacs (people macros)
+* Ensure github keys are working
+** Ensure you can login to github.com
+** configure git
+** generate a public_private keypair
+   #+begin_src shell
+     ssh-key-gen
+   #+end_src
 * Dependencies
   :PROPERTIES:
   :header-args: :noweb yes :tangle yes :comments org :eval never
@@ -9,15 +16,25 @@
      sudo apt install -y emacs #>26.0
    #+end_src
 ** kubectl / google-cloud-sdk
+
+   https://kubernetes.io/docs/tasks/tools/install-kubectl/
+*** ubuntu
    #+begin_src shell
      echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
          | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
      curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
          | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-     sudo apt update 
+     sudo apt update
      sudo apt install -y kubectl google-cloud-sdk
    #+end_src
+*** osx
+   #+begin_src shell
+     curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl"
+     chmod +x ./kubectl
+     sudo mv ./kubectl /usr/local/bin/kubectl
+   #+end_src
 ** golang 1.13
+https://golang.org/dl/
    #+begin_src shell
      sudo add-apt-repository --yes ppa:longsleep/golang-backports
      sudo apt update
@@ -44,7 +61,7 @@
      sudo apt install -y xterm xtermcontrol
    #+end_src
 ** docker
-   #+begin_src shell :tangle docker.sh
+   #+begin_src tmate :shell :tangle docker.sh
      sudo apt-get remove docker docker-engine docker.io containerd runc
      sudo apt-get install \
           apt-transport-https \
@@ -64,6 +81,56 @@
    #+end_src
 
    #+RESULTS:
+
+* OS Specific
+** OSX
+*** Installing emacs via brew and putting it in your path
+
+   Source: [2019-11-16 Sat], [[https://apple.stackexchange.com/questions/229669/update-emacs-that-comes-with-os-x][macos - Update emacs that comes with OS X - Ask Different]]
+
+   Apple controls when / if they update =emacs= so most people just install a newer version of the tool and change their PATH variable so the new version is found first and runs by default.
+
+   If you like the sound of that, I recommend installing [[http://brew.sh/][Homebrew]]:
+
+   #+BEGIN_SRC shell
+     /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+   #+END_SRC
+
+   Then install emacs by using d12frosted brew tap:
+
+   #+BEGIN_SRC shell
+     brew tap d12frosted/emacs-plus
+     brew install emacs-plus
+     #brew install emacs --with-cocoa --with-gnutls --with-librsvg --with-imagemagick@6 --with-mailutils
+     #--HEAD
+   #+END_SRC
+
+   Add a link so that it'll work as =emacs= in the Terminal:
+
+   #+BEGIN_SRC shell
+     ln -s /usr/local/Cellar/emacs/26.3/Emacs.app /Applications
+   #+END_SRC
+
+   This will install the 'stable' version. As of this writing, that's 24.5:
+
+   #+BEGIN_SRC shell
+       » brew info emacs-plus
+       emacs-plus: stable 26.3 (bottled), devel 25.0-dev, HEAD
+       GNU Emacs text editor
+       https://www.gnu.org/software/emacs/
+   #+END_SRC
+
+   This is significantly newer (24.5.1) than the version that came with El Capitan (22.1.1):
+
+   #+BEGIN_SRC shell
+       » emacs --version
+       GNU Emacs 22.1.1
+   #+END_SRC
+  If we run this, the new version will be in the path first.
+
+   #+begin_src shell
+  sudo ln -sf /usr/local/Cellar/emacs/26.3/bin/* /usr/local/bin/
+   #+end_src
 
 * Get your terminal + emacs working
   :PROPERTIES:
@@ -135,7 +202,7 @@ It's not a bad starting spot.
     iimacs ~/path/to/orgfile
   #+end_src
 ** run xterm
-   #+name: apisnoop.sh 
+   #+name: apisnoop.sh
    #+begin_src shell :tangle no
      #!/bin/bash
      #/usr/local/bin/apisnoop.sh

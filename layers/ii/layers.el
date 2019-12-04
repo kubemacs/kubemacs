@@ -1,3 +1,4 @@
+(configuration-layer/declare-layer 'graphviz)
 (configuration-layer/declare-layer 'auto-completion)
 (configuration-layer/declare-layer 'yaml)
 (configuration-layer/declare-layer 'html)
