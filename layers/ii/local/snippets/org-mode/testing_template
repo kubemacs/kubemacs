@@ -6,31 +6,32 @@
 #+TITLE: Test Writing Flow
 #+AUTHOR: ii team
 #+TODO: TODO(t) NEXT(n) IN-PROGRESS(i) BLOCKED(b) | DONE(d)
+#+SELECT_TAGS: :export:
 
 * TODO [0%] Cluster Setup
   :PROPERTIES:
-  :LOGGING: nil
+  :LOGGING:  nil
   :END:
   
   (NOTE: to reduce git noise, when you mark cluster setup as done, run this command to reset the below todo's)
-#+NAME: Reset Todo's
-#+begin_src elisp :results silent
-(org-map-entries (lambda ()
-          (when
-              (string=
-               (nth 2 (org-heading-components)) "DONE")
-             (org-todo "TODO"))) nil 'tree)
-#+end_src
+  #+NAME: Reset Todo's
+  #+begin_src elisp :results silent
+    (org-map-entries (lambda ()
+                       (when
+                           (string=
+                            (nth 2 (org-heading-components)) "DONE")
+                         (org-todo "TODO"))) nil 'tree)
+                         #+end_src
 
-You'll be using your Right Eye for a decent portion of this setup,
-so make sure it is up.  
-You can do =spc spc normal-mode= if you need to grab the ssh address again.
+  You'll be using your Right Eye for a decent portion of this setup,
+  so make sure it is up.  
+  You can do =spc spc normal-mode= if you need to grab the ssh address again.
 
 ** TODO Check your user is correct and we are attached to right eye. 
-  /bonus: this also ensures code blocks are working!/
- 
- #+begin_src tmate :results silent
- echo "You are connected, $USER!"
+   /bonus: this also ensures code blocks are working!/
+   
+   #+begin_src tmate :results silent
+     echo "You are connected, $USER!"
  #+end_src
  
 ** TODO Create a K8s cluster using KIND
@@ -65,7 +66,7 @@ You can do =spc spc normal-mode= if you need to grab the ssh address again.
   : To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ** TODO Apply apisnoop
   #+begin_src shell
-    kubectl apply -f ~/ii/apisnoop/deployment/k8s/raiinbow.yaml  --namespace=kube-system
+    kubectl apply -f "https://raw.githubusercontent.com/cncf/apisnoop/master/deployment/k8s/raiinbow.yaml" --namespace=kube-system
   #+end_src
 
   #+RESULTS:
@@ -239,16 +240,22 @@ You can iterate over a query until you have a set of endpoints you'd like to wri
  -  [[https://kubernetes.io/docs/reference/kubernetes-api/][Kubernetes API Reference Docs]]
 
 * Write Your Test
-  NOTE: This is where the test code goes. It is useful to seperate it into 
-  blocks which can be evaluted independently.
+  This is where the test code goes. It is useful to seperate it into blocks which can be evaluted independently.
+  
+  You can write tests in a variety of languages, outlined in [[https://kubernetes.io/docs/reference/using-api/client-libraries/]["Client Libraries"]] on k8s reference page.
+  
+  Whichever language you choose, you want to make sure to set the useragent to something starting with ~live-test~.  This ensures apisnoop's queries around testing work correctly.
+  
+  We've included sample tests in Go and Javascript.
 
+** Example Test in Go 
   NOTE: =, ,= or =C-c C-c= while between ~go~ *BEGIN_SRC* and *END_SRC* will
   execute the code and place the results below. (Requires ob-go) 
   
-  IMPORTANT: when writing your function, you will want to make sure you set the config.UserAgent to 'live-test-writing'.  This will ensure your test is picked up properly when verifying with apisnoop below.
+  To set the useragent, define the config and add a useragent to it:
+  : config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+  : config.UserAgent = 'live-test-my-test'
   
-** Example Test
-
 #+begin_src shell
   go get -v -u k8s.io/apimachinery/pkg/apis/meta/v1
   go get -v -u k8s.io/client-go/kubernetes
@@ -274,6 +281,41 @@ You can iterate over a query until you have a set of endpoints you'd like to wri
   fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
 #+end_src
 
+
+** Example Test in Javascript
+   
+  Most often, To set the useragent, add it as a header in the third param given to your kubernetes-interfacing function.
+  : k8sApi.readNodeStatus(node, undefined, {headers: {'User-Agent': 'live-test-my-test'}})
+  : .then(resp => // do something with the response//)
+  
+   #+begin_src javascript
+     const k8s = require('@kubernetes/client-node')
+
+     const kc = new k8s.KubeConfig()
+     kc.loadFromDefault()
+
+     const k8sApi = kc.makeApiClient(k8s.CoreV1Api)
+     const requestOptions = {
+         headers: {
+             'User-Agent': 'live-test-writing'
+         }
+     }
+
+     var nodeToReadStatus
+
+     k8sApi.listNode(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, requestOptions).then(res => {
+         nodeToReadStatus = res.body.items[0]
+
+         return k8sApi.readNodeStatus(nodeToReadStatus.metadata.name, undefined, requestOptions)
+     }).then(res => {
+         if (nodeToReadStatus.metadata.name !== res.body.metadata.name) {
+             throw console.log("[status] test failed; Node names don't match.")
+         }
+         console.log("[status] test successful; found node")
+     }).catch(err => {
+         console.log(JSON.stringify(err, null, 4))
+     })
+   #+end_src
 
 * Verify with APISnoop
   
