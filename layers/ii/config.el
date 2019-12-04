@@ -8,4 +8,5 @@
  auto-completion-enable-snippets-in-popup t
  osc52e-package-dir (concat (configuration-layer/get-layer-local-dir 'ii) "osc52e")
  python-shell-interpreter "python3"
+ org-babel-python-command "python3"
  )

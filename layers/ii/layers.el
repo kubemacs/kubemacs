@@ -11,4 +11,5 @@
 (configuration-layer/declare-layer 'sql)
 (configuration-layer/declare-layer 'javascript)
 (configuration-layer/declare-layer 'python)
+;;(configuration-layer/declare-layer 'ipython-notebook)
 (configuration-layer/declare-layer 'version-control)
