@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: testing template 
+# name: testing template
 # key:  testing
 # --
 
@@ -14,7 +14,7 @@
   :LOGGING:  nil
   :END:
 ** Reset Org (optional)
-  
+
   (NOTE: to reduce git noise, when you mark cluster setup as done, run this command to reset the below todo's)
   #+NAME: Reset Todo's
   #+begin_src elisp :results silent
@@ -26,23 +26,23 @@
   #+end_src
 
   You'll be using your Right Eye for a decent portion of this setup,
-  so make sure it is up.  
+  so make sure it is up.
   You can do =spc spc normal-mode= if you need to grab the ssh address again.
 
-** TODO Check your user is correct and we are attached to right eye. 
+** TODO Check your user is correct and we are attached to right eye.
    /bonus: this also ensures code blocks are working!/
-   
+
    #+begin_src tmate :results silent :eval never-export
      echo "You are connected, $USER!"
    #+end_src
- 
+
 ** TODO Create a K8s cluster using KIND
-   NOTE: You can build from source or use KIND's upstream images: 
+   NOTE: You can build from source or use KIND's upstream images:
    https://hub.docker.com/r/kindest/node/tags
 
    #+BEGIN_SRC tmate :eval never-export :session foo:cluster
      # Uncomment the next line if you want to clean up a previously created cluster.
-     kind delete cluster --name=kind-$USER 
+     kind delete cluster --name=kind-$USER
      curl https://raw.githubusercontent.com/cncf/apisnoop/master/deployment/k8s/kind-cluster-config.yaml -o kind-cluster-config.yaml
      kind create cluster --name kind-$USER --config kind-cluster-config.yaml
    #+END_SRC
@@ -76,7 +76,7 @@
 ** TODO Verify Pods Running
    !ATTENTION!: Wait for all pods to have a "Running" status before proceeding
    past this step.
-  
+
    #+begin_src shell
      kubectl get pods --namespace=kube-system
    #+end_src
@@ -108,7 +108,7 @@
      POSTGRES_PORT=$(kubectl get pod $POSTGRES_POD --template='{{(index (index .spec.containers 0).ports 0).containerPort}}{{"\n"}}')
      kubectl port-forward $POSTGRES_POD $(id -u)1:$POSTGRES_PORT
    #+END_SRC
-  
+
    Then we'll setup a port-forward for hasura, so our web app can query it directly.
    #+BEGIN_SRC tmate :eval never-export :session foo:hasura
      HASURA_POD=$(kubectl get pod --selector=io.apisnoop.graphql=hasura -o name | sed s:pod/::)
@@ -125,11 +125,11 @@
    #+END_SRC
 ** TODO Check it all worked
 
-   Once the postgres pod has been up for at least three minutes, you can check if it all works.  
+   Once the postgres pod has been up for at least three minutes, you can check if it all works.
 
    Running ~\d+~ will list all the tables and views in your db, and their size.
    First,you want to ensure that relations _are_ found.  IF not, something happened with postgres and you should check the logs (check out [[#footnotes]] for more info.)
-  
+
    There should be about a dozen views, and two tables.  The table ~bucket_job_swagger~ should be about 3712kb.  The table ~raw_audit_event~ should be about 416mb.  If either show as 8192 bytes, it means no data loaded.  Check the Hasura logs in this case, to see if there was an issue with the migration.
 
    #+begin_src sql-mode :results silent
@@ -139,35 +139,35 @@
    #+NAME: example results
    #+begin_example sql-mode
                                              List of relations
-      Schema |               Name               |       Type        |  Owner   |  Size   | Description 
+      Schema |               Name               |       Type        |  Owner   |  Size   | Description
      --------+----------------------------------+-------------------+----------+---------+-------------
-      public | api_operation_material           | materialized view | apisnoop | 3688 kB | 
-      public | api_operation_parameter_material | materialized view | apisnoop | 6016 kB | 
-      public | audit_event                      | view              | apisnoop | 0 bytes | 
-      public | bucket_job_swagger               | table             | apisnoop | 3712 kB | 
-      public | change_in_coverage               | view              | apisnoop | 0 bytes | 
-      public | change_in_tests                  | view              | apisnoop | 0 bytes | 
-      public | endpoint_coverage                | view              | apisnoop | 0 bytes | 
-      public | endpoints_hit_by_new_test        | view              | apisnoop | 0 bytes | 
-      public | projected_change_in_coverage     | view              | apisnoop | 0 bytes | 
-      public | raw_audit_event                  | table             | apisnoop | 419 MB  | 
-      public | stable_endpoint_stats            | view              | apisnoop | 0 bytes | 
-      public | untested_stable_core_endpoints   | view              | apisnoop | 0 bytes | 
+      public | api_operation_material           | materialized view | apisnoop | 3688 kB |
+      public | api_operation_parameter_material | materialized view | apisnoop | 6016 kB |
+      public | audit_event                      | view              | apisnoop | 0 bytes |
+      public | bucket_job_swagger               | table             | apisnoop | 3712 kB |
+      public | change_in_coverage               | view              | apisnoop | 0 bytes |
+      public | change_in_tests                  | view              | apisnoop | 0 bytes |
+      public | endpoint_coverage                | view              | apisnoop | 0 bytes |
+      public | endpoints_hit_by_new_test        | view              | apisnoop | 0 bytes |
+      public | projected_change_in_coverage     | view              | apisnoop | 0 bytes |
+      public | raw_audit_event                  | table             | apisnoop | 419 MB  |
+      public | stable_endpoint_stats            | view              | apisnoop | 0 bytes |
+      public | untested_stable_core_endpoints   | view              | apisnoop | 0 bytes |
      (12 rows)
 
    #+end_example
 ** TODO Check current coverage
    It can be useful to see the current level of testing according to your baseline audit log (by default the last successful test run on master).
-   
+
    You can view this with the query:
    #+NAME: stable endpoint stats
    #+begin_src sql-mode
-     select * from stable_endpoint_stats where job != 'live'; 
+     select * from stable_endpoint_stats where job != 'live';
    #+end_src
 
    #+RESULTS: stable endpoint stats
    #+begin_src sql-mode
-     job         |    date    | total_endpoints | test_hits | conf_hits | percent_tested | percent_conf_tested 
+     job         |    date    | total_endpoints | test_hits | conf_hits | percent_tested | percent_conf_tested
        ---------------------+------------+-----------------+-----------+-----------+----------------+---------------------
        1201667258288443395 | 2019-12-03 |             438 |       183 |       129 |          41.78 |               29.45
        (1 row)
@@ -197,7 +197,7 @@
 
   #+RESULTS: untested_stable_core_endpoints
   #+begin_src sql-mode
-                      operation_id                    | k8s_action |                                path                                 |                        description                        
+                      operation_id                    | k8s_action |                                path                                 |                        description
   ----------------------------------------------------+------------+---------------------------------------------------------------------+-----------------------------------------------------------
    replaceCoreV1PersistentVolumeStatus                | put        | /api/v1/persistentvolumes/{name}/status                             | replace status of the specified PersistentVolume
    replaceCoreV1PersistentVolume                      | put        | /api/v1/persistentvolumes/{name}                                    | replace the specified PersistentVolume
@@ -234,21 +234,21 @@
 
 * Write Your Test :export:
   This is where the test code goes. It is useful to seperate it into blocks which can be evaluted independently.
-  
+
   You can write tests in a variety of languages, outlined in [[https://kubernetes.io/docs/reference/using-api/client-libraries/]["Client Libraries"]] on k8s reference page.
-  
+
   Whichever language you choose, you want to make sure to set the useragent to something starting with ~live-test~.  This ensures apisnoop's queries around testing work correctly.
-  
+
   We've included sample tests in Go and Javascript.
 
-** Example Test in Go 
+** Example Test in Go
    NOTE: =, ,= or =C-c C-c= while between ~go~ *BEGIN_SRC* and *END_SRC* will
-   execute the code and place the results below. (Requires ob-go) 
-  
+   execute the code and place the results below. (Requires ob-go)
+
    To set the useragent, define the config and add a useragent to it:
    : config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
    : config.UserAgent = 'live-test-my-test'
-  
+
    #+begin_src shell
      go get -v -u k8s.io/apimachinery/pkg/apis/meta/v1
      go get -v -u k8s.io/client-go/kubernetes
@@ -274,13 +274,34 @@
      fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
    #+end_src
 
+** Example Test in Python
+
+
+
+#+name: use the API via python
+#+begin_src python :results output :exports both :eval never-export
+# required 'pip3 install kubernetes'
+import kubernetes.client
+from kubernetes.config import kube_config
+from kubernetes.client.configuration import Configuration
+k8s_config = Configuration()
+kube_config.load_kube_config( client_configuration=k8s_config )
+k8s_client = kubernetes.client.ApiClient( k8s_config )
+v1 = kubernetes.client.CoreV1Api( k8s_client )
+
+#print("Listing pods with their IPs:")
+ret = v1.list_pod_for_all_namespaces(watch=False)
+apod=v1.list_pod_for_all_namespaces(watch=False).items[0]
+s=v1.read_namespaced_pod_status(apod.metadata.name, apod.metadata.namespace, pretty=True)
+#print(s)
+#+end_src
 
 ** Example Test in Javascript
-   
+
    Most often, To set the useragent, add it as a header in the third param given to your kubernetes-interfacing function.
    : k8sApi.readNodeStatus(node, undefined, {headers: {'User-Agent': 'live-test-my-test'}})
    : .then(resp => // do something with the response//)
-  
+
    #+begin_src javascript
      const k8s = require('@kubernetes/client-node')
 
@@ -311,17 +332,17 @@
    #+end_src
 
 * Verify with APISnoop :export:
-  
-  As you run your test functions against the cluster, apisnoop logs all endpoints hit and puts it in the db with the bucket 'apisnoop' and the job 'live'.  
+
+  As you run your test functions against the cluster, apisnoop logs all endpoints hit and puts it in the db with the bucket 'apisnoop' and the job 'live'.
   We use this to build a set of queries that show what endpoints are hit by your test (or other function), and what the projected change in coverage would be if this test was merged into the e2e testing suite.
-  
+
   #+begin_src sql-mode :eval never-export :exports both
     select * from endpoints_hit_by_new_test where useragent like 'live%';
   #+end_src
 
   #+RESULTS:
   #+begin_src sql-mode
-    useragent      |         operation_id          | hit_by_ete | hit_by_new_test 
+    useragent      |         operation_id          | hit_by_ete | hit_by_new_test
       ---------------------+-------------------------------+------------+-----------------
       live-test-pod-count | listCoreV1PodForAllNamespaces |         32 |               1
       (1 row)
@@ -335,7 +356,7 @@
 
   #+RESULTS:
   #+begin_src sql-mode
-    category    | total_endpoints | old_coverage | new_coverage | change_in_number 
+    category    | total_endpoints | old_coverage | new_coverage | change_in_number
       ---------------+-----------------+--------------+--------------+------------------
       test_coverage |             438 |          183 |          183 |                0
       (1 row)
@@ -344,7 +365,7 @@
 
 * Open Tasks
   Set any open tasks here, using org-todo
-** DONE Live Your Best Life 
+** DONE Live Your Best Life
 * Footnotes :neverexport:
   :PROPERTIES:
   :CUSTOM_ID: footnotes
@@ -374,8 +395,8 @@
 ** Manually load swagger or audit events
    If you ran through the full setup, but were getting 0's in the stable_endpint_stats, it means the table migrations were successful, but no data was loaded.
 
-   You can verify data loaded with the below query.  ~bucket_job_swagger~ should have a size around 3600kb and raw_audit_event should have a size around 412mb.  
-  
+   You can verify data loaded with the below query.  ~bucket_job_swagger~ should have a size around 3600kb and raw_audit_event should have a size around 412mb.
+
    #+NAME: Verify Data Loaded
    #+begin_src sql-mode
      \dt+
@@ -384,10 +405,10 @@
    #+RESULTS:
    #+begin_src sql-mode
      List of relations
-       Schema |        Name        | Type  |  Owner   |  Size   | Description 
+       Schema |        Name        | Type  |  Owner   |  Size   | Description
        --------+--------------------+-------+----------+---------+-------------
-       public | bucket_job_swagger | table | apisnoop | 3600 kB | 
-       public | raw_audit_event    | table | apisnoop | 412 MB  | 
+       public | bucket_job_swagger | table | apisnoop | 3600 kB |
+       public | raw_audit_event    | table | apisnoop | 412 MB  |
        (2 rows)
 
    #+end_src
@@ -395,7 +416,7 @@
    If either shows a size of ~8192 bytes~, you'll want to manually load it, refresh materialized views, then check again.
 
    if you want to load a particular bucket or job, you can name them as the first and second argument of these functions.
-   e.g 
+   e.g
    : select * from load)swagger('ci-kubernetes-beta', 1122334344);
    will load that specific bucket/job combo.
    : select * from load_swagger('ci-kubernetes-beta');
