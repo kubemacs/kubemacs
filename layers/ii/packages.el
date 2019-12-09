@@ -52,6 +52,10 @@
   (use-package ob-go))
 (defun ii/init-ob-async ()
   (use-package ob-async))
+(defun ii/init-kubernetes ()
+  (use-package kubernetes))
+(defun ii/init-kubernetes-evil ()
+  (use-package kubernetes-evil))
 
 (defun ii/init-osc52e ()
   )
@@ -163,6 +167,14 @@
     (ob-javascript
      :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "ob-javascript")
      )
+    (kubernetes
+      :ensure t
+      :commands (kubernetes-overview))
+
+    ;; If you want to pull in the Evil compatibility package.
+    (kubernetes-evil
+      :ensure t
+      :after kubernetes)
     (ob-tmate :ensure t
               :location (recipe
                          :fetcher github

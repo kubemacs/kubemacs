@@ -139,39 +139,40 @@ XTerm*faceSize: 12
 
 *fontMenu.Label:  ii Customized Fonts
 *fontMenu*fontdefault*Label:    i
-*VT100.font:           10x14
+*VT100.faceSize:          9
+!*VT100.font:           10x14
 !*VT100.font:           7x12
 !*VT100.utf8Fonts.font:  -misc-fixed-medium-r-semicondensed--8-120-75-75-c-60-iso10646-1
 
 *fontMenu*font1*Label:  0
-*VT100.faceSize1:           5
+*VT100.faceSize1:         8
 ! *VT100.font1:           nil2
 ! *IconFont:              nil2
 !*VT100.font1:           5x7
 !*VT100.utf8Fonts.font1: -misc-fixed-medium-r-normal--4-80-75-75-c-50-iso10646-1
 
 *fontMenu*font2*Label:  ii
-*VT100.faceSize2:           10
+*VT100.faceSize2:         10
 !*VT100.font2:           6x10
 !*VT100.utf8Fonts.font2: -misc-fixed-medium-r-normal--8-80-75-75-c-50-iso10646-1
 
 *fontMenu*font3*Label:  iii
-*VT100.faceSize3:           14
+*VT100.faceSize3:          11
 !*VT100.font3:           7x12
 !*VT100.utf8Fonts.font3: -misc-fixed-medium-r-normal--14-130-75-75-c-70-iso10646-1
 
 *fontMenu*font4*Label:  iiii
-*VT100.faceSize4:           18
+*VT100.faceSize4:          12
 !*VT100.font4:           9x16
 !*VT100.utf8Fonts.font4: -misc-fixed-medium-r-normal--16-120-75-75-c-80-iso10646-1
 
 *fontMenu*font5*Label:  iiiii
-*VT100.faceSize5:           22
+*VT100.faceSize5:          13
 !*VT100.font5:           10x20
 !*VT100.utf8Fonts.font5: -misc-fixed-medium-r-normal--18-120-100-100-c-90-iso10646-1
 
 *fontMenu*font6*Label:  iiiiii
-*VT100.faceSize6:           25
+*VT100.faceSize6:          14
 !*VT100.font6:           20x40
 !*VT100.utf8Fonts.font6: -misc-fixed-medium-r-normal--20-200-75-75-c-100-iso10646-1
 *allowFontOps: true
@@ -183,7 +184,7 @@ XTerm*faceSize: 12
 
 ! Xterm*faceSize1: 5
 ! Xterm*faceSize2: 10
-! Xterm*faceSize3: 12 
+! Xterm*faceSize3: 12
 ! Xterm*faceSize4: 15
 ! Xterm*faceSize5: 20
 ! Xterm*faceSize6: 25
@@ -202,7 +203,7 @@ XTerm*disallowedWindowOps: 20,21,SetXprop
 !XTerm.vt100.translations: #override \n Ctrl <Key> minus: smaller-vt-font() \n Ctrl <Key> plus: larger-vt-font()
 ! https://www.linuxsecrets.com/archlinux-wiki/wiki.archlinux.org/index.php/Xterm.html
 ! http://futurile.net/2016/06/14/xterm-setup-and-truetype-font-configuration/
-XTerm*VT100.translations: #override Ctrl <Key>minus: smaller-vt-font() \n Ctrl <Key>plus: larger-vt-font() \n Ctrl <Key>0: set-vt-font(d) \n <Btn1Up>: select-end(PRIMARY, CLIPBOARD, CUT_BUFFER0) \n Ctrl Shift <Key>V: insert-selection(CLIPBOARD) \n Ctrl Shift <Key>C: copy-selection(CLIPBOARD) \n Meta <Btn1Up>: exec-formatted("google-chrome '%t'", PRIMARY) \n Meta <Key>slash: print-everything()
+XTerm*VT100.translations: #override Ctrl <Key>=: larger-vt-font() \n Ctrl <Key>minus: smaller-vt-font() \n Ctrl <Key>0: set-vt-font(d) \n <Btn1Up>: select-end(PRIMARY, CLIPBOARD, CUT_BUFFER0) \n Ctrl Shift <Key>V: insert-selection(CLIPBOARD) \n Ctrl Shift <Key>C: copy-selection(CLIPBOARD) \n Meta <Btn1Up>: exec-formatted("google-chrome '%t'", PRIMARY) \n Meta <Key>slash: print-everything()
 !xterm*VT100.Translations: #override Ctrl Shift <Key>V: insert-selection(CLIPBOARD) \n Ctrl Shift <Key>C: copy-selection(CLIPBOARD)
 ! XTerm*VT100*translations:       #override \
 !    <Key>BackSpace: string(0x7f)
