@@ -191,5 +191,192 @@
 ;;  ;; https://www.emacswiki.org/emacs/TimeStamp
 ;;  time-stamp-pattern "10/#+UPDATED: needs time-local formatted regexp"
 ;;  )
+;; https://emacs.stackexchange.com/questions/33892/replace-element-of-alist-using-equal-even-if-key-does-not-exist
+(defun alist-set (key val alist &optional symbol)
+  "Set property KEY to VAL in ALIST. Return new alist.
+This creates the association if it is missing, and otherwise sets
+the cdr of the first matching association in the list. It does
+not create duplicate associations. By default, key comparison is
+done with `equal'. However, if SYMBOL is non-nil, then `eq' is
+used instead.
+
+This method may mutate the original alist, but you still need to
+use the return value of this method instead of the original
+alist, to ensure correct results."
+  (if-let ((pair (if symbol (assq key alist) (assoc key alist))))
+      (setcdr pair val)
+    (push (cons key val) alist))
+  alist)
 
 (when (version<= "9.2" (org-version)) (require 'org-tempo))
+
+(defun ii/sql-org-hacks()
+  (message "START: ii/sql-org-hacks")
+  (set (make-local-variable 'sql-sqlite-program)
+       (executable-find "sqlite3"))
+  (set (make-local-variable 'sql-connection-alist)
+       (list
+        (list 'raiinbow
+              (list 'sql-product '(quote sqlite))
+              (list 'sql-database "raiinbow.sqlite")
+              )
+        (list 'apisnoop
+              (list 'sql-product '(quote postgres))
+              (list 'sql-user "apisnoop")
+              (list 'sql-database "apisnoop")
+              (list 'sql-port (+ (* (user-uid) 10) 1))
+              (list 'sql-server "localhost"))))
+  (message "END: ii/sql-org-hacks")
+  )
+(defun ii/tmate-org-hacks()
+  (message "START: ii/tmate-org-hacks")
+  (set (make-local-variable 'ssh-user)
+       user-login-name)
+  ;; set this in the org file or ENV
+  (set (make-local-variable 'ssh-host)
+       "sharing.io")
+  (set (make-local-variable 'ssh-user-host)
+       (concat ssh-user "@" ssh-host))
+  (set (make-local-variable 'user-buffer)
+       (concat user-login-name "." (file-name-base load-file-name)))
+  (set (make-local-variable 'tmate-sh)
+       (concat "/tmp/" user-buffer ".target.sh"))
+  (set (make-local-variable 'socket)
+       (concat "/tmp/" user-buffer ".target.iisocket"))
+  (set (make-local-variable 'socket-param)
+       (concat ":sockets " socket))
+  (set (make-local-variable 'start-tmate-command)
+       (concat
+        "tmate -S "
+        socket
+        " new-session -A -s "
+        user-login-name
+        " -n main "
+        "\"tmate wait tmate-ready "
+        "&& TMATE_CONNECT=\\$("
+        "tmate display -p '#{tmate_ssh} # "
+        user-buffer
+        ".target # "
+        ;; would like this to be shorter
+        (concat
+         (format-time-string "%Y-%m-%d %T")
+         (funcall (lambda ($x) (format "%s:%s" (substring $x 0 3) (substring $x 3 5))) (format-time-string "%z")))
+        " # #{tmate_web} ') "
+        "; echo \\$TMATE_CONNECT "
+        "; (echo \\$TMATE_CONNECT | xclip -i -sel p -f | xclip -i -sel c ) 2>/dev/null "
+        "; echo Share the above with your friends and hit enter when done. "
+        "; read "
+        "; bash --login\""
+        )
+       )
+  ;; at some point we can bring back working on remote hosts
+  (set (make-local-variable 'start-tmate-over-ssh-command)
+       (concat
+        "tmate -S "
+        socket
+        " new-session -A -s "
+        user-login-name
+        " -n main "
+        "\"tmate wait tmate-ready "
+        "\\&\\& TMATE_CONNECT=\\$\\("
+        "tmate display -p '#{tmate_ssh} # "
+        user-buffer
+        ".target # "
+        (concat
+         (format-time-string "%Y-%m-%d %T")
+         (funcall (lambda ($x) (format "%s:%s" (substring $x 0 3) (substring $x 3 5))) (format-time-string "%z")))
+        " #{tmate_web} '\\) "
+        "; echo \\$TMATE_CONNECT "
+        "; \\(echo \\$TMATE_CONNECT \\| xclip -i -sel p -f \\| xclip -i -sel c \\) 2>/dev/null "
+        "; echo Share the above with your friends and hit enter when done. "
+        "; read "
+        "; bash --login\""
+        )
+       )
+  (message "END: ii/tmate-org-hacks")
+  )
+
+(defun ii/before-local-org-hacks()
+  (message "BEGIN ii/before-local-org-hacks")
+  (ii/tmate-org-hacks)
+  (ii/sql-org-hacks)
+  (make-local-variable 'org-babel-default-header-args)
+  (setq org-babel-default-header-args
+        (alist-set :noweb "yes"
+        (alist-set :noweb-ref "(nth 4 (org-heading-components))"
+        (alist-set :comments "org"
+        (alist-set :exports "both"
+        (alist-set :eval "never-export"
+        (alist-set :results "replace code"
+                   org-babel-default-header-args)))))))
+  (make-local-variable 'org-babel-default-header-args:tmate)
+  (setq org-babel-default-header-args:tmate 
+        (alist-set :exports "code"
+        (alist-set :session (concat user-login-name ":main") 
+        (alist-set :window user-login-name
+        (alist-set :socket socket
+                   org-babel-default-header-args:tmate)))))
+  (make-local-variable 'org-babel-default-header-args:sql-mode)
+  (setq org-babel-default-header-args:sql-mode 
+        (alist-set :results "replace code"
+        (alist-set :product "postgres"
+        (alist-set :wrap "SRC example"
+                   org-babel-default-header-args:sql-mode))))
+  ;; (make-local-variable 'org-babel-default-header-args:emacs-lisp)
+  ;; (setq org-babel-default-header-args:emacs-lisp
+  ;;       (alist-set :results "replace code"
+  ;;                  org-babel-default-header-args:emacs-lisp))
+  ;; (make-local-variable 'org-babel-default-header-args:elisp)
+  ;; (setq org-babel-default-header-args:elisp
+  ;;       (alist-set :results "replace code"
+  ;;                  org-babel-default-header-args:elisp))
+  (make-local-variable 'org-babel-default-header-args:bash)
+  (setq org-babel-default-header-args:bash
+        (alist-set :results "output code verbatim replace"
+        (alist-set :wrap "src EXAMPLE"
+                   org-babel-default-header-args:bash)))
+  (make-local-variable 'org-babel-default-header-args:sh)
+  (setq org-babel-default-header-args:sh
+        (alist-set :results "output code verbatim replace"
+        (alist-set :wrap "src EXAMPLE"
+                   org-babel-default-header-args:sh)))
+  ;; (make-local-variable 'org-babel-default-header-args:json)
+  ;; (setq org-babel-default-header-args:json
+  ;;       (alist-set :results "output code verbatim replace"
+  ;;       (alist-set :wrap "src EXAMPLE"
+  ;;                  org-babel-default-header-args:json)))
+  ;; (make-local-variable 'org-babel-default-header-args:yaml)
+  ;; (setq org-babel-default-header-args:yaml
+  ;;       (alist-set :results "output code verbatim replace"
+  ;;       (alist-set :wrap "src EXAMPLE"
+  ;;                  org-babel-default-header-args:yaml)))
+;;   (message "BEGIN ii/before-local-org-hacks")
+;;   )
+;; ;; Setup tmate socket etc
+;; (defun ii/after-local-var-hacks()
+;;   (message "BEGIN: ii/after-local-var-hacks")
+    ;; (message tmate-sh-sh)
+    ;; For testing / setting DISPLAY to something else
+    ;; (getenv "DISPLAY")
+    ;; (setenv "DISPLAY" ":0")
+  ;; As we start on other OSes, we'll need to copy this differently
+  ;; does this org require a right eye?
+  ;; local var for that
+    (if (xclip-working)
+        (populate-x-clipboard)
+      (populate-terminal-clipboard)
+      )
+  (switch-to-buffer "start-tmate-sh")
+  (y-or-n-p "Have you Pasted?")
+  (message "END: ii/after-local-var-hacks")
+  )
+(defun ii/before-local-var-hacks()
+  (message "BEGIN: ii/before-local-var-hacks")
+  (if (string-equal mode-name "Org")
+      ;; maybe look for ii specific file-local-variable too?
+      (ii/before-local-org-hacks)
+  )
+  (message "END: ii/before-local-var-hacks")
+  )
+
+(add-hook 'before-hack-local-variables-hook 'ii/before-local-var-hacks)
