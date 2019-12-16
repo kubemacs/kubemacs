@@ -1,4 +1,3 @@
-
 (defun iso-week-to-time (year week day)
   (pcase-let ((`(,m ,d ,y)
                (calendar-gregorian-from-absolute
@@ -165,10 +164,10 @@
 (with-eval-after-load "org"
   ;; (add-to-list 'org-src-lang-modes '("go-mode" . sql))
   (add-to-list 'org-structure-template-alist
-		           `("g" . "src go")))
+               `("g" . "src go")))
 ;(add-to-list 'org-structure-template-alist
-;		         `("ii"
-;		           . "src ii-mode"))
+;            `("ii"
+;              . "src ii-mode"))
 
 ;; https://www.wisdomandwonder.com/article/10630/how-fast-can-you-tangle-in-org-mode
 ;; (setq help/default-gc-cons-threshold gc-cons-threshold)
@@ -310,14 +309,14 @@ alist, to ensure correct results."
         (alist-set :results "replace code"
                    org-babel-default-header-args)))))))
   (make-local-variable 'org-babel-default-header-args:tmate)
-  (setq org-babel-default-header-args:tmate 
+  (setq org-babel-default-header-args:tmate
         (alist-set :exports "code"
-        (alist-set :session (concat user-login-name ":main") 
+        (alist-set :session (concat user-login-name ":main")
         (alist-set :window user-login-name
         (alist-set :socket socket
                    org-babel-default-header-args:tmate)))))
   (make-local-variable 'org-babel-default-header-args:sql-mode)
-  (setq org-babel-default-header-args:sql-mode 
+  (setq org-babel-default-header-args:sql-mode
         (alist-set :results "replace code"
         (alist-set :product "postgres"
         (alist-set :wrap "SRC example"
