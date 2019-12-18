@@ -3,184 +3,35 @@
 # key:  testing
 # --
 
-#+TITLE: Test Writing Flow
+#+TITLE: Mock Test
 #+AUTHOR: ii team
 #+TODO: TODO(t) NEXT(n) IN-PROGRESS(i) BLOCKED(b) | DONE(d)
 #+OPTIONS: toc:nil
 #+EXPORT_SELECT_TAGS: export
 
-* TODO [0%] Cluster Setup
-  :PROPERTIES:
-  :LOGGING:  nil
-  :END:
-** Reset Org (optional)
+This issue proposes the writing of a new test for the following: API endpoints:
+#+begin_comment
+List endpoints picked in the sql query below.  something like:
+- readCoreV1NamespacedEvent
+- patchCoreV1NamespacedEvent 
+- listCoreV1NamespacedEvent 
+- listCoreV1EventForAllNamespaces 
+- deleteCoreV1NamespacedEvent
+- createCoreV1NamespacedEvent 
+#+end_comment
 
-  (NOTE: to reduce git noise, when you mark cluster setup as done, run this command to reset the below todo's)
-  #+NAME: Reset Todo's
-  #+begin_src elisp :results silent
-    (org-map-entries (lambda ()
-                       (when
-                           (string=
-                            (nth 2 (org-heading-components)) "DONE")
-                         (org-todo "TODO"))) nil 'tree)
-  #+end_src
+with the intention that the test can, in two weeks time, be promoted to Conformance. This issue contains a very basic mock test in order to start the conversation about what a good e2e test would look like for this endpoint. The code below is verified to be hitting the intended endpoint, shown as per the queries in APIsnoop's live view of the cluster's audit logs.
 
-  You'll be using your Right Eye for a decent portion of this setup,
-  so make sure it is up.
-  You can do =spc spc normal-mode= if you need to grab the ssh address again.
-
-** TODO Check your user is correct and we are attached to right eye.
-   /bonus: this also ensures code blocks are working!/
-
-   #+begin_src tmate :results silent :eval never-export
-     echo "You are connected, $USER!"
-   #+end_src
-
-** TODO Create a K8s cluster using KIND
-   NOTE: You can build from source or use KIND's upstream images:
-   https://hub.docker.com/r/kindest/node/tags
-
-   #+BEGIN_SRC tmate :eval never-export :session foo:cluster
-     # Uncomment the next line if you want to clean up a previously created cluster.
-     kind delete cluster --name=kind-$USER
-     curl https://raw.githubusercontent.com/cncf/apisnoop/master/deployment/k8s/kind-cluster-config.yaml -o kind-cluster-config.yaml
-     kind create cluster --name kind-$USER --config kind-cluster-config.yaml
-   #+END_SRC
-** TODO Grab cluster info, to ensure it is up.
-
-   #+BEGIN_SRC shell :results silent
-     kubectl cluster-info
-   #+END_SRC
-
-   The results shown in your minibuffer should look something like:
-   : Kubernetes master is running at https://127.0.0.1:40067
-   : KubeDNS is running at https://127.0.0.1:40067/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
-
-   : To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
-** TODO Our Kubectl Apply :export:
-   #+begin_src shell
-     kubectl apply -f "https://raw.githubusercontent.com/cncf/apisnoop/master/deployment/k8s/raiinbow.yaml" --namespace=kube-system
-   #+end_src
-
-   #+RESULTS:
-   #+begin_EXAMPLE
-   service/hasura created
-   service/postgres created
-   deployment.apps/hasura created
-   deployment.apps/postgres created
-   deployment.apps/apisnoop-auditlogger created
-   service/apisnoop-auditlogger created
-   auditsink.auditregistration.k8s.io/auditlogger created
-   #+end_EXAMPLE
-
-** TODO Verify Pods Running
-   !ATTENTION!: Wait for all pods to have a "Running" status before proceeding
-   past this step.
-
-   #+begin_src shell
-     kubectl get pods --namespace=kube-system
-   #+end_src
-
-   #+RESULTS:
-   #+begin_EXAMPLE
-   NAME                                            READY   STATUS    RESTARTS   AGE
-   apisnoop-auditlogger-5b8bd798b6-tz45d           1/1     Running   1          71s
-   coredns-5c98db65d4-bq7kc                        1/1     Running   0          80s
-   coredns-5c98db65d4-t69zt                        1/1     Running   0          80s
-   etcd-kind-zz-control-plane                      1/1     Running   0          40s
-   hasura-5d8f5d7dfc-8tb8b                         1/1     Running   1          71s
-   kindnet-cckcx                                   1/1     Running   0          80s
-   kube-apiserver-kind-zz-control-plane            1/1     Running   0          16s
-   kube-controller-manager-kind-zz-control-plane   1/1     Running   0          40s
-   kube-proxy-48dsn                                1/1     Running   0          80s
-   kube-scheduler-kind-zz-control-plane            1/1     Running   0          35s
-   postgres-6986f64497-npj4l                       1/1     Running   0          71s
-   #+end_EXAMPLE
-** TODO Setup Port-Forwarding from us to sharing to the cluster
-
-   We'll setup port-forwarding for postgres, to let us easily send queries from within our org file.
-   You can check the status of the port-forward in your right eye.
-   #+BEGIN_SRC tmate :eval never-export :session foo:postgres
-     export GOOGLE_APPLICATION_CREDENTIALS=$HOME/.gcreds.json
-     export K8S_NAMESPACE="kube-system"
-     kubectl config set-context $(kubectl config current-context) --namespace=$K8S_NAMESPACE 2>&1 > /dev/null
-     POSTGRES_POD=$(kubectl get pod --selector=io.apisnoop.db=postgres -o name | sed s:pod/::)
-     POSTGRES_PORT=$(kubectl get pod $POSTGRES_POD --template='{{(index (index .spec.containers 0).ports 0).containerPort}}{{"\n"}}')
-     kubectl port-forward $POSTGRES_POD $(id -u)1:$POSTGRES_PORT
-   #+END_SRC
-
-   Then we'll setup a port-forward for hasura, so our web app can query it directly.
-   #+BEGIN_SRC tmate :eval never-export :session foo:hasura
-     HASURA_POD=$(kubectl get pod --selector=io.apisnoop.graphql=hasura -o name | sed s:pod/::)
-     HASURA_PORT=$(kubectl get pod $HASURA_POD --template='{{(index (index .spec.containers 0).ports 0).containerPort}}{{"\n"}}')
-     kubectl port-forward $HASURA_POD --address 0.0.0.0 8080:$HASURA_PORT
-   #+END_SRC
-** TODO Connect Org to our apisnoop db
-   #+NAME: ReConnect org to postgres
-   #+BEGIN_SRC emacs-lisp :results silent
-     (if (get-buffer "*SQL: postgres:data*")
-         (with-current-buffer "*SQL: postgres:data*"
-           (kill-buffer)))
-     (sql-connect "apisnoop" (concat "*SQL: postgres:data*"))
-   #+END_SRC
-** TODO Check it all worked
-
-   Once the postgres pod has been up for at least three minutes, you can check if it all works.
-
-   Running ~\d+~ will list all the tables and views in your db, and their size.
-   First,you want to ensure that relations _are_ found.  IF not, something happened with postgres and you should check the logs (check out [[#footnotes]] for more info.)
-
-   There should be about a dozen views, and two tables.  The table ~bucket_job_swagger~ should be about 3712kb.  The table ~raw_audit_event~ should be about 416mb.  If either show as 8192 bytes, it means no data loaded.  Check the Hasura logs in this case, to see if there was an issue with the migration.
-
-   #+begin_src sql-mode :results silent
-     \d+
-   #+end_src
-
-   #+NAME: example results
-   #+begin_example sql-mode
-                                             List of relations
-      Schema |               Name               |       Type        |  Owner   |  Size   | Description
-     --------+----------------------------------+-------------------+----------+---------+-------------
-      public | api_operation_material           | materialized view | apisnoop | 3688 kB |
-      public | api_operation_parameter_material | materialized view | apisnoop | 6016 kB |
-      public | audit_event                      | view              | apisnoop | 0 bytes |
-      public | bucket_job_swagger               | table             | apisnoop | 3712 kB |
-      public | change_in_coverage               | view              | apisnoop | 0 bytes |
-      public | change_in_tests                  | view              | apisnoop | 0 bytes |
-      public | endpoint_coverage                | view              | apisnoop | 0 bytes |
-      public | endpoints_hit_by_new_test        | view              | apisnoop | 0 bytes |
-      public | projected_change_in_coverage     | view              | apisnoop | 0 bytes |
-      public | raw_audit_event                  | table             | apisnoop | 419 MB  |
-      public | stable_endpoint_stats            | view              | apisnoop | 0 bytes |
-      public | untested_stable_core_endpoints   | view              | apisnoop | 0 bytes |
-     (12 rows)
-
-   #+end_example
-** TODO Check current coverage
-   It can be useful to see the current level of testing according to your baseline audit log (by default the last successful test run on master).
-
-   You can view this with the query:
-   #+NAME: stable endpoint stats
-   #+begin_src sql-mode
-     select * from stable_endpoint_stats where job != 'live';
-   #+end_src
-
-   #+RESULTS: stable endpoint stats
-   #+begin_src sql-mode
-     job         |    date    | total_endpoints | test_hits | conf_hits | percent_tested | percent_conf_tested
-       ---------------------+------------+-----------------+-----------+-----------+----------------+---------------------
-       1201667258288443395 | 2019-12-03 |             438 |       183 |       129 |          41.78 |               29.45
-       (1 row)
-
-   #+end_src
-
-** TODO Stand up, Stretch, and get a glass of water
-   You did it! By hydration and pauses are important.  Take some you time, and drink a full glass of water!
 * Identify a Feature Using APISnoop :export:
+
+  #+begin_comment
   You can run sql blocks directly in this org-mode to help isolate good endpoints to write a test for.
   For example, we have a query called ~untested_stable_core_endpoints~.  This shows details for endpoints that are part of GA kubernetes, are not deprecated, and are not tested.
 
   You can select all columns for this view or a subset, below we want to see the op_id, it's method and path, and its description to help with our test-writing.
+  #+end_comment
+  
+  According to these query results from APIsnoop, we are lacking in tests for the following endpoints...
 
   #+NAME: untested_stable_core_endpoints
   #+begin_src sql-mode :eval never-export :exports both
@@ -194,52 +45,28 @@
      LIMIT 25
            ;
   #+end_src
-
-  #+RESULTS: untested_stable_core_endpoints
-  #+begin_src sql-mode
-                      operation_id                    | k8s_action |                                path                                 |                        description
-  ----------------------------------------------------+------------+---------------------------------------------------------------------+-----------------------------------------------------------
-   replaceCoreV1PersistentVolumeStatus                | put        | /api/v1/persistentvolumes/{name}/status                             | replace status of the specified PersistentVolume
-   replaceCoreV1PersistentVolume                      | put        | /api/v1/persistentvolumes/{name}                                    | replace the specified PersistentVolume
-   replaceCoreV1NamespaceStatus                       | put        | /api/v1/namespaces/{name}/status                                    | replace status of the specified Namespace
-   replaceCoreV1NamespaceFinalize                     | put        | /api/v1/namespaces/{name}/finalize                                  | replace finalize of the specified Namespace
-   replaceCoreV1NamespacedServiceStatus               | put        | /api/v1/namespaces/{namespace}/services/{name}/status               | replace status of the specified Service
-   replaceCoreV1NamespacedResourceQuotaStatus         | put        | /api/v1/namespaces/{namespace}/resourcequotas/{name}/status         | replace status of the specified ResourceQuota
-   replaceCoreV1NamespacedReplicationControllerStatus | put        | /api/v1/namespaces/{namespace}/replicationcontrollers/{name}/status | replace status of the specified ReplicationController
-   replaceCoreV1NamespacedPodTemplate                 | put        | /api/v1/namespaces/{namespace}/podtemplates/{name}                  | replace the specified PodTemplate
-   replaceCoreV1NamespacedPodStatus                   | put        | /api/v1/namespaces/{namespace}/pods/{name}/status                   | replace status of the specified Pod
-   replaceCoreV1NamespacedPersistentVolumeClaimStatus | put        | /api/v1/namespaces/{namespace}/persistentvolumeclaims/{name}/status | replace status of the specified PersistentVolumeClaim
-   replaceCoreV1NamespacedEvent                       | put        | /api/v1/namespaces/{namespace}/events/{name}                        | replace the specified Event
-   replaceCoreV1NamespacedEndpoints                   | put        | /api/v1/namespaces/{namespace}/endpoints/{name}                     | replace the specified Endpoints
-   readCoreV1PersistentVolumeStatus                   | get        | /api/v1/persistentvolumes/{name}/status                             | read status of the specified PersistentVolume
-   readCoreV1NodeStatus                               | get        | /api/v1/nodes/{name}/status                                         | read status of the specified Node
-   readCoreV1NamespaceStatus                          | get        | /api/v1/namespaces/{name}/status                                    | read status of the specified Namespace
-   readCoreV1NamespacedServiceStatus                  | get        | /api/v1/namespaces/{namespace}/services/{name}/status               | read status of the specified Service
-   readCoreV1NamespacedResourceQuotaStatus            | get        | /api/v1/namespaces/{namespace}/resourcequotas/{name}/status         | read status of the specified ResourceQuota
-   readCoreV1NamespacedReplicationControllerStatus    | get        | /api/v1/namespaces/{namespace}/replicationcontrollers/{name}/status | read status of the specified ReplicationController
-   readCoreV1NamespacedPodTemplate                    | get        | /api/v1/namespaces/{namespace}/podtemplates/{name}                  | read the specified PodTemplate
-   readCoreV1NamespacedPodStatus                      | get        | /api/v1/namespaces/{namespace}/pods/{name}/status                   | read status of the specified Pod
-   readCoreV1NamespacedPersistentVolumeClaimStatus    | get        | /api/v1/namespaces/{namespace}/persistentvolumeclaims/{name}/status | read status of the specified PersistentVolumeClaim
-   readCoreV1NamespacedEvent                          | get        | /api/v1/namespaces/{namespace}/events/{name}                        | read the specified Event
-   readCoreV1ComponentStatus                          | get        | /api/v1/componentstatuses/{name}                                    | read the specified ComponentStatus
-   patchCoreV1PersistentVolumeStatus                  | patch      | /api/v1/persistentvolumes/{name}/status                             | partially update status of the specified PersistentVolume
-   patchCoreV1PersistentVolume                        | patch      | /api/v1/persistentvolumes/{name}                                    | partially update the specified PersistentVolume
-  (25 rows)
-
-  #+end_src
-
+  
+  #+begin_comment
   You can iterate over a query until you have a set of endpoints you'd like to write a test for, usually by adjusting the columns you view or by extending the where clause to filter more specifically.
+  #+end_comment
+
+  
 * Use API Reference to Lightly Document the Feature
   -  [[https://kubernetes.io/docs/reference/kubernetes-api/][Kubernetes API Reference Docs]]
 
 * Write Your Test :export:
+  #+begin_comment
   This is where the test code goes. It is useful to seperate it into blocks which can be evaluted independently.
 
   You can write tests in a variety of languages, outlined in [[https://kubernetes.io/docs/reference/using-api/client-libraries/]["Client Libraries"]] on k8s reference page.
 
   Whichever language you choose, you want to make sure to set the useragent to something starting with ~live-test~.  This ensures apisnoop's queries around testing work correctly.
 
+  
+  It can be great to break your test into individual code blocks you tanble with noweb.  This way you cna walk through the outline of the test with the relevant parts of the code.
+
   We've included sample tests in Go and Javascript.
+  #+end_comment
 
 ** Example Test in Go
    NOTE: =, ,= or =C-c C-c= while between ~go~ *BEGIN_SRC* and *END_SRC* will
@@ -298,9 +125,11 @@ s=v1.read_namespaced_pod_status(apod.metadata.name, apod.metadata.namespace, pre
 
 ** Example Test in Javascript
 
+   #+begin_comment
    Most often, To set the useragent, add it as a header in the third param given to your kubernetes-interfacing function.
    : k8sApi.readNodeStatus(node, undefined, {headers: {'User-Agent': 'live-test-my-test'}})
    : .then(resp => // do something with the response//)
+   #+end_comment
 
    #+begin_src javascript
      const k8s = require('@kubernetes/client-node')
@@ -333,8 +162,10 @@ s=v1.read_namespaced_pod_status(apod.metadata.name, apod.metadata.namespace, pre
 
 * Verify with APISnoop :export:
 
+  #+begin_comment
   As you run your test functions against the cluster, apisnoop logs all endpoints hit and puts it in the db with the bucket 'apisnoop' and the job 'live'.
   We use this to build a set of queries that show what endpoints are hit by your test (or other function), and what the projected change in coverage would be if this test was merged into the e2e testing suite.
+  #+end_comment
 
   #+begin_src sql-mode :eval never-export :exports both
     select * from endpoints_hit_by_new_test where useragent like 'live%';
@@ -349,7 +180,10 @@ s=v1.read_namespaced_pod_status(apod.metadata.name, apod.metadata.namespace, pre
 
   #+end_src
 
+  #+begin_comment
   NOTE: for the projected change in coverage, your test functions must be configured with a useragent that starts with ~live-test~, otherwise endpoints hit by that test won't be counted as part of new coverage.
+  #+end_comment
+  
   #+begin_src sql-mode :eval never-export :exports both
     select * from projected_change_in_coverage;
   #+end_src
@@ -363,6 +197,11 @@ s=v1.read_namespaced_pod_status(apod.metadata.name, apod.metadata.namespace, pre
 
   #+end_src
 
+* Final Notes :export:
+  #+begin_comment
+  Here it could be good to restate the amount of points conformacne would go up if this test is merged.  Include any other final comment relevant for the ticket.
+  #+end_comment
+  
 * Open Tasks
   Set any open tasks here, using org-todo
 ** DONE Live Your Best Life
