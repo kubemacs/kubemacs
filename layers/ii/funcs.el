@@ -138,16 +138,28 @@
   ;; (setq current-tmate-ssh (concat "export II=" socket " ; rm -f $II ; ssh -tAX " ssh-user-host " -L $II:$II " tmate-sh))
   (setq current-tmate-sh tmate-sh) ;; since tmate-sh is buffer-local..
   (setq current-tmate-ssh (concat "ssh -tAX " ssh-user-host " " tmate-sh))
-  (gui-select-text current-tmate-ssh)
+  (if (string= ssh-host "")
+      (progn
+        (gui-select-text current-tmate-sh)
+        (with-current-buffer (get-buffer-create "start-tmate-sh")
+          (insert-for-yank "The following has been populated to your local X clipboard:\n")
+          (insert-for-yank
+           ;; we can use the global current-tmate-sh
+           (concat "Open another terminal on the same host and paste:\n\n" current-tmate-sh)
+           ))
+        )
+    (progn
+      (gui-select-text current-tmate-ssh)
+      (with-current-buffer (get-buffer-create "start-tmate-ssh")
+        (insert-for-yank "The following has been populated to your local X clipboard:\n")
+        (insert-for-yank
+         ;; we can use the global current-tmate-sh
+         (concat "Open another terminal on the your emacs host and paste:\n\n" current-tmate-ssh)
+         ))
+      )
+      )
                                         ; (gui-select-text start-tmate-command)
   (xclip-mode 0)
-  (with-current-buffer (get-buffer-create "start-tmate-sh")
-    (insert-for-yank "The following has been populated to your local X clipboard:\n")
-    (insert-for-yank
-     ;; we can use the global current-tmate-sh
-     (concat "\nTo open on another host, forward your iisocket by pasting:\n\n" current-tmate-ssh
-             "\n\nOR open another terminal on the same host and paste:\n\n" current-tmate-sh)
-     ))
   ;; and unset it when done
   (setq current-tmate-ssh nil)
   (setq current-tmate-sh nil)
@@ -233,15 +245,25 @@ alist, to ensure correct results."
        user-login-name)
   ;; set this in the org file or ENV
   (set (make-local-variable 'ssh-host)
-       "sharing.io")
+       (if (eq (system-name) "sharing.io")
+           (concat "sharing.io")
+         (concat "")
+         ))
   (set (make-local-variable 'ssh-user-host)
        (concat ssh-user "@" ssh-host))
   (set (make-local-variable 'user-buffer)
        (concat user-login-name "." (file-name-base load-file-name)))
   (set (make-local-variable 'tmate-sh)
-       (concat "/tmp/" user-buffer ".target.sh"))
+         (if (and (getenv "TMPDIR") (file-directory-p (getenv "TMPDIR")))
+             (concat (getenv "TMPDIR") user-buffer ".target.sh")
+           (concat "/tmp/" user-buffer ".target.sh")
+           )
+         )
   (set (make-local-variable 'socket)
-       (concat "/tmp/" user-buffer ".target.iisocket"))
+       (if (and (getenv "TMPDIR") (file-directory-p (getenv "TMPDIR")))
+           (concat (getenv "TMPDIR") user-buffer ".target.iisocket")
+         (concat "/tmp/" user-buffer ".target.iisocket")
+         ))
   (set (make-local-variable 'socket-param)
        (concat ":sockets " socket))
   (set (make-local-variable 'start-tmate-command)
@@ -297,12 +319,13 @@ alist, to ensure correct results."
 
 (defun ii/before-local-org-hacks()
   (message "BEGIN ii/before-local-org-hacks")
+  (setq ii-org-buffer (current-buffer))
   (ii/tmate-org-hacks)
   (ii/sql-org-hacks)
   (make-local-variable 'org-babel-default-header-args)
   (setq org-babel-default-header-args
         (alist-set :noweb "yes"
-        (alist-set :noweb-ref "(nth 4 (org-heading-components))"
+        (alist-set :noweb-ref "(org-entry-get nil \"ITEM\")"
         (alist-set :comments "org"
         (alist-set :exports "both"
         (alist-set :eval "never-export"
@@ -373,6 +396,7 @@ alist, to ensure correct results."
   (switch-to-buffer "start-tmate-sh")
   (y-or-n-p "Have you Pasted?")
   (message "END: ii/after-local-var-hacks")
+  (switch-to-buffer ii-org-buffer)
   )
 (defun ii/before-local-var-hacks()
   (message "BEGIN: ii/before-local-var-hacks")

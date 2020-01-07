@@ -94,6 +94,7 @@
                     lsp-prefer-flymake nil
                     lsp-print-io t
                     )
+                   (add-hook 'go-mode-hook #'lsp)
                    )))
 (defun ii/pre-init-org ()
   (spacemacs|use-package-add-hook org
