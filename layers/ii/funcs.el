@@ -329,15 +329,20 @@ alist, to ensure correct results."
   ;; (setq org-babel-default-header-args:elisp
   ;;       (alist-set :results "replace code"
   ;;                  org-babel-default-header-args:elisp))
+  (make-local-variable 'org-babel-default-header-args:shell)
+  (setq org-babel-default-header-args:shell
+        (alist-set :results "output code verbatim replace"
+                   (alist-set :wrap "example"
+                              org-babel-default-header-args:shell)))
   (make-local-variable 'org-babel-default-header-args:bash)
   (setq org-babel-default-header-args:bash
         (alist-set :results "output code verbatim replace"
-        (alist-set :wrap "src EXAMPLE"
+        (alist-set :wrap "example"
                    org-babel-default-header-args:bash)))
   (make-local-variable 'org-babel-default-header-args:sh)
   (setq org-babel-default-header-args:sh
         (alist-set :results "output code verbatim replace"
-        (alist-set :wrap "src EXAMPLE"
+        (alist-set :wrap "example"
                    org-babel-default-header-args:sh)))
   ;; (make-local-variable 'org-babel-default-header-args:json)
   ;; (setq org-babel-default-header-args:json
