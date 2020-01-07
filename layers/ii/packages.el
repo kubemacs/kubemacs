@@ -65,6 +65,11 @@
   )
 (setq ob-async-pre-execute-src-block-hook nil)
 (defun ii/post-init-ob-async ()
+  (message "ii/post-init-ob-async YAHOOOOOOOO!!")
+  ;; lsp go-mode-hook should go into post-init-go-mode...
+  ;; but for some reason ^^ isn't called
+  ;; FIXME
+  (add-hook 'go-mode-hook #'lsp)
   (add-hook 'ob-async-pre-execute-src-block-hook
             '(lambda ()
                (require 'org)
@@ -75,27 +80,33 @@
                (add-to-list 'org-babel-load-languages '(javascript . t))
                ;;(add-to-list 'org-babel-load-languages '(sql-mode . t))
                )))
-(defun ii/pre-init-lsp ()
-  (spacemacs|use-package-add-hook lsp
-    :post-config (progn
-                   (setq
-                    lsp-navigation 'both
-                    lsp-ui-doc-enable t
-                    lsp-ui-doc-position 'top
-                    lsp-ui-doc-alignment 'frame
+;; (defun ii/pre-init-lsp-mode ()
+;;   (spacemacs|use-package-add-hook lsp-mode
+;;     :post-config (progn
+;;                    )))
+(defun ii/post-init-go-mode ()
+  (message "ii/post-init-go-mode YAHOOOOOOOO!!")
+  )
+(defun ii/post-init-lsp-mode ()
+  (message "ii/post-init-lsp-mode YAHOOOOOOOO!!")
+   (setq
+   go-backend #'lsp
+   lsp-navigation 'both
+   lsp-ui-doc-enable t
+   lsp-ui-doc-position 'top
+   lsp-ui-doc-alignment 'frame
                                         ; lsp-ui-doc-border 'white
-                    lsp-ui-doc-use-childframe t
-                    lsp-ui-doc-use-webkit t
-                    lsp-ui-doc-delay 0.2
-                    lsp-ui-doc-include-signature nil
-                    lsp-ui-sideline-show-symbol t
-                    lsp-ui-remap-xref-keybindings t
-                    lsp-ui-sideline-enable t
-                    lsp-prefer-flymake nil
-                    lsp-print-io t
-                    )
-                   (add-hook 'go-mode-hook #'lsp)
-                   )))
+   lsp-ui-doc-use-childframe t
+   lsp-ui-doc-use-webkit t
+   lsp-ui-doc-delay 0.2
+   lsp-ui-doc-include-signature nil
+   lsp-ui-sideline-show-symbol t
+   lsp-ui-remap-xref-keybindings t
+   lsp-ui-sideline-enable t
+   lsp-prefer-flymake nil
+   lsp-print-io t
+   )
+  )
 (defun ii/pre-init-org ()
   (spacemacs|use-package-add-hook org
     :post-config (progn
