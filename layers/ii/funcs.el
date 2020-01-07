@@ -1,3 +1,4 @@
+;; Stephen's weekly time tracker
 (defun iso-week-to-time (year week day)
   (pcase-let ((`(,m ,d ,y)
                (calendar-gregorian-from-absolute
@@ -11,6 +12,7 @@
   (switch-to-buffer (get-buffer-create "*ii-timesheet*"))
   (ii-timesheet-skel)
   )
+
 (define-skeleton ii-timesheet-skel
   "Prompt the week and year before generating ii timesheet for the user."
   ""
@@ -42,30 +44,10 @@
   > " " \n
   (org-mode)
   (save-buffer)
-)
-(setq org-confirm-babel-evaluate nil)
-(put 'org-babel-tmate-session-prefix 'safe-local-variable #'stringp)
-(put 'github-username 'safe-local-variable #'stringp)
-(put 'github-user 'safe-local-variable #'stringp)
-(put 'org-babel-tmate-default-window-name 'safe-local-variable #'stringp)
-(put 'org-confirm-babel-evaluate 'safe-local-variable #'booleanp)
-;; (put 'org-confirm-babel-evaluate 'safe-local-variable (lambda (_) t))
-(put 'org-use-property-inheritance 'safe-local-variable (lambda (_) t))
-(put 'org-file-dir 'safe-local-variable (lambda (_) t))
-(put 'eval 'safe-local-variable (lambda (_) t))
-(setenv "PATH" (concat user-home-directory "go/bin:" (getenv "PATH")))
-(setq dotspacemacs-line-numbers '(; :visual t
-                                        ; :relative nil
-                                  :disabled-for-modes dired-mode
-                                        ;doc-view-mode
-                                        ;markdown-mode
-                                        ;org-mode
-                                        ;pdf-view-mode
-                                        ;text-mode
-                                                      :size-limit-kb 5000))
-(global-visual-line-mode 1)
-(setq dotspacemacs-enable-server t)
-(setq dotspacemacs-persistent-server t)
+  )
+
+;;; This section is for tmate / copy / paste for creating/using the right eye
+;; ensure a process can run, discard output
 (defun runs-and-exits-zero (program &rest args)
   "Run PROGRAM with ARGS and return the exit code."
   (with-temp-buffer
@@ -203,6 +185,9 @@
 ;;  time-stamp-pattern "10/#+UPDATED: needs time-local formatted regexp"
 ;;  )
 ;; https://emacs.stackexchange.com/questions/33892/replace-element-of-alist-using-equal-even-if-key-does-not-exist
+
+;; This section is for setting org code block defaults that are based on the current user and file
+;; alist-set is used to override the existing settings
 (defun alist-set (key val alist &optional symbol)
   "Set property KEY to VAL in ALIST. Return new alist.
 This creates the association if it is missing, and otherwise sets
@@ -219,8 +204,8 @@ alist, to ensure correct results."
     (push (cons key val) alist))
   alist)
 
-(when (version<= "9.2" (org-version)) (require 'org-tempo))
-
+;; Some local variable defaults that set our database connections
+;; note the UID being dynamic, so we can have a dedicated port per person
 (defun ii/sql-org-hacks()
   (message "START: ii/sql-org-hacks")
   (set (make-local-variable 'sql-sqlite-program)
@@ -239,6 +224,9 @@ alist, to ensure correct results."
               (list 'sql-server "localhost"))))
   (message "END: ii/sql-org-hacks")
   )
+
+;; This sets the local-variables for tmate so that they are specific to the user
+;; and org-file name
 (defun ii/tmate-org-hacks()
   (message "START: ii/tmate-org-hacks")
   (set (make-local-variable 'ssh-user)
@@ -317,6 +305,7 @@ alist, to ensure correct results."
   (message "END: ii/tmate-org-hacks")
   )
 
+;; This uses alist-set to override the default code block parameters
 (defun ii/before-local-org-hacks()
   (message "BEGIN ii/before-local-org-hacks")
   (setq ii-org-buffer (current-buffer))
@@ -377,27 +366,29 @@ alist, to ensure correct results."
   ;;       (alist-set :results "output code verbatim replace"
   ;;       (alist-set :wrap "src EXAMPLE"
   ;;                  org-babel-default-header-args:yaml)))
-;;   (message "BEGIN ii/before-local-org-hacks")
-;;   )
-;; ;; Setup tmate socket etc
-;; (defun ii/after-local-var-hacks()
-;;   (message "BEGIN: ii/after-local-var-hacks")
-    ;; (message tmate-sh-sh)
-    ;; For testing / setting DISPLAY to something else
-    ;; (getenv "DISPLAY")
-    ;; (setenv "DISPLAY" ":0")
+  ;;   (message "BEGIN ii/before-local-org-hacks")
+  ;;   )
+  ;; ;; Setup tmate socket etc
+  ;; (defun ii/after-local-var-hacks()
+  ;;   (message "BEGIN: ii/after-local-var-hacks")
+  ;; (message tmate-sh-sh)
+  ;; For testing / setting DISPLAY to something else
+  ;; (getenv "DISPLAY")
+  ;; (setenv "DISPLAY" ":0")
   ;; As we start on other OSes, we'll need to copy this differently
   ;; does this org require a right eye?
   ;; local var for that
-    (if (xclip-working)
-        (populate-x-clipboard)
-      (populate-terminal-clipboard)
-      )
+  (if (xclip-working)
+      (populate-x-clipboard)
+    (populate-terminal-clipboard)
+    )
   (switch-to-buffer "start-tmate-sh")
   (y-or-n-p "Have you Pasted?")
   (message "END: ii/after-local-var-hacks")
   (switch-to-buffer ii-org-buffer)
   )
+
+;; This is the function intended to be run as a before-hack-local-variables-hook
 (defun ii/before-local-var-hacks()
   (message "BEGIN: ii/before-local-var-hacks")
   (if (string-equal mode-name "Org")
@@ -407,4 +398,3 @@ alist, to ensure correct results."
   (message "END: ii/before-local-var-hacks")
   )
 
-(add-hook 'before-hack-local-variables-hook 'ii/before-local-var-hacks)

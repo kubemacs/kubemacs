@@ -1,15 +1,18 @@
-(configuration-layer/declare-layer 'graphviz)
-(configuration-layer/declare-layer 'auto-completion)
-(configuration-layer/declare-layer 'yaml)
-(configuration-layer/declare-layer 'html)
-(configuration-layer/declare-layer 'org)
-(configuration-layer/declare-layer 'go)
-(configuration-layer/declare-layer 'git)
-(configuration-layer/declare-layer 'lsp)
-(configuration-layer/declare-layer 'emacs-lisp)
-(configuration-layer/declare-layer 'markdown)
-(configuration-layer/declare-layer 'sql)
-(configuration-layer/declare-layer 'javascript)
-(configuration-layer/declare-layer 'python)
-;;(configuration-layer/declare-layer 'ipython-notebook)
-(configuration-layer/declare-layer 'version-control)
+;; List of layers we depend on
+(configuration-layer/declare-layers '(
+                                      auto-completion
+                                      emacs-lisp
+                                      git
+                                      go
+                                      graphviz
+                                      html
+                                      ;; ipython-notebook
+                                      javascript
+                                      org
+                                      lsp
+                                      python
+                                      markdown
+                                      sql
+                                      version-control
+                                      yaml
+                                      ))
