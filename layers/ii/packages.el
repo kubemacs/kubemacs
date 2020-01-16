@@ -80,6 +80,8 @@
                (add-to-list 'org-babel-load-languages '(javascript . t))
                ;;(add-to-list 'org-babel-load-languages '(sql-mode . t))
                )))
+(advice-add 'org-babel-execute-src-block
+            :before #'ii/advice:org-babel-execute-src-block)
 ;; (defun ii/pre-init-lsp-mode ()
 ;;   (spacemacs|use-package-add-hook lsp-mode
 ;;     :post-config (progn

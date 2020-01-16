@@ -19,18 +19,24 @@
  org-enable-github-support t
  org-enable-bootstrap-support t
  org-enable-reveal-js-support t
+ org-enable-sticky-header t
+ org-enable-epub-support t
+ spaceline-org-clock-p t
  osc52e-package-dir (concat (configuration-layer/get-layer-local-dir 'ii) "osc52e")
  python-shell-interpreter "python3"
+ ii-tmate-configured nil
  )
 
-;; ii-org-mode-vars
+;; setting 'safe-local-variable properties
+(put 'ii 'safe-local-variable (lambda (_) t))
 (put 'org-babel-tmate-session-prefix 'safe-local-variable #'stringp)
 (put 'github-username 'safe-local-variable #'stringp)
 (put 'github-user 'safe-local-variable #'stringp)
 (put 'org-babel-tmate-default-window-name 'safe-local-variable #'stringp)
 (put 'org-confirm-babel-evaluate 'safe-local-variable #'booleanp)
-;; (put 'org-confirm-babel-evaluate 'safe-local-variable (lambda (_) t))
+(put 'org-confirm-babel-evaluate 'safe-local-variable (lambda (_) t))
 (put 'org-use-property-inheritance 'safe-local-variable (lambda (_) t))
+(put 'org-src-preserve-indentation 'safe-local-variable (lambda (_) t))
 (put 'org-file-dir 'safe-local-variable (lambda (_) t))
 (put 'eval 'safe-local-variable (lambda (_) t))
 

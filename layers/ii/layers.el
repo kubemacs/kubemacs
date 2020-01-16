@@ -3,12 +3,14 @@
                                       auto-completion
                                       emacs-lisp
                                       git
+                                      ;; github
                                       go
                                       graphviz
                                       html
                                       ;; ipython-notebook
                                       javascript
                                       org
+                                      org-capture
                                       lsp
                                       python
                                       markdown

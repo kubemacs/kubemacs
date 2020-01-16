@@ -254,6 +254,10 @@ alist, to ensure correct results."
          ))
   (set (make-local-variable 'socket-param)
        (concat ":sockets " socket))
+  (set (make-local-variable 'copy-tmate-to-ui)
+       ;; TODO make this use osc52 or termux as necessary
+       "; (echo \\$TMATE_CONNECT | xclip -i -sel p -f | xclip -i -sel c ) 2>/dev/null "
+       )
   (set (make-local-variable 'start-tmate-command)
        (concat
         "tmate -S "
@@ -272,7 +276,7 @@ alist, to ensure correct results."
          (funcall (lambda ($x) (format "%s:%s" (substring $x 0 3) (substring $x 3 5))) (format-time-string "%z")))
         " # #{tmate_web} ') "
         "; echo \\$TMATE_CONNECT "
-        "; (echo \\$TMATE_CONNECT | xclip -i -sel p -f | xclip -i -sel c ) 2>/dev/null "
+        copy-tmate-to-ui
         "; echo Share the above with your friends and hit enter when done. "
         "; read "
         "; bash --login\""
@@ -296,7 +300,7 @@ alist, to ensure correct results."
          (funcall (lambda ($x) (format "%s:%s" (substring $x 0 3) (substring $x 3 5))) (format-time-string "%z")))
         " #{tmate_web} '\\) "
         "; echo \\$TMATE_CONNECT "
-        "; \\(echo \\$TMATE_CONNECT \\| xclip -i -sel p -f \\| xclip -i -sel c \\) 2>/dev/null "
+        copy-tmate-to-ui
         "; echo Share the above with your friends and hit enter when done. "
         "; read "
         "; bash --login\""
@@ -308,14 +312,13 @@ alist, to ensure correct results."
 ;; This uses alist-set to override the default code block parameters
 (defun ii/before-local-org-hacks()
   (message "BEGIN ii/before-local-org-hacks")
-  (setq ii-org-buffer (current-buffer))
   (ii/tmate-org-hacks)
   (ii/sql-org-hacks)
   (make-local-variable 'org-babel-default-header-args)
   (setq org-babel-default-header-args
         (alist-set :noweb "yes"
         (alist-set :noweb-ref "(org-entry-get nil \"ITEM\")"
-        (alist-set :comments "org"
+        (alist-set :comments "no"
         (alist-set :exports "both"
         (alist-set :eval "never-export"
         (alist-set :results "replace code"
@@ -378,22 +381,44 @@ alist, to ensure correct results."
   ;; As we start on other OSes, we'll need to copy this differently
   ;; does this org require a right eye?
   ;; local var for that
-  (if (xclip-working)
-      (populate-x-clipboard)
-    (populate-terminal-clipboard)
-    )
-  (switch-to-buffer "start-tmate-sh")
-  (y-or-n-p "Have you Pasted?")
-  (message "END: ii/after-local-var-hacks")
-  (switch-to-buffer ii-org-buffer)
+  ;; (if (xclip-working)
+  ;;     (populate-x-clipboard)
+  ;;   (populate-terminal-clipboard)
+  ;;   )
+  ;; (switch-to-buffer "start-tmate-sh")
+  ;; (y-or-n-p "Have you Pasted?")
+  (message "END ii/before-local-org-hacks")
+  ;; (switch-to-buffer ii-org-buffer)
   )
+
+(defun ii/advice:org-babel-execute-src-block (&optional arg info params)
+  "if ii-mate not set and this is a tmate src block"
+  (interactive)
+  (unless ii-tmate-configured
+    ;; means we want to set it up, but only for tmate blocks
+    (progn
+      (if (string= "tmate" (car (org-babel-get-src-block-info t)))
+          (progn
+            (setq ii-org-buffer (current-buffer))
+            (if (xclip-working)
+                (populate-x-clipboard)
+              (populate-terminal-clipboard)
+              )
+            (switch-to-buffer "start-tmate-sh")
+            (y-or-n-p "Have you Pasted?")
+            (switch-to-buffer ii-org-buffer)
+            (make-local-variable 'ii-tmate-configured)
+            (setq ii-tmate-configured t)
+            ))
+      )))
 
 ;; This is the function intended to be run as a before-hack-local-variables-hook
 (defun ii/before-local-var-hacks()
   (message "BEGIN: ii/before-local-var-hacks")
   (if (string-equal mode-name "Org")
-      ;; maybe look for ii specific file-local-variable too?
-      (ii/before-local-org-hacks)
+      (if (alist-get 'ii file-local-variables-alist)
+          (ii/before-local-org-hacks)
+        )
   )
   (message "END: ii/before-local-var-hacks")
   )
