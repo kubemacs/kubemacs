@@ -278,7 +278,7 @@ alist, to ensure correct results."
         "; echo \\$TMATE_CONNECT "
         copy-tmate-to-ui
         "; echo Share the above with your friends and hit enter when done. "
-        "; read "
+        ;; "; read "
         "; bash --login\""
         )
        )
@@ -302,7 +302,7 @@ alist, to ensure correct results."
         "; echo \\$TMATE_CONNECT "
         copy-tmate-to-ui
         "; echo Share the above with your friends and hit enter when done. "
-        "; read "
+        ;; "; read "
         "; bash --login\""
         )
        )

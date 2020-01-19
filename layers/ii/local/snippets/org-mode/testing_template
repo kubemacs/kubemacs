@@ -13,11 +13,11 @@ This issue proposes the writing of a new test for the following: API endpoints:
 #+begin_comment
 List endpoints picked in the sql query below.  something like:
 - readCoreV1NamespacedEvent
-- patchCoreV1NamespacedEvent 
-- listCoreV1NamespacedEvent 
-- listCoreV1EventForAllNamespaces 
+- patchCoreV1NamespacedEvent
+- listCoreV1NamespacedEvent
+- listCoreV1EventForAllNamespaces
 - deleteCoreV1NamespacedEvent
-- createCoreV1NamespacedEvent 
+- createCoreV1NamespacedEvent
 #+end_comment
 
 with the intention that the test can, in two weeks time, be promoted to Conformance. This issue contains a very basic mock test in order to start the conversation about what a good e2e test would look like for this endpoint. The code below is verified to be hitting the intended endpoint, shown as per the queries in APIsnoop's live view of the cluster's audit logs.
@@ -30,7 +30,7 @@ with the intention that the test can, in two weeks time, be promoted to Conforma
 
   You can select all columns for this view or a subset, below we want to see the op_id, it's method and path, and its description to help with our test-writing.
   #+end_comment
-  
+
   According to these query results from APIsnoop, we are lacking in tests for the following endpoints...
 
   #+NAME: untested_stable_core_endpoints
@@ -45,12 +45,12 @@ with the intention that the test can, in two weeks time, be promoted to Conforma
      LIMIT 25
            ;
   #+end_src
-  
+
   #+begin_comment
   You can iterate over a query until you have a set of endpoints you'd like to write a test for, usually by adjusting the columns you view or by extending the where clause to filter more specifically.
   #+end_comment
 
-  
+
 * Use API Reference to Lightly Document the Feature
   -  [[https://kubernetes.io/docs/reference/kubernetes-api/][Kubernetes API Reference Docs]]
 
@@ -62,7 +62,7 @@ with the intention that the test can, in two weeks time, be promoted to Conforma
 
   Whichever language you choose, you want to make sure to set the useragent to something starting with ~live-test~.  This ensures apisnoop's queries around testing work correctly.
 
-  
+
   It can be great to break your test into individual code blocks you tanble with noweb.  This way you cna walk through the outline of the test with the relevant parts of the code.
 
   We've included sample tests in Go and Javascript.
@@ -183,7 +183,7 @@ s=v1.read_namespaced_pod_status(apod.metadata.name, apod.metadata.namespace, pre
   #+begin_comment
   NOTE: for the projected change in coverage, your test functions must be configured with a useragent that starts with ~live-test~, otherwise endpoints hit by that test won't be counted as part of new coverage.
   #+end_comment
-  
+
   #+begin_src sql-mode :eval never-export :exports both
     select * from projected_change_in_coverage;
   #+end_src
@@ -201,7 +201,7 @@ s=v1.read_namespaced_pod_status(apod.metadata.name, apod.metadata.namespace, pre
   #+begin_comment
   Here it could be good to restate the amount of points conformacne would go up if this test is merged.  Include any other final comment relevant for the ticket.
   #+end_comment
-  
+
 * Open Tasks
   Set any open tasks here, using org-todo
 ** DONE Live Your Best Life
