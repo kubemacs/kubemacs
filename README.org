@@ -16,19 +16,22 @@ Using docker will reduce the setup and maintenance of sharing the core component
 The [[https://gitlab.ii.coop/ii/tooling/iiorgmacs/blob/master/Dockerfile][Dockerfile]] uses [[https://gitlab.ii.coop/ii/tooling/iibase/blob/master/Dockerfile][iibase]] as its initial build stage.
 
 #+BEGIN_SRC tmate
-docker build -t iiorgmacs .
+docker build -t iimacs/orgmacs .
 #+END_SRC
+
+* Usage
+Recommended usage is with [[https://gitlab.ii.coop/ii/tooling/iitoolbox][iitoolbox]].
 
 * Test Image as User ii
 
 #+BEGIN_SRC tmate
-docker run --name=iiorgmacs-$USER --hostname=iiorgmacs --rm -it iiorgmacs
+docker run --name=iiorgmacs --hostname=iiorgmacs --rm -it iimacs/orgmacs
 #+END_SRC
 
 * Test Image as root User
 
 #+BEGIN_SRC tmate
-docker run --name=iiorgmacs-$USER --hostname=iiorgmacs --rm -it -u 0:0 iiorgmacs
+docker run --name=iiorgmacs --hostname=iiorgmacs --rm -it -u 0:0 iimacs/orgmacs
 #+END_SRC
 
 * Debug image with strace

@@ -3,7 +3,7 @@
 
 FROM iimacs/base
 
-ENV IIMACSVERSION=0.8.1 \
+ENV IIMACSVERSION=0.9.0 \
     EMACSLOADPATH=/var/local/iimacs.d: 
 
 RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii
@@ -17,7 +17,7 @@ RUN mkdir -p /etc/sudoers.d && \
 # install some useful packages
 RUN apt update && \
     apt upgrade -y && \
-    apt install -y sudo wget acl docker docker-compose apt-transport-https build-essential zsh sqlite3 vim nano apt-utils rsync xterm postgresql-client mariadb-client inotify-tools jq python3-pip xtermcontrol
+    DEBIAN_FRONTEND=noninteractive apt install -y sudo wget acl docker docker-compose apt-transport-https build-essential zsh sqlite3 vim nano apt-utils rsync xterm postgresql-client mariadb-client inotify-tools jq python3-pip xtermcontrol tzdata apt-file
 
 # install Kubernetes client and Google Cloud SDK
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
@@ -39,7 +39,7 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1 &&
     update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 # k8s kind
-RUN curl -Lo /usr/local/bin/kind https://github.com/kubernetes-sigs/kind/releases/download/v0.6.0/kind-$(uname)-amd64 && \
+RUN curl -Lo /usr/local/bin/kind https://github.com/kubernetes-sigs/kind/releases/download/v0.7.0/kind-$(uname)-amd64 && \
 	chmod +x /usr/local/bin/kind
 
 # get ssh-find-agent
@@ -55,4 +55,5 @@ RUN chgrp -R users /var/local/iimacs.d && \
 
 COPY osc52.sh /usr/local/bin/osc52.sh
 USER ii
+
 ENTRYPOINT ["/bin/bash"]
