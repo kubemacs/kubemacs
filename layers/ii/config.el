@@ -25,6 +25,7 @@
  osc52e-package-dir (concat (configuration-layer/get-layer-local-dir 'ii) "osc52e")
  python-shell-interpreter "python3"
  ii-tmate-configured nil
+ helm-mode-handle-completion-in-region nil
  )
 
 ;; setting 'safe-local-variable properties
