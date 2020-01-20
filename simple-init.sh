@@ -3,7 +3,7 @@
 set -x
 
 cd /home/ii
-if [ ! -f "~/.ssh/id_rsa" ]
+if [ ! -f ".ssh/id_rsa" ]
 then
     ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -q -N ""
 fi
