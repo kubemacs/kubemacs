@@ -59,10 +59,11 @@ USER ii
 
 COPY .iimacs /home/ii
 
-RUN go get -u -v k8s.io/apimachinery/pkg/apis/meta/v1 && \
-  go get -u -v k8s.io/client-go/kubernetes && \
-  go get -u -v k8s.io/client-go/tools/clientcmd && \
-  go get -u -v github.com/nsf/gocode && \
-  go get -u -v golang.org/x/tools/...
+RUN go get -u -v k8s.io/apimachinery/pkg/apis/meta/v1
+RUN go get -u -v github.com/nsf/gocode
+RUN go get -u -v golang.org/x/tools/...
+ENV GO111MODULE=on
+RUN go get -u -v k8s.io/client-go/kubernetes@v0.17.0
+RUN go get -u -v k8s.io/client-go/tools/clientcmd@v0.17.0
 
 ENTRYPOINT ["/bin/bash"]
