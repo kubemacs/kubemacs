@@ -1,3 +1,4 @@
+# -*- ii: enabled; -*-
 #+TITLE: iiorgmacs
 
 * Introduction
@@ -43,3 +44,54 @@ docker run --cap-add=SYS_PTRACE \
            --hostname=iiorgmacs \
            --rm -it -u 0:0 iiorgmacs
 #+END_SRC
+* Running in k8s
+** Setting up an admin ServiceAccount
+   #+name: sa
+   #+begin_src yaml
+     apiVersion: v1
+     kind: ServiceAccount
+     metadata:
+       name: admin-iimacs
+       namespace: default
+   #+end_src
+
+** Creating a ClusterRoleBinding with the admin ServiceAccount
+   #+name:crb
+   #+begin_src yaml
+     apiVersion: rbac.authorization.k8s.io/v1
+     kind: ClusterRoleBinding
+     metadata:
+       name: admin-iimacs
+     roleRef:
+       apiGroup: rbac.authorization.k8s.io
+       kind: ClusterRole
+       name: cluster-admin
+     subjects:
+     - kind: ServiceAccount
+       name: admin-iimacs
+       namespace: default
+   #+end_src
+** make the things
+   #+begin_src shell :noweb yes :wrap "src yaml"
+     cat <<EOF | kubectl apply -f -
+     <<sa>>
+     ---
+     <<crb>>
+     EOF
+   #+end_src
+
+   #+RESULTS:
+   #+begin_src yaml
+   serviceaccount/admin-iimacs created
+   clusterrolebinding.rbac.authorization.k8s.io/admin-iimacs configured
+   #+end_src
+
+** Creating the Pod
+   #+begin_src shell
+   kubectl run --generator=run-pod/v1 -i -t orgmacs --serviceaccount='admin-iimacs' --image=docker.io/iimacs/orgmacs:0.9.0
+   #+end_src
+   
+** Re-attaching to the Pod
+   #+begin_src shell
+   kubectl attach -i -t orgmacs
+   #+end_src

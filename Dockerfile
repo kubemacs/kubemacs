@@ -4,7 +4,7 @@
 FROM iimacs/base
 
 ENV IIMACSVERSION=0.9.0 \
-    EMACSLOADPATH=/var/local/iimacs.d: 
+    EMACSLOADPATH=/var/local/iimacs.d:
 
 RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii
 
@@ -54,6 +54,15 @@ RUN chgrp -R users /var/local/iimacs.d && \
     chmod -R g+w /var/local/iimacs.d
 
 COPY osc52.sh /usr/local/bin/osc52.sh
+
 USER ii
+
+COPY .iimacs /home/ii
+
+RUN go get -u -v k8s.io/apimachinery/pkg/apis/meta/v1 && \
+  go get -u -v k8s.io/client-go/kubernetes && \
+  go get -u -v k8s.io/client-go/tools/clientcmd && \
+  go get -u -v github.com/nsf/gocode && \
+  go get -u -v golang.org/x/tools/...
 
 ENTRYPOINT ["/bin/bash"]
