@@ -6,7 +6,7 @@ FROM ubuntu:eoan-20200114
 RUN apt-get update && \
     apt-get upgrade -y
 
-ENV IIMACSVERSION=0.9.0 \
+ENV IIMACSVERSION=0.9.3 \
     EMACSLOADPATH=/var/local/iimacs.d:
 
 RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii
