@@ -1,6 +1,7 @@
 ;; List of layers we depend on
 (configuration-layer/declare-layers '(
                                       auto-completion
+                                      docker
                                       emacs-lisp
                                       git
                                       ;; github

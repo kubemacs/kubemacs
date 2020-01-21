@@ -206,6 +206,16 @@ alist, to ensure correct results."
   (message "START: ii/sql-org-hacks")
   (set (make-local-variable 'sql-sqlite-program)
        (executable-find "sqlite3"))
+  (set (make-local-variable 'sql-server)
+       (getenv "PGHOST"))
+  (set (make-local-variable 'sql-port)
+       (getenv "PGPORT"))
+  (set (make-local-variable 'sql-user)
+       (getenv "PGUSER"))
+  (set (make-local-variable 'sql-database)
+       (getenv "PGDATABASE"))
+  (set (make-local-variable 'sql-product)
+       '(quote sqlite))
   (set (make-local-variable 'sql-connection-alist)
        (list
         (list 'raiinbow
@@ -217,7 +227,13 @@ alist, to ensure correct results."
               (list 'sql-user "apisnoop")
               (list 'sql-database "apisnoop")
               (list 'sql-port (+ (* (user-uid) 10) 1))
-              (list 'sql-server "localhost"))))
+              (list 'sql-server "localhost"))
+        (list 'none
+              (list 'sql-product '(quote postgres))
+              (list 'sql-user (getenv "PGUSER"))
+              (list 'sql-database (getenv "PGDATABASE"))
+              (list 'sql-port (getenv "PGPORT"))
+              (list 'sql-server (getenv "PGHOST")))))
   (message "END: ii/sql-org-hacks")
   )
 
@@ -314,7 +330,7 @@ alist, to ensure correct results."
   (setq org-babel-default-header-args
         (alist-set :noweb "yes"
         (alist-set :noweb-ref "(org-entry-get nil \"ITEM\")"
-        (alist-set :comments "no"
+        (alist-set :comments "org"
         (alist-set :exports "both"
         (alist-set :eval "never-export"
         (alist-set :results "replace code"
@@ -329,9 +345,10 @@ alist, to ensure correct results."
   (make-local-variable 'org-babel-default-header-args:sql-mode)
   (setq org-babel-default-header-args:sql-mode
         (alist-set :results "replace code"
-        (alist-set :product "postgres"
+        ;; (alist-set :product "postgres"
+        (alist-set :comments "org"
         (alist-set :wrap "SRC example"
-                   org-babel-default-header-args:sql-mode))))
+                   org-babel-default-header-args:sql-mode))));;)
   ;; (make-local-variable 'org-babel-default-header-args:emacs-lisp)
   ;; (setq org-babel-default-header-args:emacs-lisp
   ;;       (alist-set :results "replace code"
