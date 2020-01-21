@@ -6,11 +6,6 @@ FROM ubuntu:eoan-20200114
 RUN apt-get update && \
     apt-get upgrade -y
 
-ENV IIMACSVERSION=0.9.3 \
-    EMACSLOADPATH=/var/local/iimacs.d:
-
-RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii
-
 ADD profile.d-iitoolbox.sh /etc/profile.d/iitoolbox.sh
 ADD simple-init.sh /usr/local/bin/simple-init.sh
 
@@ -42,28 +37,48 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1 &&
     update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 # k8s kind
-RUN curl -Lo /usr/local/bin/kind https://github.com/kubernetes-sigs/kind/releases/download/v0.7.0/kind-$(uname)-amd64 && \
-	chmod +x /usr/local/bin/kind
+RUN curl -Lo /usr/local/bin/kind \
+  https://github.com/kubernetes-sigs/kind/releases/download/v0.7.0/kind-$(uname)-amd64 \
+  && chmod +x /usr/local/bin/kind
 
 # get ssh-find-agent
-RUN curl https://gitlab.ii.coop/ii/tooling/ssh-find-agent/raw/master/ssh-find-agent.sh > /usr/local/bin/ssh-find-agent.sh && \
-	chmod +x /usr/local/bin/ssh-find-agent.sh
+RUN curl -Lo /usr/local/bin/ssh-find-agent.sh \
+  https://gitlab.ii.coop/ii/tooling/ssh-find-agent/raw/master/ssh-find-agent.sh \
+  && chmod +x /usr/local/bin/ssh-find-agent.sh
 
-RUN git clone --depth 1 --recursive https://github.com/iimacs/.emacs.d /var/local/iimacs.d && \
-    cd /var/local/iimacs.d && \
-    curl https://storage.googleapis.com/apisnoop/dev/iitoolbox-spacemacs-0.6.tgz | tar xzfC - /var/local/iimacs.d
+# postgresql-client-12 to connect to the db
+RUN echo deb http://apt.postgresql.org/pub/repos/apt/ eoan-pgdg main \
+  |  tee -a /etc/apt/sources.list.d/postgresql.list && \
+  wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+  | apt-key add - \
+  && apt-get update \
+  && apt-get install -y \
+  && apt-get install -y postgresql-client-12
 
+# tmate allows others to connect to your session
+# they support using self hosted / though we default to using their hosted service
 RUN curl -L \
-  https://github.com/tmate-io/tmate/releases/download/2.4.0/tmate-2.4.0-static-linux-amd64.tar.xz | tar xvJ -f - --strip-components 1  -C /usr/local/bin tmate-2.4.0-static-linux-amd64/tmate
+  https://github.com/tmate-io/tmate/releases/download/2.4.0/tmate-2.4.0-static-linux-amd64.tar.xz \
+  | tar xvJ -f - --strip-components 1  -C /usr/local/bin tmate-2.4.0-static-linux-amd64/tmate
 
-RUN chgrp -R users /var/local/iimacs.d && \
-    chmod -R g+w /var/local/iimacs.d
+# This var ensures that emacs loads iimacs before all else
+ENV IIMACSVERSION=0.9.3 \
+  EMACSLOADPATH=/var/local/iimacs.d:
+# Checking out iimacs
+RUN git clone --depth 1 --recursive https://github.com/iimacs/.emacs.d /var/local/iimacs.d
+# TODO This cache of compiled .elc files should be part of the build cache at some point
+RUN curl https://storage.googleapis.com/apisnoop/dev/iitoolbox-spacemacs-0.6.tgz \
+  | tar xzfC - /var/local/iimacs.d \
+  && chgrp -R users /var/local/iimacs.d \
+  && chmod -R g+w /var/local/iimacs.d
 
+# we use osc52 support to copy text back to your OS over kubectl run/attach
 COPY osc52.sh /usr/local/bin/osc52.sh
 
+# From here on out we setup the user
+RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii
 USER ii
-
-COPY .iimacs /home/ii
+COPY homedir/* /home/ii/
 
 RUN go get -u -v k8s.io/apimachinery/pkg/apis/meta/v1
 RUN go get -u -v github.com/nsf/gocode
@@ -71,18 +86,6 @@ RUN go get -u -v golang.org/x/tools/...
 ENV GO111MODULE=on
 RUN go get -u -v k8s.io/client-go/kubernetes@v0.17.0
 RUN go get -u -v k8s.io/client-go/tools/clientcmd@v0.17.0
-
-USER root
-RUN echo deb http://apt.postgresql.org/pub/repos/apt/ eoan-pgdg main \
-    |  tee -a /etc/apt/sources.list.d/postgresql.list && \
-    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
-    | apt-key add - \
-    && apt-get update \
-    && apt-get install -y \
-    && apt-get install -y postgresql-client-12
-
-USER ii
-COPY ii/.tmate.conf /home/ii/.tmate.conf
 RUN git clone --depth 1 https://github.com/cncf/apisnoop /home/ii/apisnoop
 
 ENTRYPOINT ["/bin/bash"]
