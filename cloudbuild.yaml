@@ -6,7 +6,8 @@ steps:
            '.']
     # dir: .
     # dir: apps/auditlogger
-substitutions:
-  _GIT_TAG: '12345'
+# substitutions:
+#   _GIT_TAG: '12345'
 images:
-  - 'gcr.io/$PROJECT_ID/iimacs:$_GIT_TAG'
+  - 'gcr.io/$PROJECT_ID/iimacs:$TAG_NAME-$REVISION_ID'
+  # - 'gcr.io/$PROJECT_ID/iimacs:$_GIT_TAG'
