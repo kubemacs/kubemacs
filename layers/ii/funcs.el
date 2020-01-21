@@ -215,7 +215,7 @@ alist, to ensure correct results."
   (set (make-local-variable 'sql-database)
        (getenv "PGDATABASE"))
   (set (make-local-variable 'sql-product)
-       '(quote sqlite))
+       '(quote postgres))
   (set (make-local-variable 'sql-connection-alist)
        (list
         (list 'raiinbow
@@ -345,10 +345,10 @@ alist, to ensure correct results."
   (make-local-variable 'org-babel-default-header-args:sql-mode)
   (setq org-babel-default-header-args:sql-mode
         (alist-set :results "replace code"
-        ;; (alist-set :product "postgres"
+        (alist-set :product "postgres"
         (alist-set :comments "org"
         (alist-set :wrap "SRC example"
-                   org-babel-default-header-args:sql-mode))));;)
+                   org-babel-default-header-args:sql-mode)))))
   ;; (make-local-variable 'org-babel-default-header-args:emacs-lisp)
   ;; (setq org-babel-default-header-args:emacs-lisp
   ;;       (alist-set :results "replace code"
