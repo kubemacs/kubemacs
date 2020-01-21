@@ -150,7 +150,7 @@
   (interactive)
   (setenv "SSH_AUTH_SOCK" (shell-command-to-string "find /tmp /run/host/tmp/ -type s -regex '.*/ssh-.*/agent..*$' 2> /dev/null | tail -n 1"))
   (message (getenv "SSH_AUTH_SOCK"))
-  ))
+  )
 (with-eval-after-load "org"
   ;; (add-to-list 'org-src-lang-modes '("go-mode" . sql))
   (add-to-list 'org-structure-template-alist
