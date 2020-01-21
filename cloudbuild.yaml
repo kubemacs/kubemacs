@@ -11,9 +11,9 @@ steps:
     # dir: apps/auditlogger
 # substitutions:
 #   _GIT_TAG: '12345'
-substitutions:
-  TAG_NAME: 'v0.9.x'
-  REVISION_ID: '0'
+# substitutions:
+#   TAG_NAME: 'v0.9.x'
+#   REVISION_ID: '0'
 images:
   - 'gcr.io/$PROJECT_ID/iimacs:$TAG_NAME-$REVISION_ID'
   # - 'gcr.io/$PROJECT_ID/iimacs:$_GIT_TAG'
