@@ -4,9 +4,9 @@ steps:
     args:
       - 'build'
       - '-t'
-      - 'gcr.io/${PROJECT_ID}/iimacs:${TAG_NAME}.${REVISION_ID}'
+      - 'gcr.io/${PROJECT_ID}/iimacs:${TAG_NAME}'
       - '--build-arg'
-      - 'IMAGE_ARG=gcr.io/${PROJECT_ID}/iimacs:${TAG_NAME}.${REVISION_ID}'
+      - 'IMAGE_ARG=gcr.io/${PROJECT_ID}/iimacs:${TAG_NAME}'
       - '.'
     # env:
     # - 'TAG=$TAG_NAME'
@@ -22,5 +22,5 @@ steps:
 #   TAG_NAME: 'v0.9.3'
 #   REVISION_ID: '0'
 images:
-  - 'gcr.io/${PROJECT_ID}/iimacs:${TAG_NAME}.${REVISION_ID}'
+  - 'gcr.io/${PROJECT_ID}/iimacs:${TAG_NAME}'
   # - 'gcr.io/$PROJECT_ID/iimacs:$_GIT_TAG'
