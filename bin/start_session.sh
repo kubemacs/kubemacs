@@ -1,8 +1,12 @@
 #!/bin/bash
 set -x
 set -e
+_FILENAME=$(basename "$1")
+if [ ! -n "$_FILENAME" ]; then
+    _FILENAME="default"
+fi
 export ALTERNATE_EDITOR=""
-export EMACSSOCKETNAME=$(basename $1)
+export EMACSSOCKETNAME=${_FILENAME}
 export II_SESSION=${USER}.${EMACSSOCKETNAME}
 OSC52E=$(dirname "${BASH_SOURCE[0]}")/osc52.sh
 xtermcontrol --title $USER.$EMACSSOCKETNAME@sharing.io
