@@ -148,11 +148,7 @@
   )
  (defun ssh-find-agent ()
   (interactive)
-  (setenv "SSH_AUTH_SOCK" (shell-command-to-string (concat "\
-          . " (configuration-layer/get-layer-local-dir 'ii) "ssh-find-agent.sh ;\
-          ssh-find-agent | grep ssh- | tail -1 \
-          | tail -1 | awk '{print $2}' | awk -F= '{print $2}' \
-          | tr --delete '\n'"))
+  (setenv "SSH_AUTH_SOCK" (shell-command-to-string "find /tmp /run/host/tmp/ -type s -regex '.*/ssh-.*/agent..*$' 2> /dev/null | tail -n 1"))
   (message (getenv "SSH_AUTH_SOCK"))
   ))
 (with-eval-after-load "org"
