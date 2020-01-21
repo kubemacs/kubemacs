@@ -82,7 +82,7 @@ RUN echo deb http://apt.postgresql.org/pub/repos/apt/ eoan-pgdg main \
     && apt-get install -y postgresql-client-12
 
 USER ii
-COPY .tmate.conf /home/ii/.tmate.conf
+COPY ii/.tmate.conf /home/ii/.tmate.conf
 RUN git clone --depth 1 https://github.com/cncf/apisnoop /home/ii/apisnoop
 
 ENTRYPOINT ["/bin/bash"]
