@@ -1,9 +1,12 @@
 timeout: 1200s
 steps:
   - name: gcr.io/cloud-builders/docker
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/iimacs:$TAG_NAME.$REVISION_ID',
-           '--build-arg', 'IMAGE_ARG=gcr.io/$PROJECT_ID/iimacs:$TAG_NAME.$REVISION_ID',
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/iimacs:$TAG.$REV',
+           '--build-arg', 'IMAGE_ARG=gcr.io/$PROJECT_ID/iimacs:$TAG.$REV',
            '.']
+    env:
+    - 'TAG=$TAG_NAME'
+    - 'REV=$REVISION_ID'
     # args: ['build', '-t', 'gcr.io/$PROJECT_ID/iimacs:$_GIT_TAG',
     #        '--build-arg', 'IMAGE_ARG=gcr.io/$PROJECT_ID/iimacs:$_GIT_TAG',
     #        '.']
