@@ -107,3 +107,25 @@ docker run --cap-add=SYS_PTRACE \
   kubectl run --generator=run-pod/v1 $PODNAME --serviceaccount='admin-iimacs' --image=$IIMAGE
   kubectl exec -t -i $PODNAME -- attach # osc52 will be sent with tmate url / you can have multiple of these
   #+end_src
+* Script to connect to a remote box and configure your kubeconfig
+  #+begin_src shell
+    # configuration
+    export KUBECONFIG=~/.kube/config-my-remote
+    # [IMPORTANT] set your user
+    REMOTE_USER=root
+    # [IMPORTANT] set your remote box's IP
+    REMOTE_HOST=x.x.x.x
+
+    # fetch the remote kubeconfig
+    ssh $REMOTE_USER@$REMOTE_HOST kubectl config view --merge --minify --flatten > $KUBECONFIG
+
+    # find the port of the Kubernetes API in the kubeconfig and export it
+    export K8S_REMOTE_PORT=$(kubectl config view -o jsonpath='{.clusters[0].cluster.server}' | cut -d ':' -f3)
+    # forward the port from the remote box to the localhost
+    ssh -fN -L $K8S_REMOTE_PORT:localhost:$K8S_REMOTE_PORT $REMOTE_USER@$REMOTE_HOST
+  #+end_src
+
+  #+begin_src shell
+  kubectl get pods -A
+  #+end_src
+  
