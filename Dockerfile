@@ -13,9 +13,7 @@ RUN mkdir -p /etc/sudoers.d && \
     echo "%sudo    ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudo
 
 # install some useful packages
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y emacs-nox sudo wget curl acl docker docker-compose apt-transport-https zsh sqlite3 apt-utils rsync inotify-tools jq xtermcontrol tzdata
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y gnupg2 software-properties-common
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y emacs-nox sudo wget curl acl docker docker-compose apt-transport-https zsh sqlite3 apt-utils rsync inotify-tools jq vim xtermcontrol tzdata gnupg2 software-properties-common
 
 # install Kubernetes client and Google Cloud SDK
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
@@ -40,11 +38,6 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1 &&
 RUN curl -Lo /usr/local/bin/kind \
   https://github.com/kubernetes-sigs/kind/releases/download/v0.7.0/kind-$(uname)-amd64 \
   && chmod +x /usr/local/bin/kind
-
-# get ssh-find-agent
-RUN curl -Lo /usr/local/bin/ssh-find-agent.sh \
-  https://gitlab.ii.coop/ii/tooling/ssh-find-agent/raw/master/ssh-find-agent.sh \
-  && chmod +x /usr/local/bin/ssh-find-agent.sh
 
 # postgresql-client-12 to connect to the db
 RUN echo deb http://apt.postgresql.org/pub/repos/apt/ eoan-pgdg main \
@@ -76,10 +69,11 @@ RUN curl https://storage.googleapis.com/apisnoop/dev/iitoolbox-spacemacs-0.6.tgz
 COPY osc52.sh /usr/local/bin/osc52.sh
 
 # From here on out we setup the user
+COPY homedir/* /etc/skel/
 RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii
 USER ii
-COPY homedir/* /home/ii/
 
+# Fetch Golang dependencies for development
 RUN go get -u -v k8s.io/apimachinery/pkg/apis/meta/v1
 RUN go get -u -v github.com/nsf/gocode
 RUN go get -u -v golang.org/x/tools/...
@@ -87,5 +81,11 @@ ENV GO111MODULE=on
 RUN go get -u -v k8s.io/client-go/kubernetes@v0.17.0
 RUN go get -u -v k8s.io/client-go/tools/clientcmd@v0.17.0
 RUN git clone --depth 1 https://github.com/cncf/apisnoop /home/ii/apisnoop
+
+# Ensure authentication to apisnoop postgres database
+ENV PGUSER=apisnoop \
+  PGDATABASE=apisnoop \
+  PGHOST=postgres \
+  PGPORT=5432
 
 ENTRYPOINT ["/bin/bash"]

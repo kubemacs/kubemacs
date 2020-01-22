@@ -16,3 +16,7 @@ unset color_prompt force_color_prompt
 if [ -f ~/.bash_aliases ]; then
     . ~/.bash_aliases
 fi
+
+if [ ! -n "$SSH_AUTH_SOCK" ]; then
+    export SSH_AUTH_SOCK=$(find /tmp /run/host/tmp/ -type s -regex '.*/ssh-.*/agent..*$' 2> /dev/null | tail -n 1)
+fi
