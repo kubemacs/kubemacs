@@ -7,7 +7,6 @@ RUN apt-get update && \
     apt-get upgrade -y
 
 ADD profile.d-iitoolbox.sh /etc/profile.d/iitoolbox.sh
-ADD simple-init.sh /usr/local/bin/simple-init.sh
 
 RUN mkdir -p /etc/sudoers.d && \
     echo "%sudo    ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudo
@@ -67,15 +66,15 @@ RUN curl https://storage.googleapis.com/apisnoop/dev/iitoolbox-spacemacs-0.6.tgz
   && chgrp -R users /var/local/iimacs.d \
   && chmod -R g+w /var/local/iimacs.d
 
-# we use osc52 support to copy text back to your OS over kubectl run/attach
-COPY osc52.sh /usr/local/bin/osc52.sh
+# we use osc52 support to copy text back to your OS over kubectl exec tmate
+COPY bin/* /usr/local/bin/
 
 # From here on out we setup the user
 COPY homedir/* /etc/skel/
 RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii
 USER ii
 
-# Fetch Golang dependencies for development
+# # Fetch Golang dependencies for development
 RUN go get -u -v k8s.io/apimachinery/pkg/apis/meta/v1
 RUN go get -u -v github.com/nsf/gocode
 RUN go get -u -v golang.org/x/tools/...
@@ -91,3 +90,4 @@ ENV PGUSER=apisnoop \
   PGPORT=5432
 
 ENTRYPOINT ["/bin/bash"]
+CMD ["simple-init.sh"]

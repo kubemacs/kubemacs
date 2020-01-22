@@ -88,10 +88,19 @@ docker run --cap-add=SYS_PTRACE \
 
 ** Creating the Pod
    #+begin_src shell
-   kubectl run --generator=run-pod/v1 -i -t orgmacs --serviceaccount='admin-iimacs' --image=docker.io/iimacs/orgmacs:0.9.0
+   kubectl run --generator=run-pod/v1 k8macs --serviceaccount='admin-iimacs' --image=gcr.io/apisnoop/iimacs/orgmacs:0.9.10
    #+end_src
    
 ** Re-attaching to the Pod
    #+begin_src shell
    kubectl attach -i -t orgmacs
    #+end_src
+* dev-build loop
+  #+begin_src shell
+  IIMAGE=gcr.io/apisnoop/iimacs:0.9.10
+  PODNAME=k8macs
+  docker build -t $IIMAGE .
+  kind load docker-image $IIMAGE
+  kubectl run --generator=run-pod/v1 $PODNAME --serviceaccount='admin-iimacs' --image=$IIMAGE
+  kubectl exec -t -i $PODNAME -- attach # osc52 will be sent with tmate url / you can have multiple of these
+  #+end_src
