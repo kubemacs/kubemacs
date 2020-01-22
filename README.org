@@ -130,6 +130,12 @@ docker run --cap-add=SYS_PTRACE \
   #+end_src
 
 **  Add a helper function to your ~/.bashrc
+  | Name          | Purpose                           | Example                  |
+  |---------------+-----------------------------------+--------------------------|
+  | ~KUBECONFIG~  | the kubeconfig to save to and use | ~/.kube/config-my-remote |
+  | ~REMOTE_USER~ | the remote user to login as       | ii                       |
+  | ~REMOTE_HOST~ | the remote host/ip to connect to  | myhost.example.com       |
+  |---------------+-----------------------------------+--------------------------|
   #+begin_src shell
     cat << EOF >> ~/.bashrc
     function ii_setup_k8s_from_remote() {
@@ -139,12 +145,12 @@ docker run --cap-add=SYS_PTRACE \
     # - remote server Kubernetes API forwarded to localhost
 
     function ii_setup_k8s_from_remote_cleanup() {
-      set +xe
+      set +e
     }
 
     trap ii_setup_k8s_from_remote_cleanup EXIT
 
-    set -xe
+    set -e
 
     if [ -x /tmp/ii_setup_k8s_from_remote-hasrun ]; then
             return
