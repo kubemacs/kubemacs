@@ -128,4 +128,63 @@ docker run --cap-add=SYS_PTRACE \
   #+begin_src shell
   kubectl get pods -A
   #+end_src
-  
+
+**  Add a helper function to your ~/.bashrc
+  #+begin_src shell
+    cat << EOF >> ~/.bashrc
+    function ii_setup_k8s_from_remote() {
+    # ensure:
+    # - remote server kubeconfig
+    # - defined $KUBECONFIG
+    # - remote server Kubernetes API forwarded to localhost
+
+    function ii_setup_k8s_from_remote_cleanup() {
+      set +xe
+    }
+
+    trap ii_setup_k8s_from_remote_cleanup EXIT
+
+    set -xe
+
+    if [ -x /tmp/ii_setup_k8s_from_remote-hasrun ]; then
+            return
+    fi
+
+    # configuration
+    if [ -z \$KUBECONFIG ]; then
+      export KUBECONFIG=~/.kube/config-my-remote
+    fi
+
+    # [IMPORTANT] set your user
+    if [ -z \$REMOTE_USER ]; then
+       echo "[error] please set \\\$REMOTE_USER"
+       return
+    fi
+
+    # [IMPORTANT] set your remote box's IP
+    if [ -z \$REMOTE_HOST ]; then
+       echo "[error] please set \\\$REMOTE_HOST"
+       return
+    fi
+
+    # fetch the remote kubeconfig
+    ssh \$REMOTE_USER@\$REMOTE_HOST kubectl config view --merge --minify --flatten > \$KUBECONFIG
+
+    # find the port of the Kubernetes API in the kubeconfig and export it
+    export K8S_REMOTE_PORT=\$(kubectl config view -o jsonpath='{.clusters[0].cluster.server}' | cut -d ':' -f3)
+
+    # check if not already listening
+    if ! lsof -i:\$K8S_REMOTE_PORT 2>&1 > /dev/null; then
+      # forward the port from the remote box to the localhost
+      ssh -fN -L \$K8S_REMOTE_PORT:localhost:\$K8S_REMOTE_PORT \$REMOTE_USER@\$REMOTE_HOST
+    fi
+
+    echo "[ok]"
+    touch /tmp/ii_setup_k8s_from_remote-hasrun
+    ii_setup_k8s_from_remote_cleanup
+
+    }
+    EOF
+
+  #+end_src
+
