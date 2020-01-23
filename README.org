@@ -78,13 +78,13 @@ docker run --cap-add=SYS_PTRACE \
 ** Creating the k8macs Pod
    #+begin_src shell
      IIMAGE=gcr.io/apisnoop/iimacs:0.9.7
-     PODNAME=k8smacs
+     PODNAME=k8macs
      kubectl run --generator=run-pod/v1 $PODNAME --serviceaccount='admin-iimacs' --image=$IIMAGE
    #+end_src
    
 ** Attaching to the Pod
    #+begin_src shell
-     PODNAME=k8smacs
+     PODNAME=k8macs
      kubectl exec -t -i $PODNAME -- attach
    #+end_src
 * dev-build loop
