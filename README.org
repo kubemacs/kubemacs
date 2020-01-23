@@ -45,19 +45,15 @@ docker run --cap-add=SYS_PTRACE \
            --rm -it -u 0:0 iiorgmacs
 #+END_SRC
 * Running in k8s
-** Setting up an admin ServiceAccount
-   #+name: sa
-   #+begin_src yaml
+** Create a cluster-admin service-account
+   #+begin_src shell :noweb yes :wrap "src yaml"
+     cat <<EOF | kubectl apply -f -
      apiVersion: v1
      kind: ServiceAccount
      metadata:
        name: admin-iimacs
        namespace: default
-   #+end_src
-
-** Creating a ClusterRoleBinding with the admin ServiceAccount
-   #+name:crb
-   #+begin_src yaml
+     ---
      apiVersion: rbac.authorization.k8s.io/v1
      kind: ClusterRoleBinding
      metadata:
@@ -70,13 +66,6 @@ docker run --cap-add=SYS_PTRACE \
      - kind: ServiceAccount
        name: admin-iimacs
        namespace: default
-   #+end_src
-** make the things
-   #+begin_src shell :noweb yes :wrap "src yaml"
-     cat <<EOF | kubectl apply -f -
-     <<sa>>
-     ---
-     <<crb>>
      EOF
    #+end_src
 
@@ -86,7 +75,7 @@ docker run --cap-add=SYS_PTRACE \
    clusterrolebinding.rbac.authorization.k8s.io/admin-iimacs configured
    #+end_src
 
-** Creating the Pod
+** Creating the k8macs Pod
    #+begin_src shell
      IIMAGE=gcr.io/apisnoop/iimacs:0.9.7
      PODNAME=k8smacs
@@ -100,11 +89,11 @@ docker run --cap-add=SYS_PTRACE \
    #+end_src
 * dev-build loop
   #+begin_src shell
-  IIMAGE=gcr.io/apisnoop/iimacs:0.9.10
+  IIDE=iimacs:0.9.10
   PODNAME=k8macs
-  docker build -t $IIMAGE .
-  kind load docker-image $IIMAGE
-  kubectl run --generator=run-pod/v1 $PODNAME --serviceaccount='admin-iimacs' --image=$IIMAGE
+  docker build -t $IIDE .
+  kind load docker-image $IIDE
+  kubectl run --generator=run-pod/v1 $PODNAME --serviceaccount='admin-iimacs' --image=$IIDE
   kubectl exec -t -i $PODNAME -- attach # osc52 will be sent with tmate url / you can have multiple of these
   #+end_src
 * Script to connect to a remote box and configure your kubeconfig
