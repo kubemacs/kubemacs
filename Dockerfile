@@ -56,7 +56,7 @@ RUN curl -L \
   | tar xvJ -f - --strip-components 1  -C /usr/local/bin tmate-2.4.0-static-linux-amd64/tmate
 
 # This var ensures that emacs loads iimacs before all else
-ENV IIMACSVERSION=0.9.3 \
+ENV IIMACSVERSION=0.9.10 \
   EMACSLOADPATH=/var/local/iimacs.d:
 # Checking out iimacs
 RUN git clone --depth 1 --recursive https://github.com/iimacs/.emacs.d /var/local/iimacs.d
@@ -76,10 +76,9 @@ RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii
 USER ii
 
 # # Fetch Golang dependencies for development
-RUN  mkdir -p ~/go/src/k8s.io && cd ~/go/src/k8s.io/ \
-  ; git clone https://github.com/kubernetes/kubernetes.git \
-  ; cd kubernetes \
-  ; go get -u -v ...
+RUN mkdir -p ~/go/src/k8s.io && git clone https://github.com/kubernetes/kubernetes.git ~/go/src/k8s.io/kubernetes
+RUN cd ~/go/src/k8s.io/kubernetes ; go mod download
+#  go get -u -v ...
 # RUN go get -u -v k8s.io/apimachinery/pkg/apis/meta/v1
 RUN go get -u -v github.com/nsf/gocode
 RUN go get -u -v golang.org/x/tools/...
