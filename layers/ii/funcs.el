@@ -428,6 +428,14 @@ alist, to ensure correct results."
   ;; (switch-to-buffer ii-org-buffer)
   )
 
+(defun ii/advice:org-babel-exp-src-block (obde)
+  "Disable the execute advice when we export src blocks"
+  (advice-remove 'org-babel-execute-src-block
+                 #'ii/advice:org-babel-execute-src-block)
+  (funcall obde)
+  (advice-add 'org-babel-execute-src-block
+               :before #'ii/advice:org-babel-execute-src-block)
+  )
 (defun ii/advice:org-babel-execute-src-block (&optional arg info params)
   "if ii-mate not set and this is a tmate src block"
   (interactive)

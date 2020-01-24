@@ -80,8 +80,12 @@
                (add-to-list 'org-babel-load-languages '(javascript . t))
                ;;(add-to-list 'org-babel-load-languages '(sql-mode . t))
                )))
+;; When we execute src blocks, we have some advice
 (advice-add 'org-babel-execute-src-block
             :before #'ii/advice:org-babel-execute-src-block)
+;; Disable the execute advice when we export src blocks
+(advice-add 'org-babel-exp-src-block
+            :around #'ii/advice:org-babel-exp-src-block)
 ;; (defun ii/pre-init-lsp-mode ()
 ;;   (spacemacs|use-package-add-hook lsp-mode
 ;;     :post-config (progn
