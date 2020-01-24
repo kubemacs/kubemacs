@@ -71,16 +71,21 @@ COPY bin/* /usr/local/bin/
 
 # From here on out we setup the user
 COPY homedir/* /etc/skel/
+RUN chmod 0600 /etc/skel/.pgpass
 RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii
 USER ii
 
 # # Fetch Golang dependencies for development
-RUN go get -u -v k8s.io/apimachinery/pkg/apis/meta/v1
+RUN  cd ~/go/src/k8s.io/ \
+  ; git clone https://github.com/kubernetes/kubernetes.git \
+  ; cd kubernetes \
+  ; go get -u -v ...
+# RUN go get -u -v k8s.io/apimachinery/pkg/apis/meta/v1
 RUN go get -u -v github.com/nsf/gocode
 RUN go get -u -v golang.org/x/tools/...
 ENV GO111MODULE=on
-RUN go get -u -v k8s.io/client-go/kubernetes@v0.17.0
-RUN go get -u -v k8s.io/client-go/tools/clientcmd@v0.17.0
+# RUN go get -u -v k8s.io/client-go/kubernetes@v0.17.0
+# RUN go get -u -v k8s.io/client-go/tools/clientcmd@v0.17.0
 RUN git clone --depth 1 https://github.com/cncf/apisnoop /home/ii/apisnoop
 
 # Ensure authentication to apisnoop postgres database
@@ -88,6 +93,6 @@ ENV PGUSER=apisnoop \
   PGDATABASE=apisnoop \
   PGHOST=postgres \
   PGPORT=5432
-
+ENV TZ="Pacific/Auckland"
 ENTRYPOINT ["/bin/bash"]
 CMD ["simple-init.sh"]

@@ -8,7 +8,7 @@ fi
 # parts of the e2e suite seem to want an actual working kubeconfig....
 kubectl config set-credentials default --token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
 export ALTERNATE_EDITOR=""
-export TMATE_SOCKET="/tmp/iisocket"
+export TMATE_SOCKET="/tmp/ii.default.target.iisocket"
 export TMATE_SOCKET_NAME=`basename ${TMATE_SOCKET}`
 # This background process will ensure tmate attache commands
 # call osc52-tmate.sh to set the ssh/web uri for this session via osc52

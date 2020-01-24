@@ -1,2 +1,3 @@
-#!/bin/sh
-tmate -S /tmp/iisocket at
+#!/bin/bash
+TMATE_SOCKET_NAME=${1:-default}
+tmate -S /tmp/ii.$TMATE_SOCKET_NAME.target.iisocket at
