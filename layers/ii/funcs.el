@@ -89,25 +89,37 @@
   (message "Unable to set X Clipboard to contain the start-tmate-sh")
   (create-target-script tmate-sh start-tmate-command)
   ;; (gui-select-text tmate-sh)
-  (setq current-tmate-sh tmate-sh) ;; since tmate-sh is buffer-local..
+  (if (string= (getenv "KUBERNETES_PORT_443_TCP_PROTO") "tcp")
+      (setq current-tmate-sh (concat "kubectl exec -ti -i " system-name " attach " (file-name-base load-file-name)))
+    (progn
+      (setq current-tmate-sh tmate-sh) ;; since tmate-sh is buffer-local..
+      (if (string= (getenv "CLOUD_SHELL") "true")
+          (setq current-tmate-ssh (concat "gcloud alpha cloud-shell ssh --ssh-flag=-t --command=" tmate-sh))
+        (if (string= system-name "sharing.io")
+            (setq current-tmate-ssh (concat "ssh -tAX " ssh-user-host " " tmate-sh))
+          (if (string= (getenv "KUBERNETES_PORT_443_TCP_PROTO") "tcp")
+              (setq current-tmate-ssh (concat "kubectl exec -ti -i " system-name " attach " (file-name-base load-file-name)))
+            (setq current-tmate-ssh tmate-sh))
+          )
+        )
+      )
+  )
   ;;(setq current-tmate-ssh (concat "export IISOCK=" socket " ; rm -f $IISOCK ; ssh -tAX " ssh-user-host " -L $IISOCK:$IISOCK " tmate-sh))
-  (if (string= (getenv "CLOUD_SHELL") "true")
-      (setq current-tmate-ssh (concat "gcloud alpha cloud-shell ssh --ssh-flag=-t --command=" tmate-sh))
-    (if (string= system-name "sharing.io")
-        (setq current-tmate-ssh (concat "ssh -tAX " ssh-user-host " " tmate-sh))
-    (setq current-tmate-ssh tmate-sh)
-    )
-    )
+
   (message "Trying to set via osc52")
   (osc52-interprogram-cut-function current-tmate-ssh)
-   (with-current-buffer (get-buffer-create "start-tmate-sh" )
-    (insert-for-yank "You will need to copy this manually:\n\n" )
-    (insert-for-yank
-     (concat "\nTo open on another host, forward your iisocket by pasting:\n\n" current-tmate-ssh
-             "\n\nOR open another terminal on the same host and paste:\n\n" current-tmate-sh)
-     ))
+  (with-current-buffer (get-buffer-create "start-tmate-sh" )
+    (erase-buffer)
+     (insert-for-yank "You may need to copy this manually:\n\n" )
+     (if (string= (getenv "KUBERNETES_PORT_443_TCP_PROTO") "tcp")
+         (insert-for-yank (concat "\nConnect to this in cluster tmate via:\n\n" current-tmate-sh))
+       (insert-for-yank
+        (concat "\nTo open on another host, forward your iisocket by pasting:\n\n" current-tmate-ssh
+              "\n\nOR open another terminal on the same host and paste:\n\n" current-tmate-sh)
+      )
+     )
   )
-
+)
 (defun populate-x-clipboard ()
   "Populate the X clipboard with the start-tmate-sh"
   (message "Setting X Clipboard to contain the start-tmate-sh")
@@ -407,23 +419,48 @@ alist, to ensure correct results."
 (defun ii/advice:org-babel-execute-src-block (&optional arg info params)
   "if ii-mate not set and this is a tmate src block"
   (interactive)
-  (unless ii-tmate-configured
+  (if (string= "tmate" (car (org-babel-get-src-block-info t)))
+      (let (
+            (socket
+             (alist-get :socket (nth 2 (org-babel-get-src-block-info t))))
+            (dir (file-truename
+                  (alist-get :dir (nth 2 (org-babel-get-src-block-info t))
+                             (file-name-directory buffer-file-name))
+                  ))
+            (target-name (file-name-base load-file-name))
+            )
+        (progn
+          (message "about to trying to start ii-tmate-process")
+          (make-local-variable 'ii-tmate-process)
+          (make-local-variable 'ii-tmate-configured)
+          (unless ii-tmate-process
+            (progn
+              (setq ii-tmate-process
+                    (start-process-shell-command
+                     (concat target-name "-tmate-process")
+                     "**tmate-process**"
+                     (concat "tmate -F -v -S " socket " new-session -s " target-name " -c " dir)
+                     ;; (concat "tmate -F -v -S " "/tmp/a" " new-session -s " target-name)
+                     ;; (concat "tmate -F -v -S " socket " -s " target-name)
+                     ;; (concat "tail -F /tmp/bar")
+                     ;; (concat "tail" "-F" "/tmp/bar")
+                     )
+                    )))
+          (unless ii-tmate-configured
     ;; means we want to set it up, but only for tmate blocks
-    (progn
-      (if (string= "tmate" (car (org-babel-get-src-block-info t)))
-          (progn
-            (setq ii-org-buffer (current-buffer))
-            (if (xclip-working)
-                (populate-x-clipboard)
-              (populate-terminal-clipboard)
-              )
-            (switch-to-buffer "start-tmate-sh")
-            (y-or-n-p "Have you Pasted?")
-            (switch-to-buffer ii-org-buffer)
-            (make-local-variable 'ii-tmate-configured)
-            (setq ii-tmate-configured t)
-            ))
-      )))
+            (progn
+              (setq ii-org-buffer (current-buffer))
+              (if (xclip-working)
+                  (populate-x-clipboard)
+                (populate-terminal-clipboard)
+                )
+              (switch-to-buffer "start-tmate-sh")
+              (y-or-n-p "Have you Pasted?")
+              (switch-to-buffer ii-org-buffer)
+              (setq ii-tmate-configured t)
+              )))
+      )
+    ))
 
 ;; This is the function intended to be run as a before-hack-local-variables-hook
 (defun ii/before-local-var-hacks()
