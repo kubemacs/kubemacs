@@ -12,7 +12,7 @@ RUN mkdir -p /etc/sudoers.d && \
     echo "%sudo    ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudo
 
 # install some useful packages
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y emacs-nox sudo wget curl acl docker docker-compose apt-transport-https zsh sqlite3 apt-utils apt-file rsync inotify-tools jq vim xtermcontrol tzdata gnupg2 software-properties-common build-essential
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y emacs-nox sudo wget curl acl docker docker-compose apt-transport-https zsh sqlite3 apt-utils apt-file rsync inotify-tools jq vim xtermcontrol tzdata gnupg2 software-properties-common build-essential silversearcher-ag ripgrep psmisc
 
 # install Kubernetes client and Google Cloud SDK
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
@@ -24,11 +24,12 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.
 RUN cd /tmp && \
   wget https://dl.google.com/go/go1.13.4.linux-amd64.tar.gz && \
   tar -C /usr/local -xvf /tmp/go1.13.4.linux-amd64.tar.gz
+
 ENV GOROOT=/usr/local/go \
   PATH=$PATH:/usr/local/go/bin
 # gopls, gocode, and others needed for dev will install into /usr/local/bin
-RUN GOHOME=/usr/local go get -u -v github.com/nsf/gocode
-RUN GOHOME=/usr/local go get -u -v golang.org/x/tools/...
+RUN GOPATH=/usr/local go get -u -v github.com/nsf/gocode && rm -rf /root/.cache /usr/local/pkg /usr/local/src
+RUN GOPATH=/usr/local go get -u -v golang.org/x/tools/... && rm -rf /root/.cache /usr/local/pkg /usr/local/src
 
 # install nodejs
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
@@ -74,6 +75,7 @@ COPY bin/* /usr/local/bin/
 
 # From here on out we setup the user
 COPY homedir/* /etc/skel/
+COPY kubeconfig /etc/skel/.kube/config
 RUN chmod 0600 /etc/skel/.pgpass
 RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii
 USER ii
