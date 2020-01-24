@@ -76,7 +76,7 @@ RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii
 USER ii
 
 # # Fetch Golang dependencies for development
-RUN  cd ~/go/src/k8s.io/ \
+RUN  mkdir -p ~/go/src/k8s.io && cd ~/go/src/k8s.io/ \
   ; git clone https://github.com/kubernetes/kubernetes.git \
   ; cd kubernetes \
   ; go get -u -v ...
