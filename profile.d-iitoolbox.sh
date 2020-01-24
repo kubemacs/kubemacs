@@ -1,3 +1,4 @@
+export PATH=$PATH:/usr/local/go/bin
 [ "$BASH_VERSION" != "" ] || [ "$ZSH_VERSION" != "" ] || return 0
 [ "$PS1" != "" ] || return 0
 [ "$IS_TOOLBOX" = true ] || return 0

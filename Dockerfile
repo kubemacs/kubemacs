@@ -26,6 +26,9 @@ RUN cd /tmp && \
   tar -C /usr/local -xvf /tmp/go1.13.4.linux-amd64.tar.gz
 ENV GOROOT=/usr/local/go \
   PATH=$PATH:/usr/local/go/bin
+# gopls, gocode, and others needed for dev will install into /usr/local/bin
+RUN GOHOME=/usr/local go get -u -v github.com/nsf/gocode
+RUN GOHOME=/usr/local go get -u -v golang.org/x/tools/...
 
 # install nodejs
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
@@ -80,12 +83,11 @@ RUN mkdir -p ~/go/src/k8s.io && git clone https://github.com/kubernetes/kubernet
 RUN cd ~/go/src/k8s.io/kubernetes ; go mod download
 #  go get -u -v ...
 # RUN go get -u -v k8s.io/apimachinery/pkg/apis/meta/v1
-RUN go get -u -v github.com/nsf/gocode
-RUN go get -u -v golang.org/x/tools/...
-ENV GO111MODULE=on
+# ENV GO111MODULE=on
 # RUN go get -u -v k8s.io/client-go/kubernetes@v0.17.0
 # RUN go get -u -v k8s.io/client-go/tools/clientcmd@v0.17.0
 RUN git clone --depth 1 https://github.com/cncf/apisnoop /home/ii/apisnoop
+RUN cd /home/ii/apisnoop/org/tickets ; go mod download
 
 # Ensure authentication to apisnoop postgres database
 ENV PGUSER=apisnoop \
