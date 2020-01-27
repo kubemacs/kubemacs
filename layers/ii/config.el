@@ -19,7 +19,9 @@
  org-enable-github-support t
  org-enable-bootstrap-support t
  org-enable-reveal-js-support t
- org-enable-sticky-header t
+ ;; With this enabled org-links don't work
+ ;; When pasting they result in "No Buffer named *Org Links*"
+ ;; org-enable-sticky-header t
  org-enable-epub-support t
  spaceline-org-clock-p t
  osc52e-package-dir (concat (configuration-layer/get-layer-local-dir 'ii) "osc52e")

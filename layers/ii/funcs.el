@@ -83,11 +83,24 @@
     )
   )
 
+(defun ii/populate-clipboard-with-tmate-connect-command()
+  "Populate the clipboard with the correct command to connect to tmate"
+  (gui-select-text 
+   (if ;; incluster
+       (file-exists-p "/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+       ;; use kubectl
+       (concat "kubectl exec -ti " system-name
+               " attach " (file-name-base load-file-name))
+     ;; out of cluster, use tmate directly
+     (concat "tmate -S " socket " attach"))
+   )
+  ;; (osc52-interprogram-cut-function current-tmate-ssh)
+  )
 (defun populate-terminal-clipboard ()
   "Populate the osc52 clipboard via terminal with the start-tmate-sh"
   ;; TODO
   (message "Unable to set X Clipboard to contain the start-tmate-sh")
-  (create-target-script tmate-sh start-tmate-command)
+  ;; (create-target-script tmate-sh start-tmate-command)
   ;; (gui-select-text tmate-sh)
   (if (string= (getenv "KUBERNETES_PORT_443_TCP_PROTO") "tcp")
       (setq current-tmate-sh (concat "kubectl exec -ti " system-name " attach " (file-name-base load-file-name)))
@@ -225,13 +238,24 @@ alist, to ensure correct results."
   (set (make-local-variable 'sql-sqlite-program)
        (executable-find "sqlite3"))
   (set (make-local-variable 'sql-server)
-       (getenv "PGHOST"))
+       (if (getenv "PGHOST")
+           (getenv "PGHOST")
+         (if (file-exists-p "/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+             "postgres"
+             "localhost"
+           )))
   (set (make-local-variable 'sql-port)
-       (string-to-number (getenv "PGPORT")))
+       (if (getenv "PGPORT")
+           (string-to-number (getenv "PGPORT"))
+         5432))
   (set (make-local-variable 'sql-user)
-       (getenv "PGUSER"))
+       (if (getenv "PGUSER")
+           (getenv "PGUSER")
+         "apisnoop"))
   (set (make-local-variable 'sql-database)
-       (getenv "PGDATABASE"))
+       (if (getenv "PGDATABASE")
+           (getenv "PGDATABASE")
+         "apisnoop"))
   (set (make-local-variable 'sql-product)
        '(quote postgres))
   (set (make-local-variable 'sql-connection-alist)
@@ -244,7 +268,7 @@ alist, to ensure correct results."
               (list 'sql-product '(quote postgres))
               (list 'sql-user (getenv "PGUSER"))
               (list 'sql-database (getenv "PGDATABASE"))
-              (list 'sql-port (string-to-number (getenv "PGPORT")))
+              (list 'sql-port sql-port)
               (list 'sql-server (getenv "PGHOST")))
         ;; (list 'apisnoop
         ;;       (list 'sql-product '(quote postgres))
@@ -252,12 +276,14 @@ alist, to ensure correct results."
         ;;       (list 'sql-database "apisnoop")
         ;;       (list 'sql-port (+ (* (user-uid) 10) 1))
         ;;       (list 'sql-server "localhost"))
+        ;; setting these allows for the connection to be
+        ;; created on the fly
         (list 'none
               (list 'sql-product '(quote postgres))
-              (list 'sql-user (getenv "PGUSER"))
-              (list 'sql-database (getenv "PGDATABASE"))
-              (list 'sql-port (string-to-number (getenv "PGPORT")))
-              (list 'sql-server (getenv "PGHOST")))))
+              (list 'sql-user sql-user)
+              (list 'sql-database sql-database)
+              (list 'sql-port sql-port)
+              (list 'sql-server sql-server))))
   (message "END: ii/sql-org-hacks")
   )
 
@@ -439,44 +465,46 @@ alist, to ensure correct results."
 (defun ii/advice:org-babel-execute-src-block (&optional arg info params)
   "if ii-mate not set and this is a tmate src block"
   (interactive)
+  ;; only run if this is a tmate block
   (if (string= "tmate" (car (org-babel-get-src-block-info t)))
       (let (
             (socket
              (alist-get :socket (nth 2 (org-babel-get-src-block-info t))))
-            (dir (file-truename
-                  (alist-get :dir (nth 2 (org-babel-get-src-block-info t))
-                             (file-name-directory buffer-file-name))
-                  ))
-            (target-name (file-name-base load-file-name))
+            (dir
+             (file-truename
+              (alist-get :dir (nth 2 (org-babel-get-src-block-info t))
+                         (file-name-directory buffer-file-name))))
+            (target-name
+             (file-name-base load-file-name))
             )
         (progn
           (message "about to trying to start ii-tmate-process")
           (make-local-variable 'ii-tmate-process)
           (make-local-variable 'ii-tmate-configured)
+          ;; ensure a tmate server has been started
           (unless ii-tmate-process
             (progn
               (setq ii-tmate-process
                     (start-process-shell-command
                      (concat target-name "-tmate-process")
                      "**tmate-process**"
-                     (concat "tmate -F -v -S " socket " new-session -s " target-name " -c " dir)
-                     ;; (concat "tmate -F -v -S " "/tmp/a" " new-session -s " target-name)
-                     ;; (concat "tmate -F -v -S " socket " -s " target-name)
-                     ;; (concat "tail -F /tmp/bar")
-                     ;; (concat "tail" "-F" "/tmp/bar")
-                     )
-                    )))
+                     (concat "tmate -F -v -S " socket
+                             " new-session -s " target-name
+                             " -c " dir)
+                     ))))
+          ;; popup asking user to paste connection command into another terminal
           (unless ii-tmate-configured
-    ;; means we want to set it up, but only for tmate blocks
             (progn
+              (ii/populate-clipboard-with-tmate-connect-command)
               (setq ii-org-buffer (current-buffer))
-              (if (xclip-working)
-                  (populate-x-clipboard)
-                (populate-terminal-clipboard)
-                )
-              (switch-to-buffer "start-tmate-sh")
-              (y-or-n-p "Have you Pasted?")
-              (switch-to-buffer ii-org-buffer)
+              ;; (if (xclip-working)
+              ;;     (populate-x-clipboard)
+              ;;   (populate-terminal-clipboard)
+              ;;   )
+              ;; (switch-to-buffer "start-tmate-sh")
+              ;; (y-or-n-p "Have you Pasted?")
+              ;; (switch-to-buffer ii-org-buffer)
+              (y-or-n-p "A command has been copied to your local OS. Have you pasted it into a terminal?")
               (setq ii-tmate-configured t)
               )))
       )
@@ -491,5 +519,6 @@ alist, to ensure correct results."
         )
   )
   (message "END: ii/before-local-var-hacks")
+  (message "ii org-mode hacks applied")
   )
 
