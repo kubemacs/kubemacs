@@ -72,15 +72,20 @@ docker run --cap-add=SYS_PTRACE \
    #+RESULTS:
    #+begin_src yaml
    serviceaccount/admin-iimacs created
-   clusterrolebinding.rbac.authorization.k8s.io/admin-iimacs configured
+   clusterrolebinding.rbac.authorization.k8s.io/admin-iimacs created
    #+end_src
 
 ** Creating the k8macs Pod
    #+begin_src shell
-     IIMAGE=gcr.io/apisnoop/iimacs:0.9.10
+     IIMAGE=gcr.io/apisnoop/iimacs:0.9.14
      PODNAME=kmacs
      kubectl run --generator=run-pod/v1 $PODNAME --serviceaccount='admin-iimacs' --image=$IIMAGE
    #+end_src
+
+   #+RESULTS:
+   #+begin_example
+   pod/kmacs created
+   #+end_example
    
 ** Attaching to the Pod
    #+begin_src shell

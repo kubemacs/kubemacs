@@ -60,7 +60,7 @@ RUN curl -L \
   | tar xvJ -f - --strip-components 1  -C /usr/local/bin tmate-2.4.0-static-linux-amd64/tmate
 
 # This var ensures that emacs loads iimacs before all else
-ENV IIMACSVERSION=0.9.10 \
+ENV IIMACSVERSION=0.9.15 \
   EMACSLOADPATH=/var/local/iimacs.d:
 # Checking out iimacs
 RUN git clone --depth 1 --recursive https://github.com/iimacs/.emacs.d /var/local/iimacs.d
