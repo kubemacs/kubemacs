@@ -60,7 +60,7 @@ RUN curl -L \
   | tar xvJ -f - --strip-components 1  -C /usr/local/bin tmate-2.4.0-static-linux-amd64/tmate
 
 # This var ensures that emacs loads iimacs before all else
-ENV IIMACSVERSION=0.9.15 \
+ENV IIMACSVERSION=0.9.16 \
   EMACSLOADPATH=/var/local/iimacs.d:
 # Checking out iimacs
 RUN git clone --depth 1 --recursive https://github.com/iimacs/.emacs.d /var/local/iimacs.d
@@ -73,11 +73,13 @@ RUN curl https://storage.googleapis.com/apisnoop/dev/kmacs-cache-0.9.13.tgz \
 # we use osc52 support to copy text back to your OS over kubectl exec tmate
 COPY bin/* /usr/local/bin/
 
+RUN groupdel docker && \
+  groupadd -g 999 docker
 # From here on out we setup the user
 COPY homedir/* /etc/skel/
 COPY kubeconfig /etc/skel/.kube/config
 RUN chmod 0600 /etc/skel/.pgpass
-RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii
+RUN useradd -m -G sudo,users,docker -s /bin/bash -u 2000 ii
 USER ii
 
 # # Fetch Golang dependencies for development
