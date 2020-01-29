@@ -42,7 +42,7 @@ spec:
       serviceAccountName: admin-kubemacs
       containers:
       - name: kubemacs
-        image: gcr.io/apisnoop/iimacs:0.9.16
+        image: gcr.io/apisnoop/kubemacs:0.9.18
         env:
           - name: TZ
             value: "Pacific/Auckland"
@@ -54,7 +54,7 @@ spec:
       volumes:
         - name: kubemacs-hostpath
           hostPath:
-            path: /tmp/workspace
+            path: /workspace
         - name: docker
           hostPath:
             path: /var/run/docker.sock

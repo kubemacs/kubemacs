@@ -12,7 +12,7 @@ RUN mkdir -p /etc/sudoers.d && \
     echo "%sudo    ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudo
 
 # install some useful packages
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y emacs-nox sudo wget curl acl docker apt-transport-https zsh sqlite3 apt-utils apt-file rsync inotify-tools jq vim xtermcontrol tzdata gnupg2 software-properties-common build-essential silversearcher-ag ripgrep psmisc git
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y emacs-nox sudo wget curl acl docker apt-transport-https zsh sqlite3 apt-utils apt-file rsync inotify-tools jq vim xtermcontrol tzdata gnupg2 software-properties-common build-essential silversearcher-ag ripgrep psmisc git docker.io
 
 # install Kubernetes client and Google Cloud SDK
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
@@ -70,13 +70,14 @@ RUN curl https://storage.googleapis.com/apisnoop/dev/kmacs-cache-0.9.13.tgz \
   && chgrp -R users /var/local/iimacs.d \
   && chmod -R g+w /var/local/iimacs.d
 
-RUN curl -fsSL "https://github.com/windmilleng/tilt/releases/download/v0.11.3/tilt.0.11.3.linux.x86_64.tar.gz" | tar -xzv tilt -C /usr/local/bin/
+RUN curl -fsSL "https://github.com/windmilleng/tilt/releases/download/v0.11.3/tilt.0.11.3.linux.x86_64.tar.gz" | tar -C /usr/local/bin -xzv tilt
 
 # we use osc52 support to copy text back to your OS over kubectl exec tmate
 COPY bin/* /usr/local/bin/
 
-RUN groupdel docker && \
-  groupadd -g 999 docker
+RUN groupadd -g 999 docker
+# RUN groupdel docker && \
+#   groupadd -g 999 docker
 # From here on out we setup the user
 COPY homedir/* /etc/skel/
 COPY kubeconfig /etc/skel/.kube/config

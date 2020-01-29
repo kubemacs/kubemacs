@@ -26,11 +26,11 @@ docker build -t gcr.io/apisnoop/kubemacs .
 ** Attaching to the Pod
    #+begin_src shell
      PODNAME=$(kubectl -n kubemacs get pod --selector=app=kubemacs -o name  | sed s:pod/::)
-     kubectl exec -t -i $PODNAME -- attach
+     kubectl exec -n kubemacs -t -i $PODNAME -- attach
    #+end_src
 * dev-build loop
   #+begin_src shell
-    IIDE=gcr.io/apisnoop/kubemacs:0.9.16
+    IIDE=gcr.io/apisnoop/kubemacs:0.9.18
     PODNAME=$(kubectl -n kubemacs get pod --selector=app=kubemacs -o name  | sed s:pod/::)
     docker build -t $IIDE .
     kind load docker-image $IIDE
