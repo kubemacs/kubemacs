@@ -117,6 +117,7 @@ kind load docker-image --nodes kind-worker $IMAGE_TAG
       ssh -fN -L \$K8S_REMOTE_PORT:localhost:\$K8S_REMOTE_PORT \$REMOTE_USER@\$REMOTE_HOST
     fi
 
+    export DOCKER_HOST="ssh://\\\$REMOTE_USER@\\\$REMOTE_HOST"
     echo "[ok]"
     touch /tmp/ii_setup_k8s_from_remote-hasrun
     ii_setup_k8s_from_remote_cleanup
