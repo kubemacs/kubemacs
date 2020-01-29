@@ -85,16 +85,23 @@
 
 (defun ii/populate-clipboard-with-tmate-connect-command()
   "Populate the clipboard with the correct command to connect to tmate"
-  (gui-select-text 
-   (if ;; incluster
-       (file-exists-p "/var/run/secrets/kubernetes.io/serviceaccount/namespace")
-       ;; use kubectl
-       (concat "kubectl exec -ti " system-name
-               " attach " (file-name-base load-file-name))
-     ;; out of cluster, use tmate directly
-     (concat "tmate -S " socket " attach"))
-   )
-  ;; (osc52-interprogram-cut-function current-tmate-ssh)
+  (message "Trying to populate clipboard")
+  (let ((attach-command (if ;; incluster
+                            (file-exists-p "/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+                            ;; use kubectl
+                            (concat "kubectl exec -n "
+                                    (with-temp-buffer
+                                      (insert-file-contents
+                                       "/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+                                      (buffer-string))
+                                    " -ti " system-name
+                                    " attach " (file-name-base load-file-name))
+                          ;; out of cluster, use tmate directly
+                          (concat "tmate -S " socket " attach"))
+                        ))
+    (gui-select-text attach-command)
+    (osc52-interprogram-cut-function attach-command)
+                          )
   )
 (defun populate-terminal-clipboard ()
   "Populate the osc52 clipboard via terminal with the start-tmate-sh"
