@@ -42,7 +42,7 @@ spec:
       serviceAccountName: admin-kubemacs
       containers:
       - name: kubemacs
-        image: gcr.io/apisnoop/kubemacs:0.9.18
+        image: gcr.io/apisnoop/kubemacs:0.9.21
         env:
           - name: TZ
             value: "Pacific/Auckland"
@@ -58,5 +58,9 @@ spec:
         - name: docker
           hostPath:
             path: /var/run/docker.sock
+            type: Socket
+        - name: ssh-agent
+          hostPath:
+            path: /var/run/ssh-agent.sock
             type: Socket
 

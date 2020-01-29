@@ -15,7 +15,9 @@ Using docker will reduce the setup and maintenance of sharing the core component
 * Build
 
 #+BEGIN_SRC tmate
-docker build -t gcr.io/apisnoop/kubemacs .
+IMAGE_TAG=gcr.io/apisnoop/kubemacs:0.9.21
+docker build -t $IMAGE_TAG .
+kind load docker-image --nodes kind-worker $IMAGE_TAG
 #+END_SRC
 
 * Running in k8s
