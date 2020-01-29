@@ -1,5 +1,5 @@
 # -*- ii: enabled; -*-
-#+TITLE: iiorgmacs
+#+TITLE: kubemacs
 
 * Introduction
 
@@ -14,92 +14,28 @@ Using docker will reduce the setup and maintenance of sharing the core component
 
 * Build
 
-The [[https://gitlab.ii.coop/ii/tooling/iiorgmacs/blob/master/Dockerfile][Dockerfile]] uses [[https://gitlab.ii.coop/ii/tooling/iibase/blob/master/Dockerfile][iibase]] as its initial build stage.
-
 #+BEGIN_SRC tmate
-docker build -t iimacs/orgmacs .
+docker build -t gcr.io/apisnoop/kubemacs .
 #+END_SRC
 
-* Usage
-Recommended usage is with [[https://gitlab.ii.coop/ii/tooling/iitoolbox][iitoolbox]].
-
-* Test Image as User ii
-
-#+BEGIN_SRC tmate
-docker run --name=iiorgmacs --hostname=iiorgmacs --rm -it iimacs/orgmacs
-#+END_SRC
-
-* Test Image as root User
-
-#+BEGIN_SRC tmate
-docker run --name=iiorgmacs --hostname=iiorgmacs --rm -it -u 0:0 iimacs/orgmacs
-#+END_SRC
-
-* Debug image with strace
-
-#+BEGIN_SRC tmate
-docker run --cap-add=SYS_PTRACE \
-           --security-opt seccomp=unconfined \
-           --name=iiorgmacs-$USER \
-           --hostname=iiorgmacs \
-           --rm -it -u 0:0 iiorgmacs
-#+END_SRC
 * Running in k8s
-** Create a cluster-admin service-account
-   #+begin_src shell :noweb yes :wrap "src yaml"
-     cat <<EOF | kubectl apply -f -
-     apiVersion: v1
-     kind: ServiceAccount
-     metadata:
-       name: admin-iimacs
-       namespace: default
-     ---
-     apiVersion: rbac.authorization.k8s.io/v1
-     kind: ClusterRoleBinding
-     metadata:
-       name: admin-iimacs
-     roleRef:
-       apiGroup: rbac.authorization.k8s.io
-       kind: ClusterRole
-       name: cluster-admin
-     subjects:
-     - kind: ServiceAccount
-       name: admin-iimacs
-       namespace: default
-     EOF
-   #+end_src
-
-   #+RESULTS:
-   #+begin_src yaml
-   serviceaccount/admin-iimacs created
-   clusterrolebinding.rbac.authorization.k8s.io/admin-iimacs created
-   #+end_src
-
-** Creating the k8macs Pod
+** Deployment   
    #+begin_src shell
-     IIMAGE=gcr.io/apisnoop/iimacs:0.9.14
-     PODNAME=kmacs
-     kubectl run --generator=run-pod/v1 $PODNAME --serviceaccount='admin-iimacs' --image=$IIMAGE
+   kubectl apply -f kubemacs.yaml
    #+end_src
-
-   #+RESULTS:
-   #+begin_example
-   pod/kmacs created
-   #+end_example
-   
 ** Attaching to the Pod
    #+begin_src shell
-     PODNAME=k8macs
+     PODNAME=$(kubectl -n kubemacs get pod --selector=app=kubemacs -o name  | sed s:pod/::)
      kubectl exec -t -i $PODNAME -- attach
    #+end_src
 * dev-build loop
   #+begin_src shell
-  IIDE=iimacs:0.9.10
-  PODNAME=k8macs
-  docker build -t $IIDE .
-  kind load docker-image $IIDE
-  kubectl run --generator=run-pod/v1 $PODNAME --serviceaccount='admin-iimacs' --image=$IIDE
-  kubectl exec -t -i $PODNAME -- attach # osc52 will be sent with tmate url / you can have multiple of these
+    IIDE=gcr.io/apisnoop/kubemacs:0.9.16
+    PODNAME=$(kubectl -n kubemacs get pod --selector=app=kubemacs -o name  | sed s:pod/::)
+    docker build -t $IIDE .
+    kind load docker-image $IIDE
+    kubectl run --generator=run-pod/v1 $PODNAME --serviceaccount='admin-kubemacs' --image=$IIDE
+    kubectl exec -t -i $PODNAME -- attach # osc52 will be sent with tmate url / you can have multiple of these
   #+end_src
 * Script to connect to a remote box and configure your kubeconfig
   #+begin_src shell

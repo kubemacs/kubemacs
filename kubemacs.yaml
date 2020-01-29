@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-kubemacs
+  namespace: kubemacs
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-kubemacs
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-kubemacs
+  namespace: kubemacs
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubemacs
+  labels:
+    environment: production
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubemacs
+  namespace: kubemacs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubemacs
+  template:
+    metadata:
+      labels:
+        app: kubemacs
+    spec:
+      serviceAccountName: admin-kubemacs
+      containers:
+      - name: kubemacs
+        image: gcr.io/apisnoop/iimacs:0.9.16
+        env:
+          - name: TZ
+            value: "Pacific/Auckland"
+        volumeMounts:
+          - mountPath: '/home/ii/workspace'
+            name: kubemacs-hostpath
+          - name: docker
+            mountPath: /var/run/docker.sock
+      volumes:
+        - name: kubemacs-hostpath
+          hostPath:
+            path: /tmp/workspace
+        - name: docker
+          hostPath:
+            path: /var/run/docker.sock
+            type: Socket
+
