@@ -75,7 +75,7 @@ RUN curl -fsSL "https://github.com/windmilleng/tilt/releases/download/v0.11.3/ti
 # we use osc52 support to copy text back to your OS over kubectl exec tmate
 COPY bin/* /usr/local/bin/
 
-RUN groupadd -g 999 docker
+# RUN groupadd -g 999 docker
 # RUN groupdel docker && \
 #   groupadd -g 999 docker
 # From here on out we setup the user
