@@ -15,7 +15,7 @@ Using docker will reduce the setup and maintenance of sharing the core component
 * Build
 
 #+BEGIN_SRC tmate
-IMAGE_TAG=gcr.io/apisnoop/kubemacs:0.9.21
+IMAGE_TAG=gcr.io/apisnoop/kubemacs:0.9.23
 docker build -t $IMAGE_TAG .
 kind load docker-image --nodes kind-worker $IMAGE_TAG
 #+END_SRC
@@ -32,7 +32,7 @@ kind load docker-image --nodes kind-worker $IMAGE_TAG
    #+end_src
 * dev-build loop
   #+begin_src shell
-    IIDE=gcr.io/apisnoop/kubemacs:0.9.18
+    IIDE=gcr.io/apisnoop/kubemacs:0.9.23
     PODNAME=$(kubectl -n kubemacs get pod --selector=app=kubemacs -o name  | sed s:pod/::)
     docker build -t $IIDE .
     kind load docker-image $IIDE
