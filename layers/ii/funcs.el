@@ -498,7 +498,14 @@ alist, to ensure correct results."
                      (concat "tmate -F -v -S " socket
                              " new-session -s " target-name
                              " -c " dir)
-                     ))))
+                     ))
+              (call-process-shell-command (concat "tmate -S " socket
+                                                  " wait tmate-ready") nil "wait ready")
+              (call-process-shell-command (concat "tmate -S " socket
+                                                  " set-hook -g client-attached"
+                                                  " 'run-shell "
+                                                  "\"tmate new-window osc52-tmate.sh\"'") nil "client-atteched")
+                     ))
           ;; popup asking user to paste connection command into another terminal
           (unless ii-tmate-configured
             (progn
