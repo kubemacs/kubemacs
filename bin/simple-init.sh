@@ -5,6 +5,7 @@ if [ ! -f ".ssh/id_rsa" ]
 then
     ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -q -N ""
 fi
+kubectl config set-context $(kubectl config current-context) --namespace=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
 export ALTERNATE_EDITOR=""
 export TMATE_SOCKET="/tmp/ii.default.target.iisocket"
 export TMATE_SOCKET_NAME=`basename ${TMATE_SOCKET}`
