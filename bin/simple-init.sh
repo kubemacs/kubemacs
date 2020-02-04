@@ -9,6 +9,7 @@ kubectl config set-context $(kubectl config current-context) --namespace=$(cat /
 export ALTERNATE_EDITOR=""
 export TMATE_SOCKET="/tmp/ii.default.target.iisocket"
 export TMATE_SOCKET_NAME=`basename ${TMATE_SOCKET}`
+export INIT_ORG_FILE=${INIT_ORG_FILE:-~/apisnoop}
 # This background process will ensure tmate attache commands
 # call osc52-tmate.sh to set the ssh/web uri for this session via osc52
 # But it wait's until the socket exists, and tmate is ready for commands
@@ -26,7 +27,7 @@ export TMATE_SOCKET_NAME=`basename ${TMATE_SOCKET}`
     tmate -S $TMATE_SOCKET set-hook -ug client-attached
     tmate -S $TMATE_SOCKET set-hook -g client-attached 'run-shell "tmate new-window osc52-tmate.sh"'
 )&
-tmate -F -v -S $TMATE_SOCKET new-session -d -c ~/apisnoop emacsclient --tty .
+tmate -F -v -S $TMATE_SOCKET new-session -d -c "$INIT_ORG_FILE" emacsclient --tty .
 # tmate new-session \
 #       -A -s ii -n emacs \
 #       "tmate wait tmate-ready \
