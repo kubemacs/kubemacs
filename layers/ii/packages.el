@@ -196,6 +196,7 @@
     (ob-tmate :ensure t
               :location (recipe
                          :fetcher github
+                         :tag "0.1.7"
                          :repo "ii/ob-tmate"))
     (ob-go :ensure t
            :location (recipe
