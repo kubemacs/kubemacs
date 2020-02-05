@@ -1,7 +1,7 @@
 #!/bin/bash
 TMATE_SOCKET_NAME=${1:-default}
 TMATE_SOCKET_FULL_PATH="/tmp/ii.$TMATE_SOCKET_NAME.target.iisocket"
-if [ ! -f "$TMATE_SOCKET_FULL_PATH" ]
+if [ ! -S "$TMATE_SOCKET_FULL_PATH" ]
 then
     # wait for socket to appear
     while read i; do
