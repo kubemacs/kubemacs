@@ -9,10 +9,20 @@ kubectl config set-context $(kubectl config current-context) --namespace=$(cat /
 export ALTERNATE_EDITOR=""
 export TMATE_SOCKET="/tmp/ii.default.target.iisocket"
 export TMATE_SOCKET_NAME=`basename ${TMATE_SOCKET}`
-export INIT_ORG_FILE=${INIT_ORG_FILE:-~/apisnoop}
+export INIT_ORG_FILE="${INIT_ORG_FILE:-~/}"
+export INIT_DEFAULT_DIR="${INIT_DEFAULT_DIR:-~/}"
+export INIT_DEFAULT_REPO="${INIT_DEFAULT_REPO}"
+
+(
+    if [ ! -z $INIT_DEFAULT_REPO ]; then
+        cd ~
+        git clone -v --recusive $INIT_DEFAULT_REPO
+    fi
+)
 # This background process will ensure tmate attache commands
 # call osc52-tmate.sh to set the ssh/web uri for this session via osc52
 # But it wait's until the socket exists, and tmate is ready for commands
+cd $INIT_DEFAULT_DIR
 (
     if [ ! -f "$TMATE_SOCKET" ]
     then
@@ -27,7 +37,8 @@ export INIT_ORG_FILE=${INIT_ORG_FILE:-~/apisnoop}
     tmate -S $TMATE_SOCKET set-hook -ug client-attached
     tmate -S $TMATE_SOCKET set-hook -g client-attached 'run-shell "tmate new-window osc52-tmate.sh"'
 )&
-tmate -F -v -S $TMATE_SOCKET new-session -d -c "$INIT_ORG_FILE" emacsclient --tty .
+
+tmate -F -v -S $TMATE_SOCKET new-session -d -c $INIT_DEFAULT_DIR emacsclient --tty $INIT_ORG_FILE
 # tmate new-session \
 #       -A -s ii -n emacs \
 #       "tmate wait tmate-ready \

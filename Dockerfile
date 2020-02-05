@@ -93,7 +93,7 @@ USER ii
 # ENV GO111MODULE=on
 # RUN go get -u -v k8s.io/client-go/kubernetes@v0.17.0
 # RUN go get -u -v k8s.io/client-go/tools/clientcmd@v0.17.0
-RUN git clone --depth 1 https://github.com/cncf/apisnoop /home/ii/apisnoop
+# RUN git clone --depth 1 https://github.com/cncf/apisnoop /home/ii/apisnoop
 # RUN cd /home/ii/apisnoop/org/tickets ; go mod download
 
 # Ensure authentication to apisnoop postgres database
