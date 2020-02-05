@@ -16,7 +16,7 @@ export INIT_DEFAULT_REPO="${INIT_DEFAULT_REPO}"
 (
     if [ ! -z $INIT_DEFAULT_REPO ]; then
         cd ~
-        git clone -v --recusive $INIT_DEFAULT_REPO
+        git clone -v --recursive $INIT_DEFAULT_REPO
     fi
 )
 # This background process will ensure tmate attache commands
