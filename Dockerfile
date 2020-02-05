@@ -67,7 +67,7 @@ RUN git clone --depth 1 --recursive https://github.com/iimacs/.emacs.d /var/loca
 # TODO This cache of compiled .elc files should be part of the build cache at some point
 #  TARFILE=kubemacs-cache-0.9.32.tgz ; kubectl exec kubemacs-0 -- tar --directory /var/local/iimacs.d --create  --gzip --file - spacemacs/elpa/26.3 > $TARFILE ; gsutil cp $TARFILE gs://apisnoop/dev/$TARFILE
 RUN curl https://storage.googleapis.com/apisnoop/dev/kubemacs-cache-0.9.32.tgz \
-  | tar xfC - /var/local/iimacs.d \
+  | tar xfzC - /var/local/iimacs.d \
   && chgrp -R users /var/local/iimacs.d \
   && chmod -R g+w /var/local/iimacs.d
 
