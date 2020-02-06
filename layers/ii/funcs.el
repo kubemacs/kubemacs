@@ -186,7 +186,7 @@
   )
  (defun ssh-find-agent ()
   (interactive)
-  (setenv "SSH_AUTH_SOCK" (shell-command-to-string "find /tmp /run/host/tmp/ -type s -regex '.*/ssh-.*/agent..*$' 2> /dev/null | tail -n 1"))
+  (setenv "SSH_AUTH_SOCK" (shell-command-to-string "find /tmp /run/host/tmp/ -type s -regex '.*/ssh-.*/agent..*$' 2> /dev/null | tail -n 1 | tr -d '\n'"))
   (message (getenv "SSH_AUTH_SOCK"))
   )
 (with-eval-after-load "org"
