@@ -50,8 +50,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get upgrade -y && apt-g
 
 # install golang
 RUN cd /tmp && \
-  wget https://dl.google.com/go/go1.13.4.linux-amd64.tar.gz && \
-  tar -C /usr/local -xvf /tmp/go1.13.4.linux-amd64.tar.gz
+  wget --quiet -O - https://dl.google.com/go/go1.13.4.linux-amd64.tar.gz \
+  | tar -C /usr/local -xvz
 
 ENV GOROOT=/usr/local/go \
   PATH=$PATH:/usr/local/go/bin
@@ -60,7 +60,8 @@ RUN GOPATH=/usr/local go get -u -v github.com/nsf/gocode && rm -rf /root/.cache 
 RUN GOPATH=/usr/local go get -u -v golang.org/x/tools/... && rm -rf /root/.cache /usr/local/pkg /usr/local/src
 
 # We used tilt
-RUN curl -fsSL "https://github.com/windmilleng/tilt/releases/download/v0.11.3/tilt.0.11.3.linux.x86_64.tar.gz" | tar -C /usr/local/bin -xzv tilt
+RUN curl -fsSL "https://github.com/windmilleng/tilt/releases/download/v0.11.3/tilt.0.11.3.linux.x86_64.tar.gz" \
+  | tar -C /usr/local/bin -xzv tilt
 
 # install nodejs
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
