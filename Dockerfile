@@ -9,15 +9,16 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
   && rm -rf /var/apt/lists/*
 
 # install Kubernetes client and Google Cloud SDK REPO
-RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
-  wget --quiet -O - https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
+  | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+RUN wget --quiet -O - https://packages.cloud.google.com/apt/doc/apt-key.gpg \
   | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
 
 # install postgresql repo to later grab postgresql-client-12
 # postgresql-client-12 to connect to the db
-RUN echo deb http://apt.postgresql.org/pub/repos/apt/ eoan-pgdg main \
-  |  tee -a /etc/apt/sources.list.d/postgresql.list && \
-  wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ eoan-pgdg main" \
+  |  tee -a /etc/apt/sources.list.d/postgresql.list
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
   | apt-key add -
 
 # upgrade existing and also install some useful packages
