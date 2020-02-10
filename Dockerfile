@@ -56,7 +56,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
   silversearcher-ag \
   sudo \
   ripgrep \
-  psmisc
+  psmisc \
   && rm -rf /var/apt/lists/*
 
 # install golang
