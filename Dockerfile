@@ -35,7 +35,8 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
 # Our primary tooling layer
 RUN DEBIAN_FRONTEND=noninteractive \
   apt-get update \
-  && apt-get install --no-install-recommends -y \
+  && DEBIAN_FRONTEND=noninteractive \
+  apt-get install --no-install-recommends -y \
   emacs-nox \
   docker docker.io \
   inotify-tools \
@@ -46,7 +47,8 @@ RUN DEBIAN_FRONTEND=noninteractive \
 # Secondary tooling layer
 RUN DEBIAN_FRONTEND=noninteractive \
   apt-get update \
-  && apt-get install --no-install-recommends -y \
+  && DEBIAN_FRONTEND=noninteractive \
+  apt-get install --no-install-recommends -y \
   apache2-utils \
   git \
   sqlite3 \
