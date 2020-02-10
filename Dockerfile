@@ -24,13 +24,18 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
   | apt-key add -
 
 # Install from the upstream repos
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get upgrade -y && apt-get install -y \
+  RUN DEBIAN_FRONTEND=noninteractive \
+  apt-get update \
+  && apt-get upgrade -y \
+  && apt-get install --no-install-recommends -y \
   kubectl google-cloud-sdk \
   postgresql-client-12 \
   && rm -rf /var/apt/lists/*
 
 # Our primary tooling layer
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
+RUN DEBIAN_FRONTEND=noninteractive \
+  apt-get update \
+  && apt-get install --no-install-recommends -y \
   emacs-nox \
   docker docker.io \
   inotify-tools \
@@ -39,7 +44,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
   && rm -rf /var/apt/lists/*
 
 # Secondary tooling layer
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
+RUN DEBIAN_FRONTEND=noninteractive \
+  apt-get update \
+  && apt-get install --no-install-recommends -y \
   apache2-utils \
   git \
   sqlite3 \
