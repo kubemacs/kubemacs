@@ -3,9 +3,11 @@
 
 FROM ubuntu:eoan-20200114
 
+RUN DEBIAN_FRONTEND=noninteractive apt-get install gnup2 && rm -rf /var/apt/lists/*
+
 # install Kubernetes client and Google Cloud SDK REPO
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
-  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+  wget --quiet -O - https://packages.cloud.google.com/apt/doc/apt-key.gpg \
   | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
 
 # install postgresql repo to later grab postgresql-client-12
