@@ -5,6 +5,8 @@ FROM ubuntu:eoan-20200114
 
 # We need gpupg for apt-key installation to work
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
+  wget \
+  curl \
   gnupg2 \
   && rm -rf /var/apt/lists/*
 
@@ -21,32 +23,41 @@ RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ eoan-pgdg main" \
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
   | apt-key add -
 
-# upgrade existing and also install some useful packages
+# Install from the upstream repos
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get upgrade -y && apt-get install -y \
-  emacs-nox \
-  docker docker.io \
   kubectl google-cloud-sdk \
   postgresql-client-12 \
-  sudo wget curl acl \
+  && rm -rf /var/apt/lists/*
+
+# Our primary tooling layer
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
+  emacs-nox \
+  docker docker.io \
+  inotify-tools \
+  jq \
+  xtermcontrol \
+  && rm -rf /var/apt/lists/*
+
+# Secondary tooling layer
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
+  apache2-utils \
+  git \
+  sqlite3 \
+  zsh \
+  vim \
+  rsync \
+  tzdata \
+  acl \
   apt-file \
   apt-transport-https \
   apt-utils \
   build-essential \
-  zsh \
-  sqlite3 \
-  rsync \
-  inotify-tools \
-  jq \
-  vim \
-  xtermcontrol \
-  tzdata \
-  gnupg2 \
   software-properties-common \
-  git \
   silversearcher-ag \
+  sudo \
   ripgrep \
-  psmisc \
-  apache2-utils
+  psmisc
+  && rm -rf /var/apt/lists/*
 
 # install golang
 RUN cd /tmp && \
