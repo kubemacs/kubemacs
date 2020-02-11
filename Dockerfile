@@ -4,7 +4,9 @@
 FROM ubuntu:eoan-20200114
 
 # We need gpupg for apt-key installation to work
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
+RUN apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  tzdata \
   wget \
   curl \
   gnupg2 \
@@ -55,7 +57,6 @@ RUN DEBIAN_FRONTEND=noninteractive \
   zsh \
   vim \
   rsync \
-  tzdata \
   acl \
   apt-file \
   apt-transport-https \
