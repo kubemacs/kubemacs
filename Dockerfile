@@ -7,7 +7,6 @@ ENV KUBEMACS_VERSION=0.0.2 \
   KUBECTL_VERSION=1.17.2 \
   GO_VERSION=1.13.6 \
   TILT_VERSION=0.12.0 \
-  NODE_VERSION=12 \
   TMATE_VERSION=2.4.0
 # GOLANG, path vars
 ENV GOROOT=/usr/local/go \
@@ -23,8 +22,9 @@ ENV PGUSER=apisnoop \
 # Note the : following the KUBEMACS_CONFIGDIR in EMACSLOADPATH
 ENV KUBEMACS_CONFIGDIR=/var/local/kubemacs.d \
   EMACSLOADPATH=$KUBEMACS_CONFIGDIR:
+# Node 12, Postgres (pgdg), and Google Cloud SDK are currently available here:
 COPY apt/*.list /etc/apt/sources.list.d/
-# Ensure the keyfile mentioned for each repo above is available
+# Ensure the keyfile for each repo above is available
 COPY apt/*.gpg /etc/apt/trusted.gpg.d/
 
 # Install emacs (26.3) and curl (to install other binaries)
@@ -41,8 +41,8 @@ RUN DEBIAN_FRONTEND=noninteractive \
 
 # docker client binary
 RUN curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz \
-  | tar --directory=/usr/local/bin \
-        --extract --ungzip --strip-components=1  docker/docker
+  | tar --directory=/usr/local/bin --extract --ungzip \
+  --strip-components=1 docker/docker
 
 # kind binary
 RUN curl -Lo /usr/local/bin/kind \
@@ -57,32 +57,36 @@ RUN curl -L https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL
 # tilt binary
 RUN curl -fsSL \
   https://github.com/windmilleng/tilt/releases/download/v${TILT_VERSION}/tilt.${TILT_VERSION}.linux.x86_64.tar.gz \
-  | tar --directory /usr/local/bin -xvz tilt
+  | tar --directory /usr/local/bin --extract --ungzip tilt
 
-# install nodejs
-RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
-  DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
+# We stopped using a shell script, and added apt list+gpg files
+# # install nodejs
+# RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
+#   DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
 
 # install golang
 RUN cd /tmp && \
   curl -L https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz \
-  | tar --directory /usr/local -xvz
+  | tar --directory /usr/local --extract --ungzip
 
 # tmate allows others to connect to your session
 # they support using self hosted / though we default to using their hosted service
 RUN curl -L \
   https://github.com/tmate-io/tmate/releases/download/${TMATE_VERSION}/tmate-${TMATE_VERSION}-static-linux-amd64.tar.xz \
-  | tar xvJ -f - --strip-components 1  -C /usr/local/bin tmate-${TMATE_VERSION}-static-linux-amd64/tmate
+  | tar --directory /usr/local/bin --extract --xz \
+  --strip-components 1 tmate-${TMATE_VERSION}-static-linux-amd64/tmate
 
-# Major dependencies
+# Major dependencies (nodejs + postgres come from upstream apt repos)
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
   apt-get install --no-install-recommends -y \
   git \
+  nodejs \
   postgresql-client-12 \
   jq \
   inotify-tools \
   xtermcontrol \
+  nodejs \
   gnupg2 \
   tzdata \
   wget \
@@ -91,23 +95,23 @@ RUN apt-get update \
   silversearcher-ag \
   && rm -rf /var/apt/lists/*
 
-# Known dependencies
-RUN apt-get update \
-  && DEBIAN_FRONTEND=noninteractive \
-  apt-get install --no-install-recommends -y \
-  acl \
-  apt-file \
-  apt-utils \
-  build-essential \
-  ripgrep \
-  psmisc \
-  rsync \
-  software-properties-common \
-  sudo \
-  vim \
-  zsh \
-  && rm -rf /var/apt/lists/*
-  # apt-transport-https \
+# # Known dependencies
+# RUN apt-get update \
+#   && DEBIAN_FRONTEND=noninteractive \
+#   apt-get install --no-install-recommends -y \
+#   acl \
+#   apt-file \
+#   apt-utils \
+#   build-essential \
+#   ripgrep \
+#   psmisc \
+#   rsync \
+#   software-properties-common \
+#   sudo \
+#   vim \
+#   zsh \
+#   && rm -rf /var/apt/lists/*
+#   # apt-transport-https \
 
 # gopls, gocode, and others needed for dev will install into /usr/local/bin
 RUN GOPATH=/usr/local \
