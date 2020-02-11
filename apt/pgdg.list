@@ -1,0 +1,4 @@
+# https://wiki.postgresql.org/wiki/Apt#PostgreSQL_packages_for_Debian_and_Ubuntu
+# curl https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+# | gpg --dearmor  > /etc/apt/trusted.gpg.d/pgdg.gpg
+deb http://apt.postgresql.org/pub/repos/apt/ eoan-pgdg main
