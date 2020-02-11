@@ -3,12 +3,10 @@
 
 FROM ubuntu:eoan-20200114
 
-# Setup Google Cloud SDK REPO
-COPY apt/google-cloud-sdk.list /etc/apt/sources.list.d/
-COPY apt/google-cloud-repo.gpg /usr/share/keyrings/
-# # Setup Postgresql Upstream REPO
-COPY apt/postgresql.list /etc/apt/sources.list.d/
-COPY apt/postgresql-repo.gpg /usr/share/keyrings/
+# Setup Postgresql Upstream REPO - Google Cloud SDK REPO
+COPY apt/google-cloud-sdk.list apt/postgresql.list /etc/apt/sources.list.d/
+# Ensure the keyfile mentioned for each repo above is available
+COPY apt/apt.postgresql.gpg  apt/cloud.google.gpg /usr/share/keyrings/
 # We were downloading these during build... but including them reduces build time and more cleary locks in the signatures for these repos
 # RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
 #   | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
