@@ -5,28 +5,28 @@ FROM ubuntu:eoan-20200114
 
 # We need gpupg for apt-key installation to work
 RUN apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  && DEBIAN_FRONTEND=noninteractive
+  apt-get install --no-install-recommends -y \
   tzdata \
   wget \
   curl \
   gnupg2 \
   && rm -rf /var/apt/lists/*
 
-# install Kubernetes client and Google Cloud SDK REPO
+# Setup Google Cloud SDK REPO
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
   | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
 RUN wget --quiet -O - https://packages.cloud.google.com/apt/doc/apt-key.gpg \
   | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
 
-# install postgresql repo to later grab postgresql-client-12
-# postgresql-client-12 to connect to the db
+# Setup Postgresql Upstream REPO
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ eoan-pgdg main" \
   |  tee -a /etc/apt/sources.list.d/postgresql.list
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
   | apt-key add -
 
-# Install from the upstream repos
-  RUN DEBIAN_FRONTEND=noninteractive \
+# Install upstream psql 12 and kubectl current
+RUN DEBIAN_FRONTEND=noninteractive \
   apt-get update \
   && apt-get upgrade -y \
   && apt-get install --no-install-recommends -y \
@@ -35,8 +35,7 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
   && rm -rf /var/apt/lists/*
 
 # Our primary tooling layer
-RUN DEBIAN_FRONTEND=noninteractive \
-  apt-get update \
+RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
   apt-get install --no-install-recommends -y \
   emacs-nox \
@@ -47,8 +46,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
   && rm -rf /var/apt/lists/*
 
 # Secondary tooling layer
-RUN DEBIAN_FRONTEND=noninteractive \
-  apt-get update \
+RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
   apt-get install --no-install-recommends -y \
   apache2-utils \
@@ -75,10 +73,14 @@ RUN cd /tmp && \
   | tar -C /usr/local -xvz
 
 ENV GOROOT=/usr/local/go \
-  PATH=$PATH:/usr/local/go/bin
+  PATH="$PATH:/usr/local/go/bin"
+
 # gopls, gocode, and others needed for dev will install into /usr/local/bin
-RUN GOPATH=/usr/local go get -u -v github.com/nsf/gocode && rm -rf /root/.cache /usr/local/pkg /usr/local/src
-RUN GOPATH=/usr/local go get -u -v golang.org/x/tools/... && rm -rf /root/.cache /usr/local/pkg /usr/local/src
+RUN GOPATH=/usr/local \
+  go get -u -v github.com/nsf/gocode \
+  && GOPATH=/usr/local \
+  go get -u -v golang.org/x/tools/... \
+  && rm -rf /root/.cache /usr/local/pkg /usr/local/src
 
 # We used tilt
 RUN curl -fsSL "https://github.com/windmilleng/tilt/releases/download/v0.11.3/tilt.0.11.3.linux.x86_64.tar.gz" \
@@ -110,7 +112,7 @@ ENV IIMACSVERSION=0.9.34 \
   EMACSLOADPATH=$KUBEMACS_CONFIGDIR:
 # This used to exist in it's own repo
 # RUN git clone --depth 1 --recursive https://github.com/iimacs/.emacs.d /var/local/iimacs.d
-RUN mkdir -4 $KUBEMACS_CONFIGDIR
+RUN mkdir -p $KUBEMACS_CONFIGDIR
 # The interesting/configuration parts of iimacs/kubemacs need to be in $EMACSLOADPATH
 COPY init.el site-start.el banners snippets layers spacemacs
 # TODO This cache of compiled .elc files should be part of the build cache at some point
