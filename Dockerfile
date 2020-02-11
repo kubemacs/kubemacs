@@ -120,16 +120,16 @@ RUN apt-get update \
 #   # apt-transport-https \
 
 # gopls, gocode, and others needed for dev will install into /usr/local/bin
-RUN GOPATH=/usr/local \
-  go get -u -v github.com/nsf/gocode \
-  && GOPATH=/usr/local \
-  go get -u -v golang.org/x/tools/... \
-  && rm -rf /root/.cache /usr/local/pkg /usr/local/src
+# RUN GOPATH=/usr/local \
+#   go get -u -v github.com/nsf/gocode \
+#   && GOPATH=/usr/local \
+#   go get -u -v golang.org/x/tools/... \
+#   && rm -rf /root/.cache /usr/local/pkg /usr/local/src
 
 
-# ensure that Python3 is default
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1 && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3 2
+# # ensure that Python3 is default
+# RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1 && \
+#     update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 # Ideally we used a checkout of this repo, but I'm having trouble with the build + submodules
 RUN git clone --depth 1 --recursive https://github.com/kubemacs/kubemacs /var/local/kubemacs.d

@@ -29,15 +29,12 @@ if [ ! -z $INIT_DEFAULT_REPO ]; then
 fi
 
 if [ -z $GIT_AUTHOR_EMAIL ]; then
-    # git config --global --get user.email
-    echo "What is your email?"
-    read EMAIL
-    git config --global user.email $EMAIL
+    echo "ERROR: GIT_AUTHOR_EMAIL env Must be set"
+    exit 1
 fi
 if [ -z $GIT_AUTHOR_NAME ]; then
-    echo "What is your name?"
-    read NAME
-    git config --global user.name $NAME
+    echo "ERROR: GIT_AUTHOR_NAME env Must be set"
+    exit 1
 fi
 
 export ALTERNATE_EDITOR=""
