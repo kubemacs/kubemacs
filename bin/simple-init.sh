@@ -28,13 +28,13 @@ if [ ! -z $INIT_DEFAULT_REPO ]; then
     git clone -v --recursive $INIT_DEFAULT_REPO
 fi
 
-if [ -z $GIT_COMMITTER_EMAIL ]; then
+if [ -z $GIT_AUTHOR_EMAIL ]; then
     # git config --global --get user.email
     echo "What is your email?"
     read EMAIL
     git config --global user.email $EMAIL
 fi
-if [ -z $GIT_COMMITTER_NAME ]; then
+if [ -z $GIT_AUTHOR_NAME ]; then
     echo "What is your name?"
     read NAME
     git config --global user.name $NAME
