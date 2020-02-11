@@ -1,37 +1,37 @@
-# "iimacs" Add "Spacemacs" layer, supporting files and "ii" user
-# Version 0.2 Jan 2020
-
 FROM ubuntu:eoan-20200114
 
 # ca-certificates need to be updated to connect to google cloud sdk repo
-RUN apt-get update \
-  && DEBIAN_FRONTEND=noninteractive \
-  apt-get install --no-install-recommends -y \
-  ca-certificates \
-  && rm -rf /var/apt/lists/*
+# RUN apt-get update \
+#   && DEBIAN_FRONTEND=noninteractive \
+#   apt-get install --no-install-recommends -y \
+#   ca-certificates \
+#   && rm -rf /var/apt/lists/*
 
 # Setup Postgresql Upstream REPO - Google Cloud SDK REPO
 COPY apt/*.list /etc/apt/sources.list.d/
 # Ensure the keyfile mentioned for each repo above is available
 COPY apt/*.gpg /etc/apt/trusted.gpg.d/
 
-# Install upstream psql 12 and kubectl current
+# Install upstream psql 12, kubectl, and google-cloud-sdk
 RUN DEBIAN_FRONTEND=noninteractive \
   apt-get update \
   && apt-get upgrade -y \
   && apt-get install --no-install-recommends -y \
-  kubectl google-cloud-sdk \
   postgresql-client-12 \
   && rm -rf /var/apt/lists/*
+  # Installing just kubectl insteaf of everything from google-cloud-sdk
+  # but still enabling the repo should someone need it later
+  # kubectl \
+  # google-cloud-sdk \
 
-# Our primary tooling layer
+# Our primary tooling: emacs, docker, jq, etc
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
   apt-get install --no-install-recommends -y \
   emacs-nox \
   docker docker.io \
-  inotify-tools \
   jq \
+  inotify-tools \
   xtermcontrol \
   && rm -rf /var/apt/lists/*
 
@@ -60,6 +60,11 @@ RUN apt-get update \
   ripgrep \
   psmisc \
   && rm -rf /var/apt/lists/*
+
+# Install just the kubectl binary
+RUN  curl -L https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl \
+  -o /usr/local/bin/kubectl \
+  && chmod +x /usr/local/bin/kubectl
 
 # install golang
 RUN cd /tmp && \
@@ -108,7 +113,7 @@ ENV IIMACSVERSION=0.9.34 \
 # RUN git clone --depth 1 --recursive https://github.com/iimacs/.emacs.d /var/local/iimacs.d
 RUN mkdir -p $KUBEMACS_CONFIGDIR
 # The interesting/configuration parts of iimacs/kubemacs need to be in $EMACSLOADPATH
-COPY init.el site-start.el banners snippets layers spacemacs
+COPY init.el site-start.el banners snippets layers spacemacs $KUBEMACS_CONFIGDIR/
 # TODO This cache of compiled .elc files should be part of the build cache at some point
 #  TARFILE=kubemacs-cache-0.9.32.tgz ; kubectl exec kubemacs-0 -- tar --directory /var/local/iimacs.d --create  --gzip --file - spacemacs/elpa/26.3 > $TARFILE ; gsutil cp $TARFILE gs://kubemacs/cache/$TARFILE
 RUN curl https://storage.googleapis.com/apisnoop/dev/kubemacs-cache-0.9.32.tgz \

@@ -1,2 +1,2 @@
 # https://packages.cloud.google.com/apt/doc/apt-key.gpg should be copied into /etc/apt/trusted.gpg.d
-deb https://packages.cloud.google.com/apt cloud-sdk main
+deb http://packages.cloud.google.com/apt cloud-sdk main
