@@ -4,9 +4,9 @@ ENV KUBEMACS_VERSION=0.0.2 \
   EMACS_VERSION=26.3 \
   DOCKER_VERSION=19.03.5 \
   KIND_VERSION=0.7.0 \
-  KUBECTL_VERSION=0.17.2 \
-  GO_VERSION=1.13.4 \
-  TILT_VERSION=0.11.3 \
+  KUBECTL_VERSION=1.17.2 \
+  GO_VERSION=1.13.6 \
+  TILT_VERSION=0.12.0 \
   NODE_VERSION=12 \
   TMATE_VERSION=2.4.0
 # GOLANG, path vars
@@ -50,7 +50,7 @@ RUN curl -Lo /usr/local/bin/kind \
   && chmod +x /usr/local/bin/kind
 
 # kubectl binary
-RUN curl -L https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl \
+RUN curl -L https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl \
   -o /usr/local/bin/kubectl \
   && chmod +x /usr/local/bin/kubectl
 
