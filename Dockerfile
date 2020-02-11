@@ -3,29 +3,17 @@
 
 FROM ubuntu:eoan-20200114
 
+# ca-certificates need to be updated to connect to google cloud sdk repo
+RUN apt-get update \
+  && DEBIAN_FRONTEND=noninteractive \
+  apt-get install --no-install-recommends -y \
+  ca-certificates \
+  && rm -rf /var/apt/lists/*
+
 # Setup Postgresql Upstream REPO - Google Cloud SDK REPO
 COPY apt/*.list /etc/apt/sources.list.d/
 # Ensure the keyfile mentioned for each repo above is available
 COPY apt/*.gpg /etc/apt/trusted.gpg.d/
-# We were downloading these during build... but including them reduces build time and more cleary locks in the signatures for these repos
-# RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
-#   | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-# RUN wget --quiet -O - https://packages.cloud.google.com/apt/doc/apt-key.gpg \
-#   | apt-key add -
-#   # | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-
-# # Setup Postgresql Upstream REPO
-# RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ eoan-pgdg main" \
-#   |  tee -a /etc/apt/sources.list.d/postgresql.list
-# RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
-#   | apt-key add -
-
-# We need gpupg for apt-key installation to work
-RUN apt-get update \
-  && DEBIAN_FRONTEND=noninteractive \
-  apt-get install --no-install-recommends -y \
-  gnupg2 \
-  && rm -rf /var/apt/lists/*
 
 # Install upstream psql 12 and kubectl current
 RUN DEBIAN_FRONTEND=noninteractive \
@@ -51,6 +39,7 @@ RUN apt-get update \
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
   apt-get install --no-install-recommends -y \
+  gnupg2 \
   tzdata \
   wget \
   curl \
