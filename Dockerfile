@@ -5,7 +5,7 @@ FROM ubuntu:eoan-20200114
 
 # We need gpupg for apt-key installation to work
 RUN apt-get update \
-  && DEBIAN_FRONTEND=noninteractive
+  && DEBIAN_FRONTEND=noninteractive \
   apt-get install --no-install-recommends -y \
   tzdata \
   wget \
