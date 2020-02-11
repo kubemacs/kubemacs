@@ -28,8 +28,20 @@ if [ ! -z $INIT_DEFAULT_REPO ]; then
     git clone -v --recursive $INIT_DEFAULT_REPO
 fi
 
+if [ -z $GIT_COMMITTER_EMAIL ]; then
+    # git config --global --get user.email
+    echo "What is your email?"
+    read EMAIL
+    git config --global user.email $EMAIL
+fi
+if [ -z $GIT_COMMITTER_NAME ]; then
+    echo "What is your name?"
+    read NAME
+    git config --global user.name $NAME
+fi
+
 export ALTERNATE_EDITOR=""
-export TMATE_SOCKET="/tmp/ii.default.target.iisocket"
+export TMATE_SOCKET="${TMATE_SOCKET:-/tmp/ii.default.target.iisocket}"
 export TMATE_SOCKET_NAME=`basename ${TMATE_SOCKET}`
 export INIT_ORG_FILE="${INIT_ORG_FILE:-~/}"
 export INIT_DEFAULT_DIR="${INIT_DEFAULT_DIR:-~/}"

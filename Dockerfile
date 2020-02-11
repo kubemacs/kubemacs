@@ -20,8 +20,8 @@ ENV PGUSER=apisnoop \
   TZ="Pacific/Auckland"
 # These vars ensure that emacs loads kubemacs before all else
 # Note the : following the KUBEMACS_CONFIGDIR in EMACSLOADPATH
-ENV KUBEMACS_CONFIGDIR=/var/local/kubemacs.d \
-  EMACSLOADPATH=$KUBEMACS_CONFIGDIR:
+ENV KUBEMACS_CONFIGDIR=/var/local/kubemacs.d
+ENV EMACSLOADPATH=$KUBEMACS_CONFIGDIR:
 # Node 12, Postgres (pgdg), and Google Cloud SDK are currently available here:
 COPY apt/*.list /etc/apt/sources.list.d/
 # Ensure the keyfile for each repo above is available
@@ -30,11 +30,14 @@ COPY apt/*.gpg /etc/apt/trusted.gpg.d/
 # Install emacs (26.3) and curl (to install other binaries)
 # Note that ubuntu:eoan defaults to 26.3
 # ca-certificates are needed to CA updates for download.docker.com and others
+# xz-utils, for tmate tar compression
 RUN DEBIAN_FRONTEND=noninteractive \
   apt-get update \
   && apt-get upgrade -y \
   && apt-get install --no-install-recommends -y \
   emacs-nox \
+  xz-utils \
+  sudo \
   curl \
   ca-certificates \
   && rm -rf /var/apt/lists/*
@@ -81,6 +84,7 @@ RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
   apt-get install --no-install-recommends -y \
   git \
+  openssh-client \
   nodejs \
   postgresql-client-12 \
   jq \
@@ -90,6 +94,8 @@ RUN apt-get update \
   gnupg2 \
   tzdata \
   wget \
+  python3-dev \
+  xz-utils \
   apache2-utils \
   sqlite3 \
   silversearcher-ag \
@@ -125,11 +131,12 @@ RUN GOPATH=/usr/local \
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1 && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
-# This used to exist in it's own repo
-# RUN git clone --depth 1 --recursive https://github.com/iimacs/.emacs.d /var/local/iimacs.d
-RUN mkdir -p $KUBEMACS_CONFIGDIR
+# Ideally we used a checkout of this repo, but I'm having trouble with the build + submodules
+RUN git clone --depth 1 --recursive https://github.com/kubemacs/kubemacs /var/local/kubemacs.d
+# TODO I'm unsure how to clone recusively during cloud-build
+#RUN mkdir -p $KUBEMACS_CONFIGDIR
 # The interesting/configuration parts of iimacs/kubemacs need to be in $EMACSLOADPATH
-COPY init.el site-start.el banners snippets layers spacemacs $KUBEMACS_CONFIGDIR/
+# COPY init.el site-start.el banners snippets layers spacemacs $KUBEMACS_CONFIGDIR/
 # TODO This cache of compiled .elc files should be part of the build cache at some point
 #  TARFILE=kubemacs-cache-0.9.32.tgz ; kubectl exec kubemacs-0 -- tar --directory /var/local/iimacs.d --create  --gzip --file - spacemacs/elpa/26.3 > $TARFILE ; gsutil cp $TARFILE gs://kubemacs/cache/$TARFILE
 RUN curl https://storage.googleapis.com/apisnoop/dev/kubemacs-cache-0.9.32.tgz \
@@ -164,7 +171,7 @@ USER ii
 # RUN git clone --depth 1 https://github.com/cncf/apisnoop /home/ii/apisnoop
 # RUN cd /home/ii/apisnoop/org/tickets ; go mod download
 
-ENTRYPOINT ["/bin/bash"]
+# ENTRYPOINT ["/bin/bash"]
 CMD ["simple-init.sh"]
 HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=5 \
   CMD ["tmate", "-S ", "/tmp/ii.default.target.iisocket", "wait-for", "tmate-ready"] || exit 1
