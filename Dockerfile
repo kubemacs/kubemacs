@@ -7,10 +7,6 @@ FROM ubuntu:eoan-20200114
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
   apt-get install --no-install-recommends -y \
-  tzdata \
-  wget \
-  curl \
-  gnupg2 \
   && rm -rf /var/apt/lists/*
 
 # Setup Google Cloud SDK REPO
@@ -56,6 +52,10 @@ RUN apt-get update \
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
   apt-get install --no-install-recommends -y \
+  tzdata \
+  wget \
+  curl \
+  gnupg2 \
   apache2-utils \
   git \
   sqlite3 \
