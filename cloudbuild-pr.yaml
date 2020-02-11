@@ -1,0 +1,14 @@
+timeout: 1200s
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/${PROJECT_ID}/kubemacs:pr-${_PR_NUMBER}'
+      - '--build-arg'
+      - 'IMAGE_ARG=gcr.io/${PROJECT_ID}/kubemacs:pr-${_PR_NUMBER}'
+      - '.'
+images:
+  - 'gcr.io/${PROJECT_ID}/kubemacs:pr-${_PR_NUMBER}'
+substitutions:
+  _PR_NUMBER: '1'
