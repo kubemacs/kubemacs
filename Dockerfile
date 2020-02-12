@@ -140,7 +140,8 @@ ADD kind-cluster-config.yaml /usr/share/kubemacs/
 RUN git clone --depth 1 https://github.com/cncf/apisnoop /usr/share/kubemacs/apisnoop
 
 # Ideally we used a checkout of this repo, but I'm having trouble with the build + submodules
-RUN git clone --depth 1 --recursive https://github.com/kubemacs/kubemacs /var/local/kubemacs.d
+# RUN git clone --depth 1 --recursive https://github.com/kubemacs/kubemacs /var/local/kubemacs.d
+ADD --chown=root:users banners *.el layers snippets spacemacs
 # TODO I'm unsure how to clone recusively during cloud-build
 #RUN mkdir -p $KUBEMACS_CONFIGDIR
 # The interesting/configuration parts of iimacs/kubemacs need to be in $EMACSLOADPATH
