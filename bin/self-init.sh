@@ -28,14 +28,14 @@ function execPrintOutputIfFailure() {
 function promptEnterOrNo() {
     read -p "$*" prompt
     if [ "$prompt" = "n" ]; then
-        return false
+        return 1
     fi
     return
 }
 
 KUBEMACS_IMAGE="${KUBEMACS_IMAGE:-}"
 KUBEMACS_INIT_SELF_CONTAINER_NAME="${KUBEMACS_INIT_SELF_CONTAINER_NAME:-kubemacs-init}"
-KUBEMACS_INIT_DEBUG="${KUBEMACS_INIT_DEBUG:-false}"
+KUBEMACS_INIT_DEBUG="${KUBEMACS_INIT_DEBUG:-1}"
 KUBEMACS_HOST_KUBECONFIG_NAME="${KUBEMACS_HOST_KUBECONFIG_NAME:-config-kind-my-cluster}"
 KUBEMACS_DEFAULT_KIND_NAME="${KUBEMACS_DEFAULT_KIND_NAME:-kind}"
 KUBEMACS_GIT_EMAIL="${KUBEMACS_GIT_EMAIL:-}"
@@ -72,7 +72,7 @@ cat <<EOF
 | KUBEMACS_HOST_KUBECONFIG_NAME     | config-kind      | $KUBEMACS_INIT_DEBUG |
 | KUBEMACS_DEFAULT_KIND_NAME        | kind             | $KUBEMACS_DEFAULT_KIND_NAME |
 | KUBEMACS_GIT_EMAIL                |                  | $KUBEMACS_GIT_EMAIL |
-| KUBEMACS_GIT_NAME                 |                  | $KUBEMACS_GIT_NAME|
+| KUBEMACS_GIT_NAME                 |                  | $KUBEMACS_GIT_NAME |
 | KUBEMACS_TIMEZONE                 | Pacific/Auckland | $KUBEMACS_TIMEZONE |
 | KUBEMACS_INIT_DEFAULT_REPOS       |                  | $KUBEMACS_INIT_DEFAULT_REPOS |
 | KUBEMACS_INIT_DEFAULT_DIR         | /home/ii         | $KUBEMACS_INIT_DEFAULT_DIR |
@@ -110,27 +110,37 @@ if ! touch "/tmp/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME"; then
     echo "[error] cannot write to '/tmp/.kube', please check permissions"
 fi
 
+WILL_CREATE_CLUSTER=true
 if kind get clusters | grep "$KUBEMACS_DEFAULT_KIND_NAME" 2>&1 > /dev/null; then
     if promptEnterOrNo "There appears to be a Kind cluster existing called '$KUBEMACS_DEFAULT_KIND_NAME', is it OK to delete it and recreate it? [enter|n] "; then
         execPrintOutputIfFailure kind delete cluster --name "$KUBEMACS_DEFAULT_KIND_NAME"
+    else
+        WILL_CREATE_CLUSTER=false
     fi
 fi
 
-echo "[status] creating kind cluster"
-kind create cluster --name "$KUBEMACS_DEFAULT_KIND_NAME" --config /usr/share/kubemacs/kind-cluster-config.yaml
+if [ "$WILL_CREATE_CLUSTER" = true ]; then
+    echo "[status] creating kind cluster"
+    kind create cluster --name "$KUBEMACS_DEFAULT_KIND_NAME" --config /usr/share/kubemacs/kind-cluster-config.yaml
+    execPrintOutputIfFailure kubectl config set clusters.kind-"$KUBEMACS_DEFAULT_KIND_NAME".server "https://127.0.0.1:6443"
+else
+    echo "[status] using existing kind cluster"
+    echo "[status] copying KUBECONFIG from host"
+    mkdir -p /root/.kube
+    execPrintOutputIfFailure cp -f "/tmp/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME" /root/.kube/config
+fi
 
-execPrintOutputIfFailure kubectl config set clusters.kind-"$KUBEMACS_DEFAULT_KIND_NAME".server "https://127.0.0.1:6443"
-
-sleep 7s
 if ! kubectl cluster-info 2>&1 > /dev/null; then
     echo "[error] unable to talk to newly created cluster"
     exit 1
 fi
 
-echo "[status] copying KUBECONFIG back to host"
-execPrintOutputIfFailure cp -f /root/.kube/config "/tmp/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME"
-if [ ! -n "$HOST_UID" ]; then
-    chown "$HOST_UID" "/tmp/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME"
+if [ "$WILL_CREATE_CLUSTER" = true ]; then
+    echo "[status] copying KUBECONFIG back to host"
+    execPrintOutputIfFailure cp -f /root/.kube/config "/tmp/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME"
+    if [ ! -n "$HOST_UID" ]; then
+        chown "$HOST_UID" "/tmp/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME"
+    fi
 fi
 
 if [ -z "$KUBEMACS_IMAGE" ]; then
@@ -171,11 +181,18 @@ execPrintOutputIfFailure kind load docker-image --name "$KUBEMACS_DEFAULT_KIND_N
 echo "[status] bringing up kubemacs in Kind"
 execPrintOutputIfFailure kubectl apply -k /root
 
+echo "[status] waiting for Kubemacs StatefulSet to have 1 ready Replica..."
+while [ "$(kubectl get statefulset kubemacs -o json | jq .status.readyReplicas)" != 1 ]; do
+    sleep 1s
+done
+echo "[status] kubemacs has 1 stateful set"
+
+echo "[status] waiting for kubemacs to be ready"
+execPrintOutputIfFailure kubectl wait --for=condition=Ready pod/kubemacs-0
+
 echo "[status] complete!"
 
-echo "
->>>>>>> Add: permission fixing of kubeconfig; Fix: EMACSLOADPATH, adding of kubemacs emacs files into container, output of final help messages
-export KUBECONFIG=~/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME
+echo "export KUBECONFIG=~/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME
 kubectl exec -it kubemacs-0 -- attach
 " | /usr/local/bin/osc52.sh
 

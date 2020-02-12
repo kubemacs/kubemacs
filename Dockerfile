@@ -138,7 +138,6 @@ RUN git clone --depth 1 https://github.com/cncf/apisnoop /usr/share/kubemacs/api
 
 # Ideally we used a checkout of this repo, but I'm having trouble with the build + submodules
 # RUN git clone --depth 1 --recursive https://github.com/kubemacs/kubemacs /var/local/kubemacs.d
-RUN mkdir -p $KUBEMACS_CONFIGDIR/
 ADD --chown=root:users *.el $KUBEMACS_CONFIGDIR/
 ADD --chown=root:users banners $KUBEMACS_CONFIGDIR/banners
 ADD --chown=root:users layers $KUBEMACS_CONFIGDIR/layers
