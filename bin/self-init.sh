@@ -66,10 +66,10 @@ cat <<EOF
 | -------------------------------------------------------------------- |
 | Property                          | Default value    | Current value |
 | --------------------------------- | ---------------- | ------------- |
-| KUBEMACS_IMAGE                    |                  | $KUBEMACS_INIT_DEBUG |
-| KUBEMACS_INIT_SELF_CONTAINER_NAME | kubemacs-init    | $KUBEMACS_INIT_DEBUG |
+| KUBEMACS_IMAGE                    |                  | $KUBEMACS_IMAGE |
+| KUBEMACS_INIT_SELF_CONTAINER_NAME | kubemacs-init    | $KUBEMACS_INIT_SELF_CONTAINER_NAME |
 | KUBEMACS_INIT_DEBUG               | false            | $KUBEMACS_INIT_DEBUG |
-| KUBEMACS_HOST_KUBECONFIG_NAME     | config-kind      | $KUBEMACS_INIT_DEBUG |
+| KUBEMACS_HOST_KUBECONFIG_NAME     | config-kind      | $KUBEMACS_HOST_KUBECONFIG_NAME |
 | KUBEMACS_DEFAULT_KIND_NAME        | kind             | $KUBEMACS_DEFAULT_KIND_NAME |
 | KUBEMACS_GIT_EMAIL                |                  | $KUBEMACS_GIT_EMAIL |
 | KUBEMACS_GIT_NAME                 |                  | $KUBEMACS_GIT_NAME |
