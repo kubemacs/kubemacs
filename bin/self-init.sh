@@ -77,6 +77,7 @@ cat <<EOF
 | KUBEMACS_INIT_DEFAULT_REPOS       |                  | $KUBEMACS_INIT_DEFAULT_REPOS |
 | KUBEMACS_INIT_DEFAULT_DIR         | /home/ii         | $KUBEMACS_INIT_DEFAULT_DIR |
 | KUBEMACS_INIT_ORG_FILE            |                  | $KUBEMACS_INIT_ORG_FILE |
+| HOST_UID                          | 0                | $HOST_UID |
 
 EOF
 
@@ -116,7 +117,7 @@ if kind get clusters | grep "$KUBEMACS_DEFAULT_KIND_NAME" 2>&1 > /dev/null; then
 fi
 
 echo "[status] creating kind cluster"
-execPrintOutputIfFailure kind create cluster --name "$KUBEMACS_DEFAULT_KIND_NAME" --config /usr/share/kubemacs/kind-cluster-config.yaml
+kind create cluster --name "$KUBEMACS_DEFAULT_KIND_NAME" --config /usr/share/kubemacs/kind-cluster-config.yaml
 
 execPrintOutputIfFailure kubectl config set clusters.kind-"$KUBEMACS_DEFAULT_KIND_NAME".server "https://127.0.0.1:6443"
 
@@ -128,6 +129,9 @@ fi
 
 echo "[status] copying KUBECONFIG back to host"
 execPrintOutputIfFailure cp -f /root/.kube/config "/tmp/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME"
+if [ ! -n "$HOST_UID" ]; then
+    chown "$HOST_UID" "/tmp/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME"
+fi
 
 if [ -z "$KUBEMACS_IMAGE" ]; then
     KUBEMACS_IMAGE="$(docker ps | grep $KUBEMACS_INIT_SELF_CONTAINER_NAME | awk '{$2=$2};1' | cut -d' ' -f2)"
@@ -169,15 +173,17 @@ execPrintOutputIfFailure kubectl apply -k /root
 
 echo "[status] complete!"
 
-cat <<EOF | /usr/local/bin/osc52.sh
+echo "
+>>>>>>> Add: permission fixing of kubeconfig; Fix: EMACSLOADPATH, adding of kubemacs emacs files into container, output of final help messages
 export KUBECONFIG=~/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME
 kubectl exec -it kubemacs-0 -- attach
-EOF
+" | /usr/local/bin/osc52.sh
 
-cat <<EOF
-
+echo "
 On your host, run:
-  export KUBECONFIG=~/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME
-  kubectl -n ii exec -it kubemacs-0 -- attach
+
+export KUBECONFIG=~/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME
+kubectl -n ii exec -it kubemacs-0 -- attach
+
 or paste in a terminal what was added to your clipboard
-EOF
+"

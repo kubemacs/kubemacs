@@ -21,9 +21,6 @@ ENV PGUSER=apisnoop \
 # These vars ensure that emacs loads kubemacs before all else
 # Note the : following the KUBEMACS_CONFIGDIR in EMACSLOADPATH
 ENV KUBEMACS_CONFIGDIR=/var/local/kubemacs.d
-# FIXME: Why doesn't this work:
-# ENV EMACSLOADPATH=$KUBEMACS_CONFIGDIR:
-# Hardcoding instead:
 ENV EMACSLOADPATH=/var/local/kubemacs.d:
 # Node 12, Postgres (pgdg), and Google Cloud SDK are currently available here:
 COPY apt/*.list /etc/apt/sources.list.d/
@@ -141,6 +138,7 @@ RUN git clone --depth 1 https://github.com/cncf/apisnoop /usr/share/kubemacs/api
 
 # Ideally we used a checkout of this repo, but I'm having trouble with the build + submodules
 # RUN git clone --depth 1 --recursive https://github.com/kubemacs/kubemacs /var/local/kubemacs.d
+RUN mkdir -p $KUBEMACS_CONFIGDIR/
 ADD --chown=root:users *.el $KUBEMACS_CONFIGDIR/
 ADD --chown=root:users banners $KUBEMACS_CONFIGDIR/banners
 ADD --chown=root:users layers $KUBEMACS_CONFIGDIR/layers
