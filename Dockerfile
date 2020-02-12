@@ -132,7 +132,7 @@ RUN apt-get update \
 #     update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 RUN mkdir -p /usr/share/kubemacs
-ADD kind-cluster-config.yaml
+ADD kind-cluster-config.yaml /usr/share/kubemacs/
 
 RUN git clone --depth 1 https://github.com/cncf/apisnoop /usr/share/kubemacs/apisnoop
 
