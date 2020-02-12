@@ -141,7 +141,11 @@ RUN git clone --depth 1 https://github.com/cncf/apisnoop /usr/share/kubemacs/api
 
 # Ideally we used a checkout of this repo, but I'm having trouble with the build + submodules
 # RUN git clone --depth 1 --recursive https://github.com/kubemacs/kubemacs /var/local/kubemacs.d
-ADD --chown=root:users banners *.el layers snippets spacemacs
+ADD --chown=root:users *.el $KUBEMACS_CONFIGDIR/
+ADD --chown=root:users banners $KUBEMACS_CONFIGDIR/banners
+ADD --chown=root:users layers $KUBEMACS_CONFIGDIR/layers
+ADD --chown=root:users snippets $KUBEMACS_CONFIGDIR/snippets
+ADD --chown=root:users spacemacs $KUBEMACS_CONFIGDIR/spacemacs
 # TODO I'm unsure how to clone recusively during cloud-build
 #RUN mkdir -p $KUBEMACS_CONFIGDIR
 # The interesting/configuration parts of iimacs/kubemacs need to be in $EMACSLOADPATH
