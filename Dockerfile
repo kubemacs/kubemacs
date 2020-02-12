@@ -21,7 +21,10 @@ ENV PGUSER=apisnoop \
 # These vars ensure that emacs loads kubemacs before all else
 # Note the : following the KUBEMACS_CONFIGDIR in EMACSLOADPATH
 ENV KUBEMACS_CONFIGDIR=/var/local/kubemacs.d
-ENV EMACSLOADPATH=$KUBEMACS_CONFIGDIR:
+# FIXME: Why doesn't this work:
+# ENV EMACSLOADPATH=$KUBEMACS_CONFIGDIR:
+# Hardcoding instead:
+ENV EMACSLOADPATH=/var/local/kubemacs.d:
 # Node 12, Postgres (pgdg), and Google Cloud SDK are currently available here:
 COPY apt/*.list /etc/apt/sources.list.d/
 # Ensure the keyfile for each repo above is available
@@ -137,7 +140,12 @@ ADD kind-cluster-config.yaml /usr/share/kubemacs/
 RUN git clone --depth 1 https://github.com/cncf/apisnoop /usr/share/kubemacs/apisnoop
 
 # Ideally we used a checkout of this repo, but I'm having trouble with the build + submodules
-RUN git clone --depth 1 --recursive https://github.com/kubemacs/kubemacs /var/local/kubemacs.d
+# RUN git clone --depth 1 --recursive https://github.com/kubemacs/kubemacs /var/local/kubemacs.d
+ADD --chown=root:users *.el $KUBEMACS_CONFIGDIR/
+ADD --chown=root:users banners $KUBEMACS_CONFIGDIR/banners
+ADD --chown=root:users layers $KUBEMACS_CONFIGDIR/layers
+ADD --chown=root:users snippets $KUBEMACS_CONFIGDIR/snippets
+ADD --chown=root:users spacemacs $KUBEMACS_CONFIGDIR/spacemacs
 # TODO I'm unsure how to clone recusively during cloud-build
 #RUN mkdir -p $KUBEMACS_CONFIGDIR
 # The interesting/configuration parts of iimacs/kubemacs need to be in $EMACSLOADPATH
