@@ -20,6 +20,35 @@ docker build -t $IMAGE_TAG .
 kind load docker-image --nodes kind-worker $IMAGE_TAG
 #+END_SRC
 
+* Initializing only with Docker
+#+begin_src shell
+docker run -it --rm --privileged --name kubemacs-init \
+   -v $HOME/.kube:/tmp/.kube \
+   -v /var/run/docker.sock:/var/run/docker.sock \
+   -e KUBEMACS_GIT_EMAIL="myemail@example.com" \
+   -e KUBEMACS_GIT_NAME="My Name" \
+   -e KUBEMACS_INIT_DEFAULT_REPOS="https://github.com/cncf/apisnoop" \
+   -e KUBEMACS_INIT_ORG_FILE="\$HOME/apisnoop/deployment/k8s/xip.io/README.org" \
+   --user root \
+   gcr.io/kubemacs/kubemacs:latest /usr/local/bin/self-init.sh  
+#+end_src
+
+** Environment variables
+
+| Property                          | Default value    |
+|-----------------------------------+------------------|
+| KUBEMACS_IMAGE                    |                  |
+| KUBEMACS_INIT_SELF_CONTAINER_NAME | kubemacs-init    |
+| KUBEMACS_INIT_DEBUG               | false            |
+| KUBEMACS_HOST_KUBECONFIG_NAME     | config-kind      |
+| KUBEMACS_DEFAULT_KIND_NAME        | kind             |
+| KUBEMACS_GIT_EMAIL                |                  |
+| KUBEMACS_GIT_NAME                 |                  |
+| KUBEMACS_TIMEZONE                 | Pacific/Auckland |
+| KUBEMACS_INIT_DEFAULT_REPOS       |                  |
+| KUBEMACS_INIT_DEFAULT_DIR         | /home/ii         |
+| KUBEMACS_INIT_ORG_FILE            |                  |
+
 * Running in k8s
 ** Deployment   
    #+begin_src shell

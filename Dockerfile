@@ -131,6 +131,11 @@ RUN apt-get update \
 # RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1 && \
 #     update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
+RUN mkdir -p /usr/share/kubemacs
+ADD kind-cluster-config.yaml
+
+RUN git clone --depth 1 https://github.com/cncf/apisnoop /usr/share/kubemacs/apisnoop
+
 # Ideally we used a checkout of this repo, but I'm having trouble with the build + submodules
 RUN git clone --depth 1 --recursive https://github.com/kubemacs/kubemacs /var/local/kubemacs.d
 # TODO I'm unsure how to clone recusively during cloud-build

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -x
+if [ -z "\$1" ]; then
+    echo "No test provided";
+    return 1;
+fi;
+if [ -f "\$HOME/go/src/k8s.io/kubernetes/_output/bin/e2e.test" ] || [ "$USE_MAKE" ]; then
+    BIN="\$HOME/go/src/k8s.io/kubernetes/_output/bin/e2e.test";
+elif [ -f "\$HOME/go/src/k8s.io/kubernetes/bazel-bin/test/e2e/e2e.test" ] || [ "$USE_BAZEL" ]; then
+    BIN="\$HOME/go/src/k8s.io/kubernetes/bazel-bin/test/e2e/e2e.test";
+fi;
+cd ~/go/src/k8s.io/kubernetes;
+(
+    export KUBECONFIG="\$HOME/.kube/config";
+    time "\$BIN" --ginkgo.focus="$1" -v=2 --provider=skeleton
+) 2>&1;

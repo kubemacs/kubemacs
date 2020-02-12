@@ -42,12 +42,15 @@ export TMATE_SOCKET="${TMATE_SOCKET:-/tmp/ii.default.target.iisocket}"
 export TMATE_SOCKET_NAME=`basename ${TMATE_SOCKET}`
 export INIT_ORG_FILE="${INIT_ORG_FILE:-~/}"
 export INIT_DEFAULT_DIR="${INIT_DEFAULT_DIR:-~/}"
-export INIT_DEFAULT_REPO="${INIT_DEFAULT_REPO}"
+export INIT_DEFAULT_REPOS=${INIT_DEFAULT_REPOS}
+export INIT_DEFAULT_REPOS_FOLDER="${INIT_DEFAULT_REPOS_FOLDER:-~}"
 
 (
-    if [ ! -z $INIT_DEFAULT_REPO ]; then
-        cd ~
-        git clone -v --recursive $INIT_DEFAULT_REPO
+    if [ ! -z $INIT_DEFAULT_REPOS ]; then
+        cd $INIT_DEFAULT_REPOS_FOLDER
+        for repo in $INIT_DEFAULT_REPOS; do
+            git clone -v --recursive $repo
+        done
     fi
 )
 
@@ -70,6 +73,8 @@ cd $INIT_DEFAULT_DIR
     tmate -S $TMATE_SOCKET set-hook -ug client-attached # unset
     tmate -S $TMATE_SOCKET set-hook -g client-attached 'run-shell "tmate new-window osc52-tmate.sh"'
 )&
+
+/usr/local/bin/ssh-agent-export.sh
 
 # This is our primary background process for kubemacs
 # a tmate session in foreground mode, respawning if it dies
