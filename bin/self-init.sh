@@ -170,9 +170,23 @@ configMapGenerator:
   - INIT_DEFAULT_REPOS=${KUBEMACS_INIT_DEFAULT_REPOS}
   - INIT_DEFAULT_DIR=${KUBEMACS_INIT_DEFAULT_DIR}
   - INIT_ORG_FILE=${KUBEMACS_INIT_ORG_FILE}
-images:
-  - name: $KUBEMACS_IMAGE_NAME
-    newTag: $KUBEMACS_IMAGE_TAG
+patchesStrategicMerge:
+- |-
+  apiVersion: apps/v1
+  kind: StatefulSet
+  metadata:
+    name: kubemacs
+  spec:
+    template:
+      spec:
+        containers:
+        - name: kubemacs
+          image: ${KUBEMACS_IMAGE_NAME}:${KUBEMACS_IMAGE_TAG}
+# Kustomise 'images:" need exact-match for image:tag
+# Our kubemacs image repo may differ so we need to patch the statefulset instead
+# images:
+#   - name: $KUBEMACS_IMAGE_NAME
+#     newTag: $KUBEMACS_IMAGE_TAG
 EOF
 
 echo "[status] loading KUBEMACS image into Kind from Docker"
