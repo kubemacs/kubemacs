@@ -169,7 +169,7 @@ execPrintOutputIfFailure kubectl apply -k /root
 
 echo "[status] complete!"
 
-cat <<EOF | /usr/local/bin/osc25.sh
+cat <<EOF | /usr/local/bin/osc52.sh
 export KUBECONFIG=~/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME
 kubectl exec -it kubemacs-0 -- attach
 EOF
@@ -177,10 +177,7 @@ EOF
 cat <<EOF
 
 On your host, run:
-```
   export KUBECONFIG=~/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME
   kubectl -n ii exec -it kubemacs-0 -- attach
-```
-
 or paste in a terminal what was added to your clipboard
 EOF

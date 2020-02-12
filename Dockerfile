@@ -21,7 +21,10 @@ ENV PGUSER=apisnoop \
 # These vars ensure that emacs loads kubemacs before all else
 # Note the : following the KUBEMACS_CONFIGDIR in EMACSLOADPATH
 ENV KUBEMACS_CONFIGDIR=/var/local/kubemacs.d
-ENV EMACSLOADPATH=$KUBEMACS_CONFIGDIR:
+# FIXME: Why doesn't this work:
+# ENV EMACSLOADPATH=$KUBEMACS_CONFIGDIR:
+# Hardcoding instead:
+ENV EMACSLOADPATH=/var/local/kubemacs.d:
 # Node 12, Postgres (pgdg), and Google Cloud SDK are currently available here:
 COPY apt/*.list /etc/apt/sources.list.d/
 # Ensure the keyfile for each repo above is available
