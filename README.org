@@ -22,15 +22,20 @@ kind load docker-image --nodes kind-worker $IMAGE_TAG
 
 * Initializing only with Docker
 #+begin_src shell
-docker run -it --rm --privileged --name kubemacs-init \
-   -v $HOME/.kube:/tmp/.kube \
-   -v /var/run/docker.sock:/var/run/docker.sock \
-   -e KUBEMACS_GIT_EMAIL="myemail@example.com" \
-   -e KUBEMACS_GIT_NAME="My Name" \
-   -e KUBEMACS_INIT_DEFAULT_REPOS="https://github.com/cncf/apisnoop" \
-   -e KUBEMACS_INIT_ORG_FILE="\$HOME/apisnoop/deployment/k8s/xip.io/README.org" \
-   --user root \
-   gcr.io/kubemacs/kubemacs:latest /usr/local/bin/self-init.sh  
+  docker run -it --rm --name kubemacs-init \
+     -v "$HOME/.kube":/tmp/.kube \
+     -v /var/run/docker.sock:/var/run/docker.sock \
+     -e KUBEMACS_GIT_EMAIL="myemail@example.org" \
+     -e KUBEMACS_GIT_NAME="My name" \
+     -e KUBEMACS_INIT_DEFAULT_REPOS="https://github.com/cncf/apisnoop https://github.com/kubernetes/kubernetes" \
+     -e KUBEMACS_INIT_ORG_FILE="\$HOME/Projects/apisnoop/deployment/k8s/xip.io/README.org" \
+     -e KUBEMACS_DEFAULT_KIND_NAME=kind-self-init-test \
+     -e HOST_UID="$(id -u)" \
+     -e KUBEMACS_HOST_KUBECONFIG_NAME=config-kind-my-cluster \
+     --user root \
+     --network host \
+     gcr.io/kubemacs/kubemacs:latest \
+     bash /usr/local/bin/self-init.sh
 #+end_src
 
 ** Environment variables

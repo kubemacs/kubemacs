@@ -157,7 +157,9 @@ fi
 
 if ! kubectl cluster-info 2>&1 > /dev/null; then
     echo "[error] cannot talk to the newly created cluster - try running using '--network host'"
-    kind delete cluster --name "$KUBEMACS_DEFAULT_KIND_NAME"
+    if [ "$WILL_CREATE_CLUSTER" = true ]; then
+        kind delete cluster --name "$KUBEMACS_DEFAULT_KIND_NAME"
+    fi
     exit 1
 fi
 
