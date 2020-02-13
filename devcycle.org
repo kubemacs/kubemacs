@@ -4,6 +4,19 @@
   #+begin_src shell
     kubectl exec -it kubemacs-0 -- tmate -S /tmp/ii.default.target.iisocket at
   #+end_src
+* checkout-existing-PR/branch-from-src
+  #+begin_src shell
+    git clone https://github.com/kubemacs/kubemacs
+    # be sure and fork to your own user
+    cd kubemacs
+    git remote add dev git@github.com:bernokl/kubemacs.git
+    # to work on a branch based on a PR
+    git fetch origin refs/pull/6/head
+    git checkout -b devcycle FETCH_HEAD
+  #+end_src
+
+Now you can work on your the existing PR in a local branch.
+
 * dev-cycle
   #+begin_src tmate :dir "."
     # needs another var to not ask questions
@@ -23,7 +36,7 @@
      -e KUBEMACS_INIT_DEFAULT_REPOS='https://github.com/cncf/apisnoop git@gitlab.ii.coop:ii/hours.git' \
      -e KUBEMACS_INIT_DEFAULT_REPOS_FOLDER='Projects' \
      -e KUBEMACS_INIT_DEFAULT_DIR='Projects/apisnoop' \
-     -e KUBEMACS_INIT_ORG_FILE='Projects/apisnoops/deployment/k8s/local/tilt.org' \
+     -e KUBEMACS_INIT_ORG_FILE='Projects/apisnoop/deployment/k8s/local/tilt.org' \
      -e KUBEMACS_INIT_DEBUG=true \
      --user root \
      --network host \
