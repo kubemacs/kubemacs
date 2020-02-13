@@ -11,11 +11,11 @@ fi
 # If we are in cluster, set our default namespace
 SERVICE_ACCOUNT_DIR=/var/run/secrets/kubernetes.io/serviceaccount
 if [ -d $SERVICE_ACCOUNT_DIR ]; then
-    IN_CLUSTER=true
+    export IN_CLUSTER=true
     kubectl config set-context $(kubectl config current-context) \
             --namespace=$(cat $SERVICE_ACCOUNT_DIR/namespace)
 else
-    IN_CLUSTER=false
+    export IN_CLUSTER=false
     docker version
     kind get clusters
     kind get nodes

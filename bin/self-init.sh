@@ -48,10 +48,11 @@ KUBEMACS_IMAGE="${KUBEMACS_IMAGE:-}"
 KUBEMACS_INIT_SELF_CONTAINER_NAME="${KUBEMACS_INIT_SELF_CONTAINER_NAME:-kubemacs-init}"
 KUBEMACS_INIT_DEBUG="${KUBEMACS_INIT_DEBUG:-false}"
 KUBEMACS_HOST_KUBECONFIG_NAME="${KUBEMACS_HOST_KUBECONFIG_NAME:-config-kind-my-cluster}"
-KUBEMACS_DEFAULT_KIND_NAME="${KUBEMACS_DEFAULT_KIND_NAME:-kind}"
+KUBEMACS_KIND_NAME="${KUBEMACS_KIND_NAME:-kind}"
 KUBEMACS_GIT_EMAIL="${KUBEMACS_GIT_EMAIL:-}"
 KUBEMACS_GIT_NAME="${KUBEMACS_GIT_NAME:-}"
 KUBEMACS_TIMEZONE="${KUBEMACS_TIMEZONE:-Pacific/Auckland}"
+KUBEMACS_INIT_DEFAULT_NAMESPACE="${KUBEMACS_INIT_DEFAULT_NAMESPACE:-kubemacs}"
 KUBEMACS_INIT_DEFAULT_REPOS="${KUBEMACS_INIT_DEFAULT_REPOS:-}"
 KUBEMACS_INIT_DEFAULT_REPOS_FOLDER="${KUBEMACS_INIT_DEFAULT_REPOS_FOLDER:-$HOME}"
 KUBEMACS_INIT_DEFAULT_DIR="${KUBEMACS_INIT_DEFAULT_DIR:-/home/ii}"
@@ -83,10 +84,11 @@ cat <<EOF
 | KUBEMACS_INIT_SELF_CONTAINER_NAME  | kubemacs-init    | $KUBEMACS_INIT_SELF_CONTAINER_NAME |
 | KUBEMACS_INIT_DEBUG                | false            | $KUBEMACS_INIT_DEBUG |
 | KUBEMACS_HOST_KUBECONFIG_NAME      | config-kind      | $KUBEMACS_HOST_KUBECONFIG_NAME |
-| KUBEMACS_DEFAULT_KIND_NAME         | kind             | $KUBEMACS_DEFAULT_KIND_NAME |
+| KUBEMACS_KIND_NAME                 | kind             | $KUBEMACS_KIND_NAME |
 | KUBEMACS_GIT_EMAIL                 |                  | $KUBEMACS_GIT_EMAIL |
 | KUBEMACS_GIT_NAME                  |                  | $KUBEMACS_GIT_NAME |
 | KUBEMACS_TIMEZONE                  | Pacific/Auckland | $KUBEMACS_TIMEZONE |
+| KUBEMACS_INIT_DEFAULT_NAMESPACE    | kubemacs         | $KUBEMACS_INIT_DEFAULT_DEFAULT_NAMESPACE |
 | KUBEMACS_INIT_DEFAULT_REPOS_FOLDER | /home/ii         | $KUBEMACS_INIT_DEFAULT_REPOS_FOLDER |
 | KUBEMACS_INIT_DEFAULT_REPOS        |                  | $KUBEMACS_INIT_DEFAULT_REPOS |
 | KUBEMACS_INIT_DEFAULT_DIR          | /home/ii         | $KUBEMACS_INIT_DEFAULT_DIR |
@@ -132,22 +134,24 @@ if ! touch "/tmp/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME"; then
 fi
 
 WILL_CREATE_CLUSTER=true
-if kind get clusters | grep "$KUBEMACS_DEFAULT_KIND_NAME" 2>&1 > /dev/null; then
-    promptEnterNoOrQuit "There appears to be a Kind cluster existing called '$KUBEMACS_DEFAULT_KIND_NAME', is it OK to delete it and recreate it?"
+if kind get clusters | grep "$KUBEMACS_KIND_NAME" 2>&1 > /dev/null; then
+    promptEnterNoOrQuit "There appears to be a Kind cluster existing called '$KUBEMACS_KIND_NAME', is it OK to delete it and recreate it?"
     clusterDeleteOrQuit=$?
     if [ "$clusterDeleteOrQuit" -eq 1 ]; then
         exit 0
     elif [ "$clusterDeleteOrQuit" -eq 2 ]; then
         WILL_CREATE_CLUSTER=false
     else
-        execPrintOutputIfFailure kind delete cluster --name "$KUBEMACS_DEFAULT_KIND_NAME"
+        execPrintOutputIfFailure kind delete cluster --name "$KUBEMACS_KIND_NAME"
     fi
 fi
 
 if [ "$WILL_CREATE_CLUSTER" = true ]; then
     echo "[status] creating kind cluster"
-    kind create cluster --name "$KUBEMACS_DEFAULT_KIND_NAME" --config /usr/share/kubemacs/kind-cluster-config.yaml
-    execPrintOutputIfFailure kubectl config set clusters.kind-"$KUBEMACS_DEFAULT_KIND_NAME".server "https://127.0.0.1:6443"
+    kind create cluster --name "$KUBEMACS_KIND_NAME" --config /usr/share/kubemacs/kind-cluster-config.yaml
+    kubectl create ns $KUBEMACS_INIT_DEFAULT_NAMESPACE
+    kubectl config set-context $(kubectl config current-context) --namespace=$KUBEMACS_INIT_DEFAULT_NAMESPACE
+    execPrintOutputIfFailure kubectl config set clusters.kind-"$KUBEMACS_KIND_NAME".server "https://127.0.0.1:6443"
 else
     echo "[status] using existing kind cluster"
     echo "[status] copying KUBECONFIG from host"
@@ -158,7 +162,7 @@ fi
 if ! kubectl cluster-info 2>&1 > /dev/null; then
     echo "[error] cannot talk to the newly created cluster - try running using '--network host'"
     if [ "$WILL_CREATE_CLUSTER" = true ]; then
-        kind delete cluster --name "$KUBEMACS_DEFAULT_KIND_NAME"
+        kind delete cluster --name "$KUBEMACS_KIND_NAME"
     fi
     exit 1
 fi
@@ -187,7 +191,7 @@ kind: Kustomization
 #   - basic-auth.yaml
   # - namespace.yaml
 bases:
-  - ../usr/share/kubemacs/manifests
+  - ../usr/share/kubemacs/
 configMapGenerator:
 - name: kubemacs-configuration
   behavior: merge
@@ -221,11 +225,28 @@ echo "
 " > /root/kubemacs-patch-image.yaml
 
 echo "[status] loading Kubemacs image into Kind from Docker"
-execPrintOutputIfFailure kind load docker-image --name "$KUBEMACS_DEFAULT_KIND_NAME" --nodes "$KUBEMACS_DEFAULT_KIND_NAME-worker" "$KUBEMACS_IMAGE"
+execPrintOutputIfFailure kind load docker-image --name "$KUBEMACS_KIND_NAME" --nodes "$KUBEMACS_KIND_NAME-worker" "$KUBEMACS_IMAGE"
 
 echo "[status] bringing up Kubemacs in Kind"
+# execPrintOutputIfFailure kubectl create ns $KUBEMACS_INIT_DEFAULT_NAMESPACE
 execPrintOutputIfFailure kubectl apply -k /root
-
+kubectl delete clusterrolebinding kubemacs-crb
+# TODO: Figure out how to patch a clusterrolebinding within kustomize!
+# | kubectl patch clusterrolebinding kubemacs-crb --patch -
+cat <<EOF |kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubemacs-crb
+subjects:
+  - name: kubemacs-sa
+    kind: ServiceAccount
+    namespace: $KUBEMACS_INIT_DEFAULT_NAMESPACE
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+EOF
 echo "[status] waiting for Kubemacs StatefulSet to have 1 ready Replica..."
 while [ "$(kubectl get statefulset kubemacs -o json | jq .status.readyReplicas)" != 1 ]; do
     sleep 1s
@@ -248,3 +269,5 @@ kubectl exec -it kubemacs-0 -- attach
 
 or paste in a terminal what was added to your clipboard
 "
+
+bash

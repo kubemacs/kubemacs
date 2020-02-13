@@ -133,7 +133,7 @@ RUN apt-get update \
 #     update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 RUN mkdir -p /usr/share/kubemacs
-ADD kind-cluster-config.yaml /usr/share/kubemacs/
+ADD kind-cluster-config.yaml kustomization.yaml /usr/share/kubemacs/
 ADD manifests /usr/share/kubemacs/manifests
 ADD kustomization.yaml /usr/share/kubemacs/manifests
 
@@ -166,6 +166,8 @@ RUN mkdir -p /etc/sudoers.d && \
 #   groupadd -g 999 docker
 # From here on out we setup the user
 COPY homedir/* /etc/skel/
+RUN mkdir -p /etc/skel/.ssh
+COPY known_hosts /etc/skel/.ssh/
 COPY kubeconfig /etc/skel/.kube/config
 RUN chmod 0600 /etc/skel/.pgpass
 RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii

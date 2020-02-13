@@ -21,6 +21,9 @@ kubeadmConfigPatchesJSON6902:
   patch: |
     - op: add
       path: /apiServer/certSANs/-
+      value: '127.0.0.1'
+    - op: add
+      path: /apiServer/certSANs/-
       value: '*.kubemacs.org'
     - op: add
       path: /apiServer/certSANs/-
