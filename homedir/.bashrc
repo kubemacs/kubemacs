@@ -22,7 +22,6 @@ if [ -d "$HOME/go/bin" ]; then
 fi
 export PATH=$PATH:"/usr/local/go/bin"
 
-/usr/local/bin/ssh-agent-export.sh
-
+. /usr/local/bin/ssh-agent-export.sh
 export EDITOR=vim
 

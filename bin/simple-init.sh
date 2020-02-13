@@ -8,7 +8,6 @@ then
     ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -q -N ""
 fi
 
-
 # If we are in cluster, set our default namespace
 SERVICE_ACCOUNT_DIR=/var/run/secrets/kubernetes.io/serviceaccount
 if [ -d $SERVICE_ACCOUNT_DIR ]; then
@@ -21,11 +20,6 @@ else
     kind get clusters
     kind get nodes
     kind get kubeconfig
-fi
-
-if [ ! -z $INIT_DEFAULT_REPO ]; then
-    cd ~
-    git clone -v --recursive $INIT_DEFAULT_REPO
 fi
 
 if [ -z $GIT_AUTHOR_EMAIL ]; then
@@ -42,11 +36,14 @@ export TMATE_SOCKET="${TMATE_SOCKET:-/tmp/ii.default.target.iisocket}"
 export TMATE_SOCKET_NAME=`basename ${TMATE_SOCKET}`
 export INIT_ORG_FILE="${INIT_ORG_FILE:-~/}"
 export INIT_DEFAULT_DIR="${INIT_DEFAULT_DIR:-~/}"
-export INIT_DEFAULT_REPOS=${INIT_DEFAULT_REPOS}
-export INIT_DEFAULT_REPOS_FOLDER="${INIT_DEFAULT_REPOS_FOLDER:-~}"
+export INIT_DEFAULT_REPOS="${INIT_DEFAULT_REPOS}"
+export INIT_DEFAULT_REPOS_FOLDER="${INIT_DEFAULT_REPOS_FOLDER}"
+
+. /usr/local/bin/ssh-agent-export.sh
 
 (
-    if [ ! -z $INIT_DEFAULT_REPOS ]; then
+    if [ ! -z "$INIT_DEFAULT_REPOS" ]; then
+        mkdir -p $INIT_DEFAULT_REPOS_FOLDER
         cd $INIT_DEFAULT_REPOS_FOLDER
         for repo in $INIT_DEFAULT_REPOS; do
             git clone -v --recursive $repo
@@ -73,8 +70,6 @@ cd $INIT_DEFAULT_DIR
     tmate -S $TMATE_SOCKET set-hook -ug client-attached # unset
     tmate -S $TMATE_SOCKET set-hook -g client-attached 'run-shell "tmate new-window osc52-tmate.sh"'
 )&
-
-/usr/local/bin/ssh-agent-export.sh
 
 # This is our primary background process for kubemacs
 # a tmate session in foreground mode, respawning if it dies

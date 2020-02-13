@@ -25,9 +25,20 @@ function execPrintOutputIfFailure() {
     return $exitCode
 }
 
-function promptEnterOrNo() {
-    read -p "$*" prompt
+function promptEnterOrQuit() {
+    read -p "$* ([enter]|q) " prompt
+    if [ "$prompt" = "q" ]; then
+        return 1
+    fi
+    return
+}
+
+function promptEnterNoOrQuit() {
+    read -p "$* ([enter]|n|q) " prompt
     if [ "$prompt" = "n" ]; then
+        return 2
+    fi
+    if [ "$prompt" = "q" ]; then
         return 1
     fi
     return
@@ -35,15 +46,17 @@ function promptEnterOrNo() {
 
 KUBEMACS_IMAGE="${KUBEMACS_IMAGE:-}"
 KUBEMACS_INIT_SELF_CONTAINER_NAME="${KUBEMACS_INIT_SELF_CONTAINER_NAME:-kubemacs-init}"
-KUBEMACS_INIT_DEBUG="${KUBEMACS_INIT_DEBUG:-1}"
+KUBEMACS_INIT_DEBUG="${KUBEMACS_INIT_DEBUG:-false}"
 KUBEMACS_HOST_KUBECONFIG_NAME="${KUBEMACS_HOST_KUBECONFIG_NAME:-config-kind-my-cluster}"
 KUBEMACS_DEFAULT_KIND_NAME="${KUBEMACS_DEFAULT_KIND_NAME:-kind}"
 KUBEMACS_GIT_EMAIL="${KUBEMACS_GIT_EMAIL:-}"
 KUBEMACS_GIT_NAME="${KUBEMACS_GIT_NAME:-}"
 KUBEMACS_TIMEZONE="${KUBEMACS_TIMEZONE:-Pacific/Auckland}"
 KUBEMACS_INIT_DEFAULT_REPOS="${KUBEMACS_INIT_DEFAULT_REPOS:-}"
+KUBEMACS_INIT_DEFAULT_REPOS_FOLDER="${KUBEMACS_INIT_DEFAULT_REPOS_FOLDER:-$HOME}"
 KUBEMACS_INIT_DEFAULT_DIR="${KUBEMACS_INIT_DEFAULT_DIR:-/home/ii}"
 KUBEMACS_INIT_ORG_FILE="${KUBEMACS_INIT_ORG_FILE:-}"
+HOST_UID="${HOST_UID:-0}"
 
 if [ $KUBEMACS_INIT_DEBUG = true ]; then
     set -x
@@ -62,29 +75,30 @@ fi
 #    gcr.io/kubemacs/kubemacs:latest /usr/local/bin/self-init.sh
 
 cat <<EOF
-| Kubemacs config                                                      |
-| -------------------------------------------------------------------- |
-| Property                          | Default value    | Current value |
-| --------------------------------- | ---------------- | ------------- |
-| KUBEMACS_IMAGE                    |                  | $KUBEMACS_IMAGE |
-| KUBEMACS_INIT_SELF_CONTAINER_NAME | kubemacs-init    | $KUBEMACS_INIT_SELF_CONTAINER_NAME |
-| KUBEMACS_INIT_DEBUG               | false            | $KUBEMACS_INIT_DEBUG |
-| KUBEMACS_HOST_KUBECONFIG_NAME     | config-kind      | $KUBEMACS_HOST_KUBECONFIG_NAME |
-| KUBEMACS_DEFAULT_KIND_NAME        | kind             | $KUBEMACS_DEFAULT_KIND_NAME |
-| KUBEMACS_GIT_EMAIL                |                  | $KUBEMACS_GIT_EMAIL |
-| KUBEMACS_GIT_NAME                 |                  | $KUBEMACS_GIT_NAME |
-| KUBEMACS_TIMEZONE                 | Pacific/Auckland | $KUBEMACS_TIMEZONE |
-| KUBEMACS_INIT_DEFAULT_REPOS       |                  | $KUBEMACS_INIT_DEFAULT_REPOS |
-| KUBEMACS_INIT_DEFAULT_DIR         | /home/ii         | $KUBEMACS_INIT_DEFAULT_DIR |
-| KUBEMACS_INIT_ORG_FILE            |                  | $KUBEMACS_INIT_ORG_FILE |
-| HOST_UID                          | 0                | $HOST_UID |
+| Kubemacs config                                                       |
+| --------------------------------------------------------------------- |
+| Property                           | Default value    | Current value |
+| ---------------------------------- | ---------------- | ------------- |
+| KUBEMACS_IMAGE                     |                  | $KUBEMACS_IMAGE |
+| KUBEMACS_INIT_SELF_CONTAINER_NAME  | kubemacs-init    | $KUBEMACS_INIT_SELF_CONTAINER_NAME |
+| KUBEMACS_INIT_DEBUG                | false            | $KUBEMACS_INIT_DEBUG |
+| KUBEMACS_HOST_KUBECONFIG_NAME      | config-kind      | $KUBEMACS_HOST_KUBECONFIG_NAME |
+| KUBEMACS_DEFAULT_KIND_NAME         | kind             | $KUBEMACS_DEFAULT_KIND_NAME |
+| KUBEMACS_GIT_EMAIL                 |                  | $KUBEMACS_GIT_EMAIL |
+| KUBEMACS_GIT_NAME                  |                  | $KUBEMACS_GIT_NAME |
+| KUBEMACS_TIMEZONE                  | Pacific/Auckland | $KUBEMACS_TIMEZONE |
+| KUBEMACS_INIT_DEFAULT_REPOS_FOLDER | /home/ii         | $KUBEMACS_INIT_DEFAULT_REPOS_FOLDER |
+| KUBEMACS_INIT_DEFAULT_REPOS        |                  | $KUBEMACS_INIT_DEFAULT_REPOS |
+| KUBEMACS_INIT_DEFAULT_DIR          | /home/ii         | $KUBEMACS_INIT_DEFAULT_DIR |
+| KUBEMACS_INIT_ORG_FILE             |                  | $KUBEMACS_INIT_ORG_FILE |
+| HOST_UID                           | 0                | $HOST_UID |
 
 EOF
 
 checkEnvForEmpty KUBEMACS_GIT_EMAIL "$KUBEMACS_GIT_EMAIL" || exit 1
 checkEnvForEmpty KUBEMACS_GIT_NAME  "$KUBEMACS_GIT_NAME"  || exit 1
 
-promptEnterOrNo "Are you happy with using the config above? [enter|n] " || exit 1
+promptEnterOrQuit "Are you happy with using the config above?" || exit 1
 
 if ! ( [ -f /.dockerenv ] || [ -f /run/.containerenv ] ); then
     echo "[error] this must run in a container"
@@ -94,6 +108,13 @@ fi
 if ! docker info 2>&1 > /dev/null; then
     echo "[error] cannot talk to the Docker socket"
     exit 1
+fi
+
+if [ ! "$HOST_UID" = 0 ] && [ ! "$(id -u)" = 0 ]; then
+    echo "[error] incorrect permissions to run, '--user root' is required for fixing file permissions"
+    exit 1
+elif [ "$HOST_UID" = 0 ]; then
+    promptEnterOrQuit "It appears that HOST_UID has is set to '0' (root), this means that the new cluster's KUBECONFIG will be owned by root when it copies to your home directory. Do you wish to continue?" || exit 1
 fi
 
 if ! ( docker ps | grep "$KUBEMACS_INIT_SELF_CONTAINER_NAME" 2>&1 > /dev/null && docker exec -it "$KUBEMACS_INIT_SELF_CONTAINER_NAME" test -f /usr/local/bin/self-init.sh 2>&1 > /dev/null ) then
@@ -112,10 +133,14 @@ fi
 
 WILL_CREATE_CLUSTER=true
 if kind get clusters | grep "$KUBEMACS_DEFAULT_KIND_NAME" 2>&1 > /dev/null; then
-    if promptEnterOrNo "There appears to be a Kind cluster existing called '$KUBEMACS_DEFAULT_KIND_NAME', is it OK to delete it and recreate it? [enter|n] "; then
-        execPrintOutputIfFailure kind delete cluster --name "$KUBEMACS_DEFAULT_KIND_NAME"
-    else
+    promptEnterNoOrQuit "There appears to be a Kind cluster existing called '$KUBEMACS_DEFAULT_KIND_NAME', is it OK to delete it and recreate it?"
+    clusterDeleteOrQuit=$?
+    if [ "$clusterDeleteOrQuit" -eq 1 ]; then
+        exit 0
+    elif [ "$clusterDeleteOrQuit" -eq 2 ]; then
         WILL_CREATE_CLUSTER=false
+    else
+        execPrintOutputIfFailure kind delete cluster --name "$KUBEMACS_DEFAULT_KIND_NAME"
     fi
 fi
 
@@ -131,7 +156,8 @@ else
 fi
 
 if ! kubectl cluster-info 2>&1 > /dev/null; then
-    echo "[error] unable to talk to newly created cluster"
+    echo "[error] cannot talk to the newly created cluster - try running using '--network host'"
+    kind delete cluster --name "$KUBEMACS_DEFAULT_KIND_NAME"
     exit 1
 fi
 
@@ -150,8 +176,8 @@ fi
 KUBEMACS_IMAGE_NAME=$(echo $KUBEMACS_IMAGE | cut -d':' -f1)
 KUBEMACS_IMAGE_TAG=$(echo $KUBEMACS_IMAGE | cut -d':' -f2)
 
-echo "[status] writing kubemacs-kustomize.yaml"
-cat <<EOF > /root/kustomization.yaml
+echo "[status] writing Kubemacs configs [1/2]"
+echo "
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 # namespace: apisnoop
@@ -159,7 +185,7 @@ kind: Kustomization
 #   - basic-auth.yaml
   # - namespace.yaml
 bases:
-  - ../usr/share/kubemacs/apisnoop/deployment/k8s/kubemacs
+  - ../usr/share/kubemacs/manifests
 configMapGenerator:
 - name: kubemacs-configuration
   behavior: merge
@@ -168,31 +194,34 @@ configMapGenerator:
   - GIT_EMAIL=${KUBEMACS_GIT_EMAIL}
   - GIT_NAME=${KUBEMACS_GIT_NAME}
   - INIT_DEFAULT_REPOS=${KUBEMACS_INIT_DEFAULT_REPOS}
+  - INIT_DEFAULT_REPOS_FOLDER=${KUBEMACS_INIT_DEFAULT_REPOS_FOLDER}
   - INIT_DEFAULT_DIR=${KUBEMACS_INIT_DEFAULT_DIR}
   - INIT_ORG_FILE=${KUBEMACS_INIT_ORG_FILE}
-patchesStrategicMerge:
-- |-
-  apiVersion: apps/v1
-  kind: StatefulSet
-  metadata:
+patchesJSON6902:
+- target:
+    group: apps
+    version: v1
+    kind: StatefulSet
     name: kubemacs
-  spec:
-    template:
-      spec:
-        containers:
-        - name: kubemacs
-          image: ${KUBEMACS_IMAGE_NAME}:${KUBEMACS_IMAGE_TAG}
-# Kustomise 'images:" need exact-match for image:tag
+  path: kubemacs-patch-image.yaml
+# Kustomise 'images: need exact-match for image:tag
 # Our kubemacs image repo may differ so we need to patch the statefulset instead
 # images:
 #   - name: $KUBEMACS_IMAGE_NAME
 #     newTag: $KUBEMACS_IMAGE_TAG
-EOF
+" > /root/kustomization.yaml
 
-echo "[status] loading KUBEMACS image into Kind from Docker"
+echo "[status] writing Kubemacs configs [2/2]"
+echo "
+- op: replace
+  path: /spec/template/spec/containers/0/image
+  value: $KUBEMACS_IMAGE
+" > /root/kubemacs-patch-image.yaml
+
+echo "[status] loading Kubemacs image into Kind from Docker"
 execPrintOutputIfFailure kind load docker-image --name "$KUBEMACS_DEFAULT_KIND_NAME" --nodes "$KUBEMACS_DEFAULT_KIND_NAME-worker" "$KUBEMACS_IMAGE"
 
-echo "[status] bringing up kubemacs in Kind"
+echo "[status] bringing up Kubemacs in Kind"
 execPrintOutputIfFailure kubectl apply -k /root
 
 echo "[status] waiting for Kubemacs StatefulSet to have 1 ready Replica..."
@@ -201,7 +230,7 @@ while [ "$(kubectl get statefulset kubemacs -o json | jq .status.readyReplicas)"
 done
 echo "[status] kubemacs has 1 stateful set"
 
-echo "[status] waiting for kubemacs to be ready"
+echo "[status] waiting for Kubemacs to be ready"
 execPrintOutputIfFailure kubectl wait --for=condition=Ready pod/kubemacs-0
 
 echo "[status] complete!"
@@ -210,11 +239,10 @@ echo "export KUBECONFIG=~/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME
 kubectl exec -it kubemacs-0 -- attach
 " | /usr/local/bin/osc52.sh
 
-echo "
-On your host, run:
+echo "On your host, run:
 
 export KUBECONFIG=~/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME
-kubectl -n ii exec -it kubemacs-0 -- attach
+kubectl exec -it kubemacs-0 -- attach
 
 or paste in a terminal what was added to your clipboard
 "

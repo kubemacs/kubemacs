@@ -99,6 +99,9 @@ RUN apt-get update \
   apache2-utils \
   sqlite3 \
   silversearcher-ag \
+  build-essential \
+  vim \
+  rsync \
   && rm -rf /var/apt/lists/*
 
 # # Known dependencies
@@ -108,10 +111,8 @@ RUN apt-get update \
 #   acl \
 #   apt-file \
 #   apt-utils \
-#   build-essential \
 #   ripgrep \
 #   psmisc \
-#   rsync \
 #   software-properties-common \
 #   sudo \
 #   vim \
@@ -133,8 +134,8 @@ RUN apt-get update \
 
 RUN mkdir -p /usr/share/kubemacs
 ADD kind-cluster-config.yaml /usr/share/kubemacs/
-
-RUN git clone --depth 1 https://github.com/cncf/apisnoop /usr/share/kubemacs/apisnoop
+ADD manifests /usr/share/kubemacs/manifests
+ADD kustomization.yaml /usr/share/kubemacs/manifests
 
 # Ideally we used a checkout of this repo, but I'm having trouble with the build + submodules
 # RUN git clone --depth 1 --recursive https://github.com/kubemacs/kubemacs /var/local/kubemacs.d

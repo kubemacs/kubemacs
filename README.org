@@ -35,19 +35,21 @@ docker run -it --rm --privileged --name kubemacs-init \
 
 ** Environment variables
 
-| Property                          | Default value    |
-|-----------------------------------+------------------|
-| KUBEMACS_IMAGE                    |                  |
-| KUBEMACS_INIT_SELF_CONTAINER_NAME | kubemacs-init    |
-| KUBEMACS_INIT_DEBUG               | false            |
-| KUBEMACS_HOST_KUBECONFIG_NAME     | config-kind      |
-| KUBEMACS_DEFAULT_KIND_NAME        | kind             |
-| KUBEMACS_GIT_EMAIL                |                  |
-| KUBEMACS_GIT_NAME                 |                  |
-| KUBEMACS_TIMEZONE                 | Pacific/Auckland |
-| KUBEMACS_INIT_DEFAULT_REPOS       |                  |
-| KUBEMACS_INIT_DEFAULT_DIR         | /home/ii         |
-| KUBEMACS_INIT_ORG_FILE            |                  |
+| Property                           | Default value    |
+|------------------------------------+------------------|
+| KUBEMACS_IMAGE                     |                  |
+| KUBEMACS_INIT_SELF_CONTAINER_NAME  | kubemacs-init    |
+| KUBEMACS_INIT_DEBUG                | false            |
+| KUBEMACS_HOST_KUBECONFIG_NAME      | config-kind      |
+| KUBEMACS_DEFAULT_KIND_NAME         | kind             |
+| KUBEMACS_GIT_EMAIL                 |                  |
+| KUBEMACS_GIT_NAME                  |                  |
+| KUBEMACS_TIMEZONE                  | Pacific/Auckland |
+| KUBEMACS_INIT_DEFAULT_REPOS        |                  |
+| KUBEMACS_INIT_DEFAULT_REPOS_FOLDER | /home/ii/        |
+| KUBEMACS_INIT_DEFAULT_DIR          | /home/ii         |
+| KUBEMACS_INIT_ORG_FILE             |                  |
+| HOST_UID                           | 0                |
 
 * Running in k8s
 ** Deployment   
