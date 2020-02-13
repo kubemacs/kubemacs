@@ -10,19 +10,20 @@
     KUBEMACS_USER=berno
     KUBEMACS_IMAGE=gcr.io/kubemacs/kubemacs:${KUBEMACS_USER}-dev
     docker build -t $KUBEMACS_IMAGE .
+    # KUBEMACS_IMAGE=gcr.io/kubemacs/kubemacs:pr-N # for any kubemacs/kubemacs PR
     docker run \
      --name kubemacs-init \
      -e HOST_UID="$(id -u)" \
      -e KUBEMACS_GIT_EMAIL='hhii@ii.coop' \
      -e KUBEMACS_GIT_NAME='Hippie Hacker (ii)' \
-     -e KUBEMACS_TIMEZONE='Pacific/Auckland}' \
+     -e KUBEMACS_TIMEZONE='Pacific/Auckland' \
      -e KUBEMACS_IMAGE=$KUBEMACS_IMAGE \
      -e KUBEMACS_HOST_KUBECONFIG_NAME="${KUBEMACS_USER}.kubemacs" \
      -e KUBEMACS_KIND_NAME="kind-${KUBEMACS_USER}.kubemacs" \
      -e KUBEMACS_INIT_DEFAULT_REPOS='https://github.com/cncf/apisnoop git@gitlab.ii.coop:ii/hours.git' \
-     -e KUBEMACS_INIT_DEFAULT_REPOS_FOLDER='repos' \
-     -e KUBEMACS_INIT_DEFAULT_DIR='repos/apisnoop' \
-     -e KUBEMACS_INIT_ORG_FILE='$HOME/repos/apisnoop/deployment/k8s/local/tilt.org' \
+     -e KUBEMACS_INIT_DEFAULT_REPOS_FOLDER='Projects' \
+     -e KUBEMACS_INIT_DEFAULT_DIR='Projects/apisnoop' \
+     -e KUBEMACS_INIT_ORG_FILE='Projects/apisnoops/deployment/k8s/local/tilt.org' \
      -e KUBEMACS_INIT_DEBUG=true \
      --user root \
      --network host \
