@@ -1,9 +1,5 @@
 # -*- ii: true; -*-
 #+TITLE: dev cycle
-* aoeu
-  #+begin_src shell
-    kubectl exec -it kubemacs-0 -- tmate -S /tmp/ii.default.target.iisocket at
-  #+end_src
 * checkout-existing-PR/branch-from-src
   #+begin_src shell
     git clone https://github.com/kubemacs/kubemacs
@@ -13,26 +9,131 @@
     # to work on a branch based on a PR
     git fetch origin refs/pull/6/head
     git checkout -b devcycle FETCH_HEAD
+    # submodules point to other repos and mounth them within our repo
+    # google cloud builds (for our PRs) are not supported... yet
+    git submodule init
+    git submodule update
   #+end_src
 
 Now you can work on your the existing PR in a local branch.
 
+* ensure the IP:PORTS you want to use locally are available
+** tcp
+#+name: listening tcp ip:ports
+#+begin_src shell
+ss --listening --numeric --tcp | grep -v :: | awk '{print $1, $4}' | sort
+#+end_src
+
+#+RESULTS: listening tcp ip:ports
+#+begin_example
+LISTEN 0.0.0.0:22
+LISTEN *:10350
+LISTEN 127.0.0.1:25
+LISTEN 127.0.0.1:2947
+LISTEN 127.0.0.1:32852
+LISTEN 127.0.0.1:5037
+LISTEN 127.0.0.1:631
+LISTEN 127.0.0.1%lo:53
+LISTEN 192.168.122.1:53
+LISTEN *:21
+LISTEN *:2200
+LISTEN *:3128
+LISTEN *:443
+LISTEN *:5432
+LISTEN *:6443
+LISTEN *:80
+LISTEN *:8000
+State Local
+#+end_example
+** udp
+#+name: listening udp ip:ports
+#+begin_src shell
+ss --listening --numeric --udp | grep -v :: | awk '{print $1, $4}' | sort
+#+end_src
+
+#+RESULTS: listening udp ip:ports
+#+begin_example
+State Local
+UNCONN 0.0.0.0:123
+UNCONN 0.0.0.0:1701
+UNCONN 0.0.0.0:30000
+UNCONN 0.0.0.0:35014
+UNCONN 0.0.0.0:36984
+UNCONN 0.0.0.0:5353
+UNCONN 0.0.0.0:53581
+UNCONN 0.0.0.0:631
+UNCONN 0.0.0.0:68
+UNCONN 0.0.0.0%virbr0:67
+UNCONN 127.0.0.1:123
+UNCONN 127.0.0.1%lo:53
+UNCONN 169.254.109.149:123
+UNCONN 169.254.133.227:123
+UNCONN 172.17.0.1:123
+UNCONN 192.168.1.17:123
+UNCONN 192.168.122.1:53
+UNCONN 224.0.0.251:5353
+UNCONN 224.0.0.251:5353
+UNCONN 224.0.0.251:5353
+UNCONN 224.0.0.251:5353
+UNCONN 224.0.0.251:5353
+UNCONN *:43714
+UNCONN *:56726
+#+end_example
+
+** kind.nodes.hostPort entres
+   #+begin_src shell
+     grep hostPort: kind-cluster-config.yaml
+   #+end_src
+
+   #+RESULTS:
+   #+begin_example
+        hostPort: 80
+        hostPort: 443
+        hostPort: 2200
+      #   hostPort: 4000
+      #   hostPort: 4001
+        hostPort: 5432
+        hostPort: 6443
+        hostPort: 10350
+      #   hostPort: 2080
+      #   hostPort: 20443
+   #+end_example
+
+
+* setting up local-registry
+  #+begin_src tmate :session foo:registry
+  # create registry container unless it already exists
+  reg_name='kind-registry'
+  reg_port='5000'
+  docker pull registry:2
+  running="$(docker inspect -f '{{.State.Running}}' "${reg_name}" 2>/dev/null || true)"
+  if [ "${running}" != 'true' ]; then
+    docker run \
+      -d --restart=always -p "${reg_port}:5000" --name "${reg_name}" \
+      registry:2
+  fi
+  #+end_src
 * dev-cycle
+
   #+begin_src tmate :dir "."
     # needs another var to not ask questions
     KUBEMACS_USER=berno
     KUBEMACS_IMAGE=gcr.io/kubemacs/kubemacs:${KUBEMACS_USER}-dev
     docker build -t $KUBEMACS_IMAGE .
     # KUBEMACS_IMAGE=gcr.io/kubemacs/kubemacs:pr-N # for any kubemacs/kubemacs PR
+     # -e KUBEMACS_DOCKER_INIT_CONTAINER_NAME="kubemacs-docker-init" \
     docker run \
-     --name kubemacs-init \
+     --name kubemacs-docker-init \
      -e HOST_UID="$(id -u)" \
      -e KUBEMACS_GIT_EMAIL='hhii@ii.coop' \
      -e KUBEMACS_GIT_NAME='Hippie Hacker (ii)' \
      -e KUBEMACS_TIMEZONE='Pacific/Auckland' \
      -e KUBEMACS_IMAGE=$KUBEMACS_IMAGE \
-     -e KUBEMACS_HOST_KUBECONFIG_NAME="${KUBEMACS_USER}.kubemacs" \
-     -e KUBEMACS_KIND_NAME="kind-${KUBEMACS_USER}.kubemacs" \
+     -e KUBEMACS_HOST_KUBECONFIG_NAME="kind-${KUBEMACS_USER}.kubemacs.configname" \
+     -e KIND_LOCAL_REGISTRY_ENABLE="true" \
+     -e KIND_LOCAL_REGISTRY_NAME="kind-registry" \
+     -e KIND_LOCAL_REGISTRY_PORT="5000" \
+     -e KUBEMACS_KIND_NAME="${KUBEMACS_USER}.kubemacs.kindname" \
      -e KUBEMACS_INIT_DEFAULT_REPOS='https://github.com/cncf/apisnoop git@gitlab.ii.coop:ii/hours.git' \
      -e KUBEMACS_INIT_DEFAULT_REPOS_FOLDER='Projects' \
      -e KUBEMACS_INIT_DEFAULT_DIR='Projects/apisnoop' \
@@ -46,7 +147,14 @@ Now you can work on your the existing PR in a local branch.
      -v "$HOME/.kube":/tmp/.kube \
      -v /var/run/docker.sock:/var/run/docker.sock \
     $KUBEMACS_IMAGE \
-     /usr/local/bin/self-init.sh
+     docker-init.sh
+  #+end_src
+
+##+begin_src tmate :session foo:bar
+
+* aoeu
+  #+begin_src shell
+    kubectl exec -it kubemacs-0 -- tmate -S /tmp/ii.default.target.iisocket at
   #+end_src
 * get pod/kubemacs-0
   #+name: get pod/kubemacs-0
@@ -301,6 +409,125 @@ Now you can work on your the existing PR in a local branch.
     Normal  Created    86s   kubelet, hh-kubemacs-worker  Created container kubemacs
     Normal  Started    86s   kubelet, hh-kubemacs-worker  Started container kubemacs
   #+end_example
+
+* Four nested levels of KUBECONFIGs
+** within the kubemacs-init docker container
+#+begin_src shell
+docker exec kubemacs-init kubectl config view
+# docker exec kubemacs-init cat /root/.kube/config
+#+end_src
+
+#+RESULTS:
+#+begin_example
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://127.0.0.1:6443
+  name: kind-berno.kubemacs.kindname
+contexts:
+- context:
+    cluster: kind-berno.kubemacs.kindname
+    namespace: kubemacs
+    user: kind-berno.kubemacs.kindname
+  name: kind-berno.kubemacs.kindname
+current-context: kind-berno.kubemacs.kindname
+kind: Config
+preferences: {}
+users:
+- name: kind-berno.kubemacs.kindname
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+#+end_example
+
+** within the kind control-plane node
+#+begin_src shell
+KIND_CLUSTER_NAME=$(kind get clusters | tail -1) # assuming we only have one
+docker exec ${KIND_CLUSTER_NAME}-control-plane kubectl config view --kubeconfig /etc/kubernetes/admin.conf
+#+end_src
+
+#+RESULTS:
+#+begin_example
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://172.17.0.3:6443
+  name: berno.kubemacs.kindname
+contexts:
+- context:
+    cluster: berno.kubemacs.kindname
+    user: kubernetes-admin
+  name: kubernetes-admin@berno.kubemacs.kindname
+current-context: kubernetes-admin@berno.kubemacs.kindname
+kind: Config
+preferences: {}
+users:
+- name: kubernetes-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+#+end_example
+
+** within k8s kubemacs-0 pod/container
+#+begin_src shell
+export KUBECONFIG=~/.kube/kind-berno.kubemacs.configname
+kubectl exec kubemacs-0 kubectl config view
+#+end_src
+
+#+RESULTS:
+#+begin_example
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    server: https://kubernetes.default
+  name: kind-kubemacs
+contexts:
+- context:
+    cluster: kind-kubemacs
+    namespace: kubemacs
+    user: serviceaccount
+  name: in-cluster
+current-context: in-cluster
+kind: Config
+preferences: {}
+users:
+- name: serviceaccount
+  user:
+    tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+#+end_example
+
+** the one copied out of the container to the outer host
+#+begin_src shell
+export KUBECONFIG=~/.kube/kind-berno.kubemacs.configname
+kubectl config view
+#+end_src
+
+#+RESULTS:
+#+begin_example
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://127.0.0.1:6443
+  name: kind-berno.kubemacs.kindname
+contexts:
+- context:
+    cluster: kind-berno.kubemacs.kindname
+    namespace: kubemacs
+    user: kind-berno.kubemacs.kindname
+  name: kind-berno.kubemacs.kindname
+current-context: kind-berno.kubemacs.kindname
+kind: Config
+preferences: {}
+users:
+- name: kind-berno.kubemacs.kindname
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+#+end_example
 
 * Logs
   #+name: logs from kubemacs-0 pod

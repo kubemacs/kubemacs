@@ -45,7 +45,7 @@ function promptEnterNoOrQuit() {
 }
 
 KUBEMACS_IMAGE="${KUBEMACS_IMAGE:-}"
-KUBEMACS_INIT_SELF_CONTAINER_NAME="${KUBEMACS_INIT_SELF_CONTAINER_NAME:-kubemacs-init}"
+KUBEMACS_DOCKER_INIT_CONTAINER_NAME="${KUBEMACS_DOCKER_INIT_CONTAINER_NAME:-kubemacs-docker-init}"
 KUBEMACS_INIT_DEBUG="${KUBEMACS_INIT_DEBUG:-false}"
 KUBEMACS_HOST_KUBECONFIG_NAME="${KUBEMACS_HOST_KUBECONFIG_NAME:-config-kind-my-cluster}"
 KUBEMACS_KIND_NAME="${KUBEMACS_KIND_NAME:-kind}"
@@ -57,6 +57,9 @@ KUBEMACS_INIT_DEFAULT_REPOS="${KUBEMACS_INIT_DEFAULT_REPOS:-}"
 KUBEMACS_INIT_DEFAULT_REPOS_FOLDER="${KUBEMACS_INIT_DEFAULT_REPOS_FOLDER:-$HOME}"
 KUBEMACS_INIT_DEFAULT_DIR="${KUBEMACS_INIT_DEFAULT_DIR:-/home/ii}"
 KUBEMACS_INIT_ORG_FILE="${KUBEMACS_INIT_ORG_FILE:-}"
+KIND_LOCAL_REGISTRY_ENABLE=${KIND_LOCAL_REGISTRY_ENABLE:-false}
+KIND_LOCAL_REGISTRY_NAME=${KIND_LOCAL_REGISTRY_NAME:-registry}
+KIND_LOCAL_REGISTRY_PORT=${KIND_LOCAL_REGISTRY_PORT:-5000}
 HOST_UID="${HOST_UID:-0}"
 
 if [ $KUBEMACS_INIT_DEBUG = true ]; then
@@ -73,7 +76,7 @@ fi
 #    -e KUBEMACS_INIT_DEFAULT_REPOS="https://github.com/cncf/apisnoop" \
 #    -e KUBEMACS_INIT_ORG_FILE="\$HOME/apisnoop/deployment/k8s/xip.io/README.org" \
 #    --user root \
-#    gcr.io/kubemacs/kubemacs:latest /usr/local/bin/self-init.sh
+#    gcr.io/kubemacs/kubemacs:latest /usr/local/bin/docker-init.sh
 
 cat <<EOF
 | Kubemacs config                                                       |
@@ -81,14 +84,17 @@ cat <<EOF
 | Property                           | Default value    | Current value |
 | ---------------------------------- | ---------------- | ------------- |
 | KUBEMACS_IMAGE                     |                  | $KUBEMACS_IMAGE |
-| KUBEMACS_INIT_SELF_CONTAINER_NAME  | kubemacs-init    | $KUBEMACS_INIT_SELF_CONTAINER_NAME |
+| KUBEMACS_DOCKER_INIT_CONTAINER_NAME  | kubemacs-init    | $KUBEMACS_DOCKER_INIT_CONTAINER_NAME |
 | KUBEMACS_INIT_DEBUG                | false            | $KUBEMACS_INIT_DEBUG |
 | KUBEMACS_HOST_KUBECONFIG_NAME      | config-kind      | $KUBEMACS_HOST_KUBECONFIG_NAME |
 | KUBEMACS_KIND_NAME                 | kind             | $KUBEMACS_KIND_NAME |
 | KUBEMACS_GIT_EMAIL                 |                  | $KUBEMACS_GIT_EMAIL |
 | KUBEMACS_GIT_NAME                  |                  | $KUBEMACS_GIT_NAME |
 | KUBEMACS_TIMEZONE                  | Pacific/Auckland | $KUBEMACS_TIMEZONE |
-| KUBEMACS_INIT_DEFAULT_NAMESPACE    | kubemacs         | $KUBEMACS_INIT_DEFAULT_DEFAULT_NAMESPACE |
+| KIND_LOCAL_REGISTRY_ENABLE         | false            | $KIND_LOCAL_REGISTRY_ENABLE |
+| KIND_LOCAL_REGISTRY_NAME           | registry         | $KIND_LOCAL_REGISTRY_NAME |
+| KIND_LOCAL_REGISTRY_PORT           | 5000             | $KIND_LOCAL_REGISTRY_PORT |
+| KUBEMACS_INIT_DEFAULT_NAMESPACE    | kubemacs         | $KUBEMACS_INIT_DEFAULT_NAMESPACE |
 | KUBEMACS_INIT_DEFAULT_REPOS_FOLDER | /home/ii         | $KUBEMACS_INIT_DEFAULT_REPOS_FOLDER |
 | KUBEMACS_INIT_DEFAULT_REPOS        |                  | $KUBEMACS_INIT_DEFAULT_REPOS |
 | KUBEMACS_INIT_DEFAULT_DIR          | /home/ii         | $KUBEMACS_INIT_DEFAULT_DIR |
@@ -119,8 +125,8 @@ elif [ "$HOST_UID" = 0 ]; then
     promptEnterOrQuit "It appears that HOST_UID has is set to '0' (root), this means that the new cluster's KUBECONFIG will be owned by root when it copies to your home directory. Do you wish to continue?" || exit 1
 fi
 
-if ! ( docker ps | grep "$KUBEMACS_INIT_SELF_CONTAINER_NAME" 2>&1 > /dev/null && docker exec -it "$KUBEMACS_INIT_SELF_CONTAINER_NAME" test -f /usr/local/bin/self-init.sh 2>&1 > /dev/null ) then
-   echo "[error] could not find $KUBEMACS_INIT_SELF_CONTAINER_NAME container, please name this container accordingly"
+if ! ( docker ps | grep "$KUBEMACS_DOCKER_INIT_CONTAINER_NAME" 2>&1 > /dev/null && docker exec -it "$KUBEMACS_DOCKER_INIT_CONTAINER_NAME" test -f /usr/local/bin/docker-init.sh 2>&1 > /dev/null ) then
+   echo "[error] could not find $KUBEMACS_DOCKER_INIT_CONTAINER_NAME container, please name this container accordingly"
    exit 1
 fi
 
@@ -146,9 +152,14 @@ if kind get clusters | grep "$KUBEMACS_KIND_NAME" 2>&1 > /dev/null; then
     fi
 fi
 
+
 if [ "$WILL_CREATE_CLUSTER" = true ]; then
     echo "[status] creating kind cluster"
-    kind create cluster --name "$KUBEMACS_KIND_NAME" --config /usr/share/kubemacs/kind-cluster-config.yaml
+    if [ "$KIND_LOCAL_REGISTRY_ENABLE" = true ]; then
+        kind create cluster --name "$KUBEMACS_KIND_NAME" --config /usr/share/kubemacs/kind-cluster+registry.yaml
+    else
+        kind create cluster --name "$KUBEMACS_KIND_NAME" --config /usr/share/kubemacs/kind-cluster-config.yaml
+    fi
     kubectl create ns $KUBEMACS_INIT_DEFAULT_NAMESPACE
     kubectl config set-context $(kubectl config current-context) --namespace=$KUBEMACS_INIT_DEFAULT_NAMESPACE
     execPrintOutputIfFailure kubectl config set clusters.kind-"$KUBEMACS_KIND_NAME".server "https://127.0.0.1:6443"
@@ -167,6 +178,16 @@ if ! kubectl cluster-info 2>&1 > /dev/null; then
     exit 1
 fi
 
+# add the registry to /etc/hosts on each node
+ip_fmt='{{.NetworkSettings.IPAddress}}'
+cmd="echo $(docker inspect -f "${ip_fmt}" "${KIND_LOCAL_REGISTRY_NAME}") registry >> /etc/hosts"
+for node in $(kind get nodes --name "${KUBEMACS_KIND_NAME}"); do
+    docker exec "${node}" sh -c "${cmd}"
+    kubectl annotate node "${node}" \
+            tilt.dev/registry=localhost:${KIND_LOCAL_REGISTRY_PORT} \
+            tilt.dev/registry-from-cluster=registry:${KIND_LOCAL_REGISTRY_PORT}
+done
+
 if [ "$WILL_CREATE_CLUSTER" = true ]; then
     echo "[status] copying KUBECONFIG back to host"
     execPrintOutputIfFailure cp -f /root/.kube/config "/tmp/.kube/$KUBEMACS_HOST_KUBECONFIG_NAME"
@@ -176,7 +197,7 @@ if [ "$WILL_CREATE_CLUSTER" = true ]; then
 fi
 
 if [ -z "$KUBEMACS_IMAGE" ]; then
-    KUBEMACS_IMAGE="$(docker ps | grep $KUBEMACS_INIT_SELF_CONTAINER_NAME | awk '{$2=$2};1' | cut -d' ' -f2)"
+    KUBEMACS_IMAGE="$(docker ps | grep $KUBEMACS_DOCKER_INIT_CONTAINER_NAME | awk '{$2=$2};1' | cut -d' ' -f2)"
 fi
 
 KUBEMACS_IMAGE_NAME=$(echo $KUBEMACS_IMAGE | cut -d':' -f1)
