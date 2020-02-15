@@ -1,0 +1,697 @@
+# -*- ii: true; -*-
+#+TITLE: dev cycle
+* checkout-existing-PR/branch-from-src
+  #+begin_src shell
+    git clone https://github.com/kubemacs/kubemacs
+    # be sure and fork to your own user
+    cd kubemacs
+    git remote add dev git@github.com:bernokl/kubemacs.git
+    # to work on a branch based on a PR
+    git fetch origin refs/pull/6/head
+    git checkout -b devcycle FETCH_HEAD
+    # submodules point to other repos and mounth them within our repo
+    # google cloud builds (for our PRs) are not supported... yet
+    git submodule init
+    git submodule update
+  #+end_src
+
+Now you can work on your the existing PR in a local branch.
+
+* ensure the IP:PORTS you want to use locally are available
+** tcp
+#+name: listening tcp ip:ports
+#+begin_src shell
+ss --listening --numeric --tcp | grep -v :: | awk '{print $1, $4}' | sort
+#+end_src
+
+#+RESULTS: listening tcp ip:ports
+#+begin_example
+LISTEN 0.0.0.0:22
+LISTEN *:10350
+LISTEN 127.0.0.1:25
+LISTEN 127.0.0.1:2947
+LISTEN 127.0.0.1:32852
+LISTEN 127.0.0.1:5037
+LISTEN 127.0.0.1:631
+LISTEN 127.0.0.1%lo:53
+LISTEN 192.168.122.1:53
+LISTEN *:21
+LISTEN *:2200
+LISTEN *:3128
+LISTEN *:443
+LISTEN *:5432
+LISTEN *:6443
+LISTEN *:80
+LISTEN *:8000
+State Local
+#+end_example
+** udp
+#+name: listening udp ip:ports
+#+begin_src shell
+ss --listening --numeric --udp | grep -v :: | awk '{print $1, $4}' | sort
+#+end_src
+
+#+RESULTS: listening udp ip:ports
+#+begin_example
+State Local
+UNCONN 0.0.0.0:123
+UNCONN 0.0.0.0:1701
+UNCONN 0.0.0.0:30000
+UNCONN 0.0.0.0:35014
+UNCONN 0.0.0.0:36984
+UNCONN 0.0.0.0:5353
+UNCONN 0.0.0.0:53581
+UNCONN 0.0.0.0:631
+UNCONN 0.0.0.0:68
+UNCONN 0.0.0.0%virbr0:67
+UNCONN 127.0.0.1:123
+UNCONN 127.0.0.1%lo:53
+UNCONN 169.254.109.149:123
+UNCONN 169.254.133.227:123
+UNCONN 172.17.0.1:123
+UNCONN 192.168.1.17:123
+UNCONN 192.168.122.1:53
+UNCONN 224.0.0.251:5353
+UNCONN 224.0.0.251:5353
+UNCONN 224.0.0.251:5353
+UNCONN 224.0.0.251:5353
+UNCONN 224.0.0.251:5353
+UNCONN *:43714
+UNCONN *:56726
+#+end_example
+
+** kind.nodes.hostPort entres
+   #+begin_src shell
+     grep hostPort: kind-cluster-config.yaml
+   #+end_src
+
+   #+RESULTS:
+   #+begin_example
+        hostPort: 80
+        hostPort: 443
+        hostPort: 2200
+      #   hostPort: 4000
+      #   hostPort: 4001
+        hostPort: 5432
+        hostPort: 6443
+        hostPort: 10350
+      #   hostPort: 2080
+      #   hostPort: 20443
+   #+end_example
+
+
+* setting up local-registry
+  #+begin_src tmate :session foo:registry
+  # create registry container unless it already exists
+  KIND_LOCAL_REGISTRY_NAME="kind-registry"
+  KIND_LOCAL_REGISTRY_PORT="5000"
+  docker pull registry:2
+  running="$(docker inspect -f '{{.State.Running}}' "${KIND_LOCAL_REGIESTRY_NAME}" 2>/dev/null || true)"
+  if [ "${running}" != 'true' ]; then
+    docker run \
+      -d --restart=always -p "${KIND_LOCAL_REGISTRY_PORT}:5000" --name "${KIND_LOCAL_REGISTRY_NAME}" \
+      registry:2
+  fi
+  #+end_src
+* dev-cycle
+
+  #+begin_src tmate :dir "."
+    # needs another var to not ask questions
+    KUBEMACS_USER=berno
+    KUBEMACS_IMAGE=gcr.io/kubemacs/kubemacs:${KUBEMACS_USER}-dev
+    docker build -t $KUBEMACS_IMAGE .
+    # KUBEMACS_IMAGE=gcr.io/kubemacs/kubemacs:pr-N # for any kubemacs/kubemacs PR
+     # -e KUBEMACS_DOCKER_INIT_CONTAINER_NAME="kubemacs-docker-init" \
+    docker run \
+     --name kubemacs-docker-init \
+     -e HOST_UID="$(id -u)" \
+     -e KUBEMACS_GIT_EMAIL='hhii@ii.coop' \
+     -e KUBEMACS_GIT_NAME='Hippie Hacker (ii)' \
+     -e KUBEMACS_TIMEZONE='Pacific/Auckland' \
+     -e KUBEMACS_IMAGE=$KUBEMACS_IMAGE \
+     -e KUBEMACS_HOST_KUBECONFIG_NAME="kind-${KUBEMACS_USER}.kubemacs.configname" \
+     -e KIND_LOCAL_REGISTRY_ENABLE="true" \
+     -e KIND_LOCAL_REGISTRY_NAME="kind-registry" \
+     -e KIND_LOCAL_REGISTRY_PORT="5000" \
+     -e KUBEMACS_KIND_NAME="${KUBEMACS_USER}.kubemacs.kindname" \
+     -e KUBEMACS_INIT_DEFAULT_REPOS='https://github.com/cncf/apisnoop git@gitlab.ii.coop:ii/hours.git' \
+     -e KUBEMACS_INIT_DEFAULT_REPOS_FOLDER='Projects' \
+     -e KUBEMACS_INIT_DEFAULT_DIR='Projects/apisnoop' \
+     -e KUBEMACS_INIT_ORG_FILE='Projects/apisnoop/deployment/k8s/local/tilt.org' \
+     -e KUBEMACS_INIT_DEBUG=true \
+     --user root \
+     --network host \
+     -it \
+     --rm \
+     --privileged \
+     -v "$HOME/.kube":/tmp/.kube \
+     -v /var/run/docker.sock:/var/run/docker.sock \
+    $KUBEMACS_IMAGE \
+     docker-init.sh
+  #+end_src
+
+##+begin_src tmate :session foo:bar
+
+* aoeu
+  #+begin_src shell
+    kubectl exec -it kubemacs-0 -- tmate -S /tmp/ii.default.target.iisocket at
+  #+end_src
+* get pod/kubemacs-0
+  #+name: get pod/kubemacs-0
+  #+begin_src shell :wrap "src yaml"
+    docker exec hh-kubemacs-control-plane kubectl get pod/kubemacs-0 --kubeconfig=/etc/kubernetes/admin.conf -o yaml
+  #+end_src
+
+  #+RESULTS: get pod/kubemacs-0
+  #+begin_src yaml
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2020-02-13T09:00:17Z"
+    generateName: kubemacs-
+    labels:
+      app: kubemacs
+      controller-revision-hash: kubemacs-66f94b6cd6
+      statefulset.kubernetes.io/pod-name: kubemacs-0
+    name: kubemacs-0
+    namespace: default
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: StatefulSet
+      name: kubemacs
+      uid: 6bc89307-6001-4912-a386-d6c556a5d244
+    resourceVersion: "703"
+    selfLink: /api/v1/namespaces/default/pods/kubemacs-0
+    uid: 5c4ab83d-a88a-4a9e-abb2-7b838b5bdf4b
+  spec:
+    containers:
+    - command:
+      - /usr/local/bin/simple-init.sh
+      - $INIT_ORG_FILE
+      env:
+      - name: TZ
+        valueFrom:
+          configMapKeyRef:
+            key: TZ
+            name: kubemacs-configuration
+      - name: GIT_COMMITTER_EMAIL
+        valueFrom:
+          configMapKeyRef:
+            key: GIT_EMAIL
+            name: kubemacs-configuration
+      - name: GIT_COMMITTER_NAME
+        valueFrom:
+          configMapKeyRef:
+            key: GIT_NAME
+            name: kubemacs-configuration
+      - name: GIT_AUTHOR_EMAIL
+        valueFrom:
+          configMapKeyRef:
+            key: GIT_EMAIL
+            name: kubemacs-configuration
+      - name: GIT_AUTHOR_NAME
+        valueFrom:
+          configMapKeyRef:
+            key: GIT_NAME
+            name: kubemacs-configuration
+      - name: INIT_DEFAULT_REPOS
+        valueFrom:
+          configMapKeyRef:
+            key: INIT_DEFAULT_REPOS
+            name: kubemacs-configuration
+      - name: INIT_DEFAULT_DIR
+        valueFrom:
+          configMapKeyRef:
+            key: INIT_DEFAULT_DIR
+            name: kubemacs-configuration
+      - name: INIT_ORG_FILE
+        valueFrom:
+          configMapKeyRef:
+            key: INIT_ORG_FILE
+            name: kubemacs-configuration
+      image: gcr.io/kubemacs/kubemacs:hh-dev
+      imagePullPolicy: IfNotPresent
+      name: kubemacs
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /home/ii/workspace
+        name: kubemacs-hostpath
+      - mountPath: /var/run/docker.sock
+        name: docker
+      - mountPath: /tmp
+        name: host-tmp
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kubemacs-sa-token-nwh84
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    hostname: kubemacs-0
+    nodeName: hh-kubemacs-worker
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: kubemacs-sa
+    serviceAccountName: kubemacs-sa
+    subdomain: kubemacs
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - hostPath:
+        path: /workspace
+        type: ""
+      name: kubemacs-hostpath
+    - hostPath:
+        path: /var/run/docker.sock
+        type: Socket
+      name: docker
+    - hostPath:
+        path: /var/host/tmp
+        type: ""
+      name: host-tmp
+    - name: kubemacs-sa-token-nwh84
+      secret:
+        defaultMode: 420
+        secretName: kubemacs-sa-token-nwh84
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2020-02-13T09:00:17Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2020-02-13T09:00:23Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2020-02-13T09:00:23Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2020-02-13T09:00:17Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://9e52bdce9fd2f36692f4313e9f76e077d4ac8f0042565dde37f65d35fff7518c
+      image: gcr.io/kubemacs/kubemacs:hh-dev
+      imageID: sha256:7fbdbb42358b4f1cdf378e6e162146c4d3efc5d47c5345f3896fa5984175f76b
+      lastState: {}
+      name: kubemacs
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2020-02-13T09:00:23Z"
+    hostIP: 172.17.0.2
+    phase: Running
+    podIP: 10.244.1.3
+    podIPs:
+    - ip: 10.244.1.3
+    qosClass: BestEffort
+    startTime: "2020-02-13T09:00:17Z"
+  #+end_src
+
+* Describe pod/kubemacs-0
+  #+name: describe pod/kubemacs-0
+  #+begin_src shell
+    docker exec hh-kubemacs-control-plane kubectl describe pod/kubemacs-0 --kubeconfig=/etc/kubernetes/admin.conf 
+  #+end_src
+
+  #+RESULTS: describe pod/kubemacs-0
+  #+begin_example
+  Name:         kubemacs-0
+  Namespace:    default
+  Priority:     0
+  Node:         hh-kubemacs-worker/172.17.0.2
+  Start Time:   Thu, 13 Feb 2020 09:00:17 +0000
+  Labels:       app=kubemacs
+                controller-revision-hash=kubemacs-66f94b6cd6
+                statefulset.kubernetes.io/pod-name=kubemacs-0
+  Annotations:  <none>
+  Status:       Running
+  IP:           10.244.1.3
+  IPs:
+    IP:           10.244.1.3
+  Controlled By:  StatefulSet/kubemacs
+  Containers:
+    kubemacs:
+      Container ID:  containerd://9e52bdce9fd2f36692f4313e9f76e077d4ac8f0042565dde37f65d35fff7518c
+      Image:         gcr.io/kubemacs/kubemacs:hh-dev
+      Image ID:      sha256:7fbdbb42358b4f1cdf378e6e162146c4d3efc5d47c5345f3896fa5984175f76b
+      Port:          <none>
+      Host Port:     <none>
+      Command:
+        /usr/local/bin/simple-init.sh
+        $INIT_ORG_FILE
+      State:          Running
+        Started:      Thu, 13 Feb 2020 09:00:23 +0000
+      Ready:          True
+      Restart Count:  0
+      Environment:
+        TZ:                   <set to the key 'TZ' of config map 'kubemacs-configuration'>                  Optional: false
+        GIT_COMMITTER_EMAIL:  <set to the key 'GIT_EMAIL' of config map 'kubemacs-configuration'>           Optional: false
+        GIT_COMMITTER_NAME:   <set to the key 'GIT_NAME' of config map 'kubemacs-configuration'>            Optional: false
+        GIT_AUTHOR_EMAIL:     <set to the key 'GIT_EMAIL' of config map 'kubemacs-configuration'>           Optional: false
+        GIT_AUTHOR_NAME:      <set to the key 'GIT_NAME' of config map 'kubemacs-configuration'>            Optional: false
+        INIT_DEFAULT_REPOS:   <set to the key 'INIT_DEFAULT_REPOS' of config map 'kubemacs-configuration'>  Optional: false
+        INIT_DEFAULT_DIR:     <set to the key 'INIT_DEFAULT_DIR' of config map 'kubemacs-configuration'>    Optional: false
+        INIT_ORG_FILE:        <set to the key 'INIT_ORG_FILE' of config map 'kubemacs-configuration'>       Optional: false
+      Mounts:
+        /home/ii/workspace from kubemacs-hostpath (rw)
+        /tmp from host-tmp (rw)
+        /var/run/docker.sock from docker (rw)
+        /var/run/secrets/kubernetes.io/serviceaccount from kubemacs-sa-token-nwh84 (ro)
+  Conditions:
+    Type              Status
+    Initialized       True 
+    Ready             True 
+    ContainersReady   True 
+    PodScheduled      True 
+  Volumes:
+    kubemacs-hostpath:
+      Type:          HostPath (bare host directory volume)
+      Path:          /workspace
+      HostPathType:  
+    docker:
+      Type:          HostPath (bare host directory volume)
+      Path:          /var/run/docker.sock
+      HostPathType:  Socket
+    host-tmp:
+      Type:          HostPath (bare host directory volume)
+      Path:          /var/host/tmp
+      HostPathType:  
+    kubemacs-sa-token-nwh84:
+      Type:        Secret (a volume populated by a Secret)
+      SecretName:  kubemacs-sa-token-nwh84
+      Optional:    false
+  QoS Class:       BestEffort
+  Node-Selectors:  <none>
+  Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
+                   node.kubernetes.io/unreachable:NoExecute for 300s
+  Events:
+    Type    Reason     Age   From                         Message
+    ----    ------     ----  ----                         -------
+    Normal  Scheduled  92s   default-scheduler            Successfully assigned default/kubemacs-0 to hh-kubemacs-worker
+    Normal  Pulled     90s   kubelet, hh-kubemacs-worker  Container image "gcr.io/kubemacs/kubemacs:hh-dev" already present on machine
+    Normal  Created    86s   kubelet, hh-kubemacs-worker  Created container kubemacs
+    Normal  Started    86s   kubelet, hh-kubemacs-worker  Started container kubemacs
+  #+end_example
+
+* Four nested levels of KUBECONFIGs
+** within the kubemacs-init docker container
+#+begin_src shell
+docker exec kubemacs-init kubectl config view
+# docker exec kubemacs-init cat /root/.kube/config
+#+end_src
+
+#+RESULTS:
+#+begin_example
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://127.0.0.1:6443
+  name: kind-berno.kubemacs.kindname
+contexts:
+- context:
+    cluster: kind-berno.kubemacs.kindname
+    namespace: kubemacs
+    user: kind-berno.kubemacs.kindname
+  name: kind-berno.kubemacs.kindname
+current-context: kind-berno.kubemacs.kindname
+kind: Config
+preferences: {}
+users:
+- name: kind-berno.kubemacs.kindname
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+#+end_example
+
+** within the kind control-plane node
+#+begin_src shell
+KIND_CLUSTER_NAME=$(kind get clusters | tail -1) # assuming we only have one
+docker exec ${KIND_CLUSTER_NAME}-control-plane kubectl config view --kubeconfig /etc/kubernetes/admin.conf
+#+end_src
+
+#+RESULTS:
+#+begin_example
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://172.17.0.3:6443
+  name: berno.kubemacs.kindname
+contexts:
+- context:
+    cluster: berno.kubemacs.kindname
+    user: kubernetes-admin
+  name: kubernetes-admin@berno.kubemacs.kindname
+current-context: kubernetes-admin@berno.kubemacs.kindname
+kind: Config
+preferences: {}
+users:
+- name: kubernetes-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+#+end_example
+
+** within k8s kubemacs-0 pod/container
+#+begin_src shell
+export KUBECONFIG=~/.kube/kind-berno.kubemacs.configname
+kubectl exec kubemacs-0 kubectl config view
+#+end_src
+
+#+RESULTS:
+#+begin_example
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    server: https://kubernetes.default
+  name: kind-kubemacs
+contexts:
+- context:
+    cluster: kind-kubemacs
+    namespace: kubemacs
+    user: serviceaccount
+  name: in-cluster
+current-context: in-cluster
+kind: Config
+preferences: {}
+users:
+- name: serviceaccount
+  user:
+    tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+#+end_example
+
+** the one copied out of the container to the outer host
+#+begin_src shell
+export KUBECONFIG=~/.kube/kind-berno.kubemacs.configname
+kubectl config view
+#+end_src
+
+#+RESULTS:
+#+begin_example
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://127.0.0.1:6443
+  name: kind-berno.kubemacs.kindname
+contexts:
+- context:
+    cluster: kind-berno.kubemacs.kindname
+    namespace: kubemacs
+    user: kind-berno.kubemacs.kindname
+  name: kind-berno.kubemacs.kindname
+current-context: kind-berno.kubemacs.kindname
+kind: Config
+preferences: {}
+users:
+- name: kind-berno.kubemacs.kindname
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+#+end_example
+
+* Logs
+  #+name: logs from kubemacs-0 pod
+  #+begin_src shell
+    docker exec hh-kubemacs-control-plane kubectl logs kubemacs-0 --kubeconfig=/etc/kubernetes/admin.conf 
+  #+end_src
+
+  #+RESULTS: logs from kubemacs-0 pod
+  #+begin_example
+  + cd /home/ii
+  + '[' '!' -f .ssh/id_rsa ']'
+  + ssh-keygen -b 4096 -t rsa -f /home/ii/.ssh/id_rsa -q -N ''
+  Saving key "/home/ii/.ssh/id_rsa" failed: Not a directory
+  + SERVICE_ACCOUNT_DIR=/var/run/secrets/kubernetes.io/serviceaccount
+  + '[' -d /var/run/secrets/kubernetes.io/serviceaccount ']'
+  + export IN_CLUSTER=true
+  + IN_CLUSTER=true
+  ++ kubectl config current-context
+  ++ cat /var/run/secrets/kubernetes.io/serviceaccount/namespace
+  + kubectl config set-context in-cluster --namespace=default
+  Context "in-cluster" modified.
+  + '[' -z hhii@ii.coop ']'
+  + '[' -z Hippie Hacker '(ii)' ']'
+  /usr/local/bin/simple-init.sh: line 29: [: too many arguments
+  + export ALTERNATE_EDITOR=
+  + ALTERNATE_EDITOR=
+  + export TMATE_SOCKET=/tmp/ii.default.target.iisocket
+  + TMATE_SOCKET=/tmp/ii.default.target.iisocket
+  ++ basename /tmp/ii.default.target.iisocket
+  + export TMATE_SOCKET_NAME=ii.default.target.iisocket
+  + TMATE_SOCKET_NAME=ii.default.target.iisocket
+  + export 'INIT_ORG_FILE=$HOME/repos/apisnoop/deployment/k8s'
+  + INIT_ORG_FILE='$HOME/repos/apisnoop/deployment/k8s'
+  + export INIT_DEFAULT_DIR=repos/apisnoop
+  + INIT_DEFAULT_DIR=repos/apisnoop
+  + export 'INIT_DEFAULT_REPOS=https://github.com/cncf/apisnoop git@gitlab.ii.coop:ii/hours.git'
+  + INIT_DEFAULT_REPOS='https://github.com/cncf/apisnoop git@gitlab.ii.coop:ii/hours.git'
+  + export INIT_DEFAULT_REPOS_FOLDER=repos
+  + INIT_DEFAULT_REPOS_FOLDER=repos
+  + . /usr/local/bin/ssh-agent-export.sh
+  ++ '[' '!' -n '' ']'
+  +++ find /tmp -maxdepth 1 -name 'ssh-*' -print -quit
+  ++ '[' -n /tmp/ssh-HQ7tj6ZLk9KG ']'
+  ++ sudo chgrp -R users /tmp/ssh-46JRVi3lGV7J /tmp/ssh-6Kv9giGTmSyj /tmp/ssh-BYoI3BjKLZct /tmp/ssh-HQ7tj6ZLk9KG /tmp/ssh-JkMnmKkql3sy /tmp/ssh-LEhwob8q8CUI /tmp/ssh-VeY35fIDe92c /tmp/ssh-X /tmp/ssh-fkMnyYVHC7n1 /tmp/ssh-hqJmtYCdTcic /tmp/ssh-tZVtJnYBeRAt /tmp/ssh-vsSrfetZGSyA /tmp/ssh-wgPO8nHLc9oR
+  ++ sudo chmod -R 0770 /tmp/ssh-46JRVi3lGV7J /tmp/ssh-6Kv9giGTmSyj /tmp/ssh-BYoI3BjKLZct /tmp/ssh-HQ7tj6ZLk9KG /tmp/ssh-JkMnmKkql3sy /tmp/ssh-LEhwob8q8CUI /tmp/ssh-VeY35fIDe92c /tmp/ssh-X /tmp/ssh-fkMnyYVHC7n1 /tmp/ssh-hqJmtYCdTcic /tmp/ssh-tZVtJnYBeRAt /tmp/ssh-vsSrfetZGSyA /tmp/ssh-wgPO8nHLc9oR
+  +++ find /tmp /run/host/tmp/ -type s -regex '.*/ssh-.*/agent..*$'
+  +++ tail -n 1
+  ++ export SSH_AUTH_SOCK=/tmp/ssh-wgPO8nHLc9oR/agent.20739
+  ++ SSH_AUTH_SOCK=/tmp/ssh-wgPO8nHLc9oR/agent.20739
+  + '[' '!' -z 'https://github.com/cncf/apisnoop git@gitlab.ii.coop:ii/hours.git' ']'
+  + mkdir -p repos
+  + cd repos
+  + for repo in $INIT_DEFAULT_REPOS
+  + git clone -v --recursive https://github.com/cncf/apisnoop
+  Cloning into 'apisnoop'...
+  POST git-upload-pack (gzip 2677 to 1394 bytes)
+  Submodule 'apps/kubemacs' (https://github.com/kubemacs/kubemacs) registered for path 'apps/kubemacs'
+  Cloning into '/home/ii/repos/apisnoop/apps/kubemacs'...
+  Submodule path 'apps/kubemacs': checked out '47feb9e52306768605bb83b22cf90b051cf8fadb'
+  Submodule 'layers/emacs-reveal/local/emacs-reveal' (https://gitlab.com/oer/emacs-reveal) registered for path 'apps/kubemacs/layers/emacs-reveal/local/emacs-reveal'
+  Submodule 'layers/ii/local/ob-javascript' (https://github.com/zweifisch/ob-javascript.git) registered for path 'apps/kubemacs/layers/ii/local/ob-javascript'
+  Submodule 'spacemacs' (https://github.com/syl20bnr/spacemacs.git) registered for path 'apps/kubemacs/spacemacs'
+  Cloning into '/home/ii/repos/apisnoop/apps/kubemacs/layers/emacs-reveal/local/emacs-reveal'...
+  warning: redirecting to https://gitlab.com/oer/emacs-reveal.git/
+  remote: warning: ignoring extra bitmap file: /var/opt/gitlab/git-data/repositories/@pools/08/9e/089ee14b926fabea6dd95890032d1a37e69c1011c710977af774ec3a7b5b39a6.git/objects/pack/pack-5a7b478694453290ad708d33192f100888496b79.pack        
+  Cloning into '/home/ii/repos/apisnoop/apps/kubemacs/layers/ii/local/ob-javascript'...
+  Cloning into '/home/ii/repos/apisnoop/apps/kubemacs/spacemacs'...
+  Submodule path 'apps/kubemacs/layers/emacs-reveal/local/emacs-reveal': checked out '49d2cd26d9560b042ad31b5bf1b74ce5148b785d'
+  Submodule path 'apps/kubemacs/layers/ii/local/ob-javascript': checked out '4aafd53efbc9693fd938d6c1f23a12f7666e0728'
+  Submodule path 'apps/kubemacs/spacemacs': checked out 'bd46b02f7fd8979fe1ee4830a430beb4255aab30'
+  + for repo in $INIT_DEFAULT_REPOS
+  + git clone -v --recursive git@gitlab.ii.coop:ii/hours.git
+  Cloning into 'hours'...
+  load pubkey "/home/ii/.ssh/id_rsa": Not a directory
+  load pubkey "/home/ii/.ssh/id_rsa": Not a directory
+  load pubkey "/home/ii/.ssh/id_dsa": Not a directory
+  load pubkey "/home/ii/.ssh/id_dsa": Not a directory
+  load pubkey "/home/ii/.ssh/id_ecdsa": Not a directory
+  load pubkey "/home/ii/.ssh/id_ecdsa": Not a directory
+  load pubkey "/home/ii/.ssh/id_ed25519": Not a directory
+  load pubkey "/home/ii/.ssh/id_ed25519": Not a directory
+  load pubkey "/home/ii/.ssh/id_xmss": Not a directory
+  load pubkey "/home/ii/.ssh/id_xmss": Not a directory
+  Host key verification failed.
+  fatal: Could not read from remote repository.
+
+  Please make sure you have the correct access rights
+  and the repository exists.
+  + cd repos/apisnoop
+  + tmate -F -v -S /tmp/ii.default.target.iisocket new-session -d -c repos/apisnoop emacsclient --tty '$HOME/repos/apisnoop/deployment/k8s'
+  + '[' '!' -f /tmp/ii.default.target.iisocket ']'
+  + read i
+  ++ inotifywait -e create,open --format %f --quiet /tmp --monitor
+  + '[' ii.default.target.iisocket = ii.default.target.iisocket ']'
+  + break
+  + tmate -S /tmp/ii.default.target.iisocket wait-for tmate-ready
+  To connect to the session locally, run: tmate -S /tmp/ii.default.target.iisocket attach
+  Looking up ssh.tmate.io...
+  Connecting to ssh.tmate.io...
+  [2] [ssh_config_parse_line] ssh_config_parse_line: Unapplicable option: SendEnv, line: 48
+  [1] [ssh_config_parse_line] ssh_config_parse_line: Unsupported option: HashKnownHosts, line: 49
+  [2] [ssh_connect] ssh_connect: libssh 0.9.0 (c) 2003-2019 Aris Adamantiadis, Andreas Schneider and libssh contributors. Distributed under the LGPL, please refer to COPYING file for information about your rights, using threading (null)
+  [2] [ssh_socket_connect] ssh_socket_connect: Nonblocking connection socket: 6
+  [2] [ssh_connect] ssh_connect: Socket connecting, now waiting for the callbacks to work
+  [2] [ssh_config_parse_line] ssh_config_parse_line: Unapplicable option: SendEnv, line: 48
+  [1] [ssh_config_parse_line] ssh_config_parse_line: Unsupported option: HashKnownHosts, line: 49
+  [2] [ssh_connect] ssh_connect: libssh 0.9.0 (c) 2003-2019 Aris Adamantiadis, Andreas Schneider and libssh contributors. Distributed under the LGPL, please refer to COPYING file for information about your rights, using threading (null)
+  [2] [ssh_socket_connect] ssh_socket_connect: Nonblocking connection socket: 9
+  [2] [ssh_connect] ssh_connect: Socket connecting, now waiting for the callbacks to work
+  [2] [ssh_config_parse_line] ssh_config_parse_line: Unapplicable option: SendEnv, line: 48
+  [1] [ssh_config_parse_line] ssh_config_parse_line: Unsupported option: HashKnownHosts, line: 49
+  [2] [ssh_connect] ssh_connect: libssh 0.9.0 (c) 2003-2019 Aris Adamantiadis, Andreas Schneider and libssh contributors. Distributed under the LGPL, please refer to COPYING file for information about your rights, using threading (null)
+  [2] [ssh_socket_connect] ssh_socket_connect: Nonblocking connection socket: 10
+  [2] [ssh_connect] ssh_connect: Socket connecting, now waiting for the callbacks to work
+  [2] [ssh_config_parse_line] ssh_config_parse_line: Unapplicable option: SendEnv, line: 48
+  [1] [ssh_config_parse_line] ssh_config_parse_line: Unsupported option: HashKnownHosts, line: 49
+  [2] [ssh_connect] ssh_connect: libssh 0.9.0 (c) 2003-2019 Aris Adamantiadis, Andreas Schneider and libssh contributors. Distributed under the LGPL, please refer to COPYING file for information about your rights, using threading (null)
+  [2] [ssh_socket_connect] ssh_socket_connect: Nonblocking connection socket: 11
+  [2] [ssh_connect] ssh_connect: Socket connecting, now waiting for the callbacks to work
+  [1] [socket_callback_connected] socket_callback_connected: Socket connection callback: 1 (0)
+  [2] [ssh_client_connection_callback] ssh_client_connection_callback: SSH server banner: SSH-2.0-tmate
+  [2] [ssh_analyze_banner] ssh_analyze_banner: Analyzing banner: SSH-2.0-tmate
+  [1] [ssh_known_hosts_read_entries] ssh_known_hosts_read_entries: Failed to open the known_hosts file '/home/ii/.ssh/known_hosts': Not a directory
+  [1] [ssh_known_hosts_read_entries] ssh_known_hosts_read_entries: Failed to open the known_hosts file '/etc/ssh/ssh_known_hosts': No such file or directory
+  [1] [socket_callback_connected] socket_callback_connected: Socket connection callback: 1 (0)
+  [2] [ssh_client_connection_callback] ssh_client_connection_callback: SSH server banner: SSH-2.0-tmate
+  [2] [ssh_analyze_banner] ssh_analyze_banner: Analyzing banner: SSH-2.0-tmate
+  [1] [ssh_known_hosts_read_entries] ssh_known_hosts_read_entries: Failed to open the known_hosts file '/home/ii/.ssh/known_hosts': Not a directory
+  [1] [ssh_known_hosts_read_entries] ssh_known_hosts_read_entries: Failed to open the known_hosts file '/etc/ssh/ssh_known_hosts': No such file or directory
+  [2] [ssh_kex_select_methods] ssh_kex_select_methods: Negotiated curve25519-sha256,rsa-sha2-512,aes256-gcm@openssh.com,aes256-gcm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-256-etm@openssh.com,zlib@openssh.com,zlib@openssh.com,,
+  [1] [socket_callback_connected] socket_callback_connected: Socket connection callback: 1 (0)
+  [2] [ssh_client_connection_callback] ssh_client_connection_callback: SSH server banner: SSH-2.0-tmate
+  [2] [ssh_analyze_banner] ssh_analyze_banner: Analyzing banner: SSH-2.0-tmate
+  [1] [ssh_known_hosts_read_entries] ssh_known_hosts_read_entries: Failed to open the known_hosts file '/home/ii/.ssh/known_hosts': Not a directory
+  [1] [ssh_known_hosts_read_entries] ssh_known_hosts_read_entries: Failed to open the known_hosts file '/etc/ssh/ssh_known_hosts': No such file or directory
+  [1] [socket_callback_connected] socket_callback_connected: Socket connection callback: 1 (0)
+  [2] [ssh_client_connection_callback] ssh_client_connection_callback: SSH server banner: SSH-2.0-tmate
+  [2] [ssh_analyze_banner] ssh_analyze_banner: Analyzing banner: SSH-2.0-tmate
+  [1] [ssh_known_hosts_read_entries] ssh_known_hosts_read_entries: Failed to open the known_hosts file '/home/ii/.ssh/known_hosts': Not a directory
+  [1] [ssh_known_hosts_read_entries] ssh_known_hosts_read_entries: Failed to open the known_hosts file '/etc/ssh/ssh_known_hosts': No such file or directory
+  [2] [ssh_init_rekey_state] ssh_init_rekey_state: Set rekey after 4294967296 blocks
+  [2] [ssh_init_rekey_state] ssh_init_rekey_state: Set rekey after 4294967296 blocks
+  [2] [ssh_packet_client_curve25519_reply] ssh_packet_client_curve25519_reply: SSH_MSG_NEWKEYS sent
+  [2] [ssh_packet_newkeys] ssh_packet_newkeys: Received SSH_MSG_NEWKEYS
+  [2] [ssh_packet_newkeys] ssh_packet_newkeys: Signature verified and valid
+  Establishing connection to 157.230.72.130
+  Connected to 157.230.72.130
+  SSH client killed (206.189.246.93)
+  SSH client killed (134.209.128.51)
+  SSH client killed (188.166.207.127)
+  Auth successful via none method
+  [2] [channel_open] channel_open: Creating a channel 43 with 64000 window and 32768 max packet
+  [2] [ssh_packet_channel_open_conf] ssh_packet_channel_open_conf: Received a CHANNEL_OPEN_CONFIRMATION for channel 43:43
+  [2] [ssh_packet_channel_open_conf] ssh_packet_channel_open_conf: Remote window : 32000, maxpacket : 35000
+  Session opened, initalizing tmate
+  [2] [channel_request] channel_request: Channel request subsystem success
+  Ready
+  [2] [channel_rcv_change_window] channel_rcv_change_window: Adding 1251867 bytes to channel (43:43) (from 28133 bytes)
+  [2] [grow_window] grow_window: growing window (channel 43:43) to 1280000 bytes
+  web session read only: https://tmate.io/t/ro-Xv5hDgswG9CGjDqTwETNPZ4HE
+  ssh session read only: ssh ro-Xv5hDgswG9CGjDqTwETNPZ4HE@sfo2.tmate.io
+  web session: https://tmate.io/t/2GT78bdJh62smHntw8JCNc7WT
+  ssh session: ssh 2GT78bdJh62smHntw8JCNc7WT@sfo2.tmate.io
+  + tmate -S /tmp/ii.default.target.iisocket set-hook -ug client-attached
+  + tmate -S /tmp/ii.default.target.iisocket set-hook -g client-attached 'run-shell "tmate new-window osc52-tmate.sh"'
+  #+end_example
+

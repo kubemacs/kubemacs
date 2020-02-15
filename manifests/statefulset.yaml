@@ -46,6 +46,11 @@ spec:
               configMapKeyRef:
                 name: kubemacs-configuration
                 key: GIT_NAME
+          - name: INIT_DEFAULT_REPOS_FOLDER
+            valueFrom:
+              configMapKeyRef:
+                name: kubemacs-configuration
+                key: INIT_DEFAULT_REPOS_FOLDER
           - name: INIT_DEFAULT_REPOS
             valueFrom:
               configMapKeyRef:

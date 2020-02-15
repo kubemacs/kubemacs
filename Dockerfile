@@ -133,7 +133,7 @@ RUN apt-get update \
 #     update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 RUN mkdir -p /usr/share/kubemacs
-ADD kind-cluster-config.yaml /usr/share/kubemacs/
+ADD kind-cluster-config.yaml kind-cluster+registry.yaml kustomization.yaml /usr/share/kubemacs/
 ADD manifests /usr/share/kubemacs/manifests
 ADD kustomization.yaml /usr/share/kubemacs/manifests
 
@@ -156,7 +156,6 @@ RUN curl https://storage.googleapis.com/apisnoop/dev/kubemacs-cache-0.9.32.tgz \
   && chmod -R g+w $KUBEMACS_CONFIGDIR
 
 # we use osc52 support to copy text back to your OS over kubectl exec tmate
-COPY bin/* /usr/local/bin/
 ADD profile.d-iitoolbox.sh /etc/profile.d/iitoolbox.sh
 RUN mkdir -p /etc/sudoers.d && \
   echo "%sudo    ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudo
@@ -166,6 +165,8 @@ RUN mkdir -p /etc/sudoers.d && \
 #   groupadd -g 999 docker
 # From here on out we setup the user
 COPY homedir/* /etc/skel/
+RUN mkdir -p /etc/skel/.ssh
+COPY known_hosts /etc/skel/.ssh/
 COPY kubeconfig /etc/skel/.kube/config
 RUN chmod 0600 /etc/skel/.pgpass
 RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii
@@ -204,3 +205,6 @@ HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=5 \
   # but still enabling the repo should someone need it later
   # kubectl \
   # google-cloud-sdk \
+USER root
+COPY bin/* /usr/local/bin/
+USER ii

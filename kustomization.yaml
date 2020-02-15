@@ -1,11 +1,11 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - configuration.yaml
-  - statefulset.yaml
-  - service-account.yaml
-  - cluster-role-binding.yaml
-  - tilt-service.yaml
+  - manifests/configuration.yaml
+  - manifests/statefulset.yaml
+  - manifests/service-account.yaml
+  - manifests/cluster-role-binding.yaml
+  - manifests/tilt-service.yaml
 configMapGenerator:
 - name: kubemacs-configuration
   behavior: merge
