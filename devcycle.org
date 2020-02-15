@@ -103,13 +103,13 @@ UNCONN *:56726
 * setting up local-registry
   #+begin_src tmate :session foo:registry
   # create registry container unless it already exists
-  reg_name='kind-registry'
-  reg_port='5000'
+  KIND_LOCAL_REGISTRY_NAME="kind-registry"
+  KIND_LOCAL_REGISTRY_PORT="5000"
   docker pull registry:2
-  running="$(docker inspect -f '{{.State.Running}}' "${reg_name}" 2>/dev/null || true)"
+  running="$(docker inspect -f '{{.State.Running}}' "${KIND_LOCAL_REGIESTRY_NAME}" 2>/dev/null || true)"
   if [ "${running}" != 'true' ]; then
     docker run \
-      -d --restart=always -p "${reg_port}:5000" --name "${reg_name}" \
+      -d --restart=always -p "${KIND_LOCAL_REGISTRY_PORT}:5000" --name "${KIND_LOCAL_REGISTRY_NAME}" \
       registry:2
   fi
   #+end_src
