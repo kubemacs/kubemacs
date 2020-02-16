@@ -91,6 +91,7 @@ cat <<EOF
 | KUBEMACS_GIT_EMAIL                 |                  | $KUBEMACS_GIT_EMAIL |
 | KUBEMACS_GIT_NAME                  |                  | $KUBEMACS_GIT_NAME |
 | KUBEMACS_TIMEZONE                  | Pacific/Auckland | $KUBEMACS_TIMEZONE |
+| DOCKER_HOST                        |                  | $DOCKER_HOST |
 | KIND_LOCAL_REGISTRY_ENABLE         | false            | $KIND_LOCAL_REGISTRY_ENABLE |
 | KIND_LOCAL_REGISTRY_NAME           | registry         | $KIND_LOCAL_REGISTRY_NAME |
 | KIND_LOCAL_REGISTRY_PORT           | 5000             | $KIND_LOCAL_REGISTRY_PORT |
