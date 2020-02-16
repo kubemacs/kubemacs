@@ -180,6 +180,14 @@ if ! kubectl cluster-info 2>&1 > /dev/null; then
 fi
 
 if [ "$KIND_LOCAL_REGISTRY_ENABLE" = true ]; then
+    docker pull registry:2
+    running="$(docker inspect -f '{{.State.Running}}' "${KIND_LOCAL_REGISTRY_NAME}" 2>/dev/null || true)"
+    if [ ! "${running}" = 'true' ]; then
+        echo "[status] bringing up a local Docker registry"
+        execPrintOutputIfFailure docker run \
+               -d --restart=always -p "${KIND_LOCAL_REGISTRY_PORT}:5000" --name "${KIND_LOCAL_REGISTRY_NAME}" \
+               registry:2
+    fi
     echo "[status] ensuring nodes refer to the local Docker registry"
     # add the registry to /etc/hosts on each node
     ip_fmt='{{.NetworkSettings.IPAddress}}'
