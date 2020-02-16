@@ -155,11 +155,12 @@ fi
 
 if [ "$WILL_CREATE_CLUSTER" = true ]; then
     echo "[status] creating kind cluster"
+    KIND_MANIFEST=/usr/share/kubemacs/kind-cluster-config.yaml
     if [ "$KIND_LOCAL_REGISTRY_ENABLE" = true ]; then
-        kind create cluster --name "$KUBEMACS_KIND_NAME" --config /usr/share/kubemacs/kind-cluster+registry.yaml
-    else
-        kind create cluster --name "$KUBEMACS_KIND_NAME" --config /usr/share/kubemacs/kind-cluster-config.yaml
+        echo "[status] setting up cluster with local Docker registry support"
+        KIND_MANIFEST=/usr/share/kubemacs/kind-cluster+registry.yaml
     fi
+    kind create cluster --name "$KUBEMACS_KIND_NAME" --config "$KIND_MANIFEST"
     kubectl create ns $KUBEMACS_INIT_DEFAULT_NAMESPACE
     kubectl config set-context $(kubectl config current-context) --namespace=$KUBEMACS_INIT_DEFAULT_NAMESPACE
     execPrintOutputIfFailure kubectl config set clusters.kind-"$KUBEMACS_KIND_NAME".server "https://127.0.0.1:6443"
@@ -178,15 +179,18 @@ if ! kubectl cluster-info 2>&1 > /dev/null; then
     exit 1
 fi
 
-# add the registry to /etc/hosts on each node
-ip_fmt='{{.NetworkSettings.IPAddress}}'
-cmd="echo $(docker inspect -f "${ip_fmt}" "${KIND_LOCAL_REGISTRY_NAME}") registry >> /etc/hosts"
-for node in $(kind get nodes --name "${KUBEMACS_KIND_NAME}"); do
-    docker exec "${node}" sh -c "${cmd}"
-    kubectl annotate node "${node}" \
-            tilt.dev/registry=localhost:${KIND_LOCAL_REGISTRY_PORT} \
-            tilt.dev/registry-from-cluster=registry:${KIND_LOCAL_REGISTRY_PORT}
-done
+if [ "$KIND_LOCAL_REGISTRY_ENABLE" = true ]; then
+    echo "[status] ensuring nodes refer to the local Docker registry"
+    # add the registry to /etc/hosts on each node
+    ip_fmt='{{.NetworkSettings.IPAddress}}'
+    cmd="echo $(docker inspect -f "${ip_fmt}" "${KIND_LOCAL_REGISTRY_NAME}") registry >> /etc/hosts"
+    for node in $(kind get nodes --name "${KUBEMACS_KIND_NAME}"); do
+        docker exec "${node}" sh -c "${cmd}"
+        kubectl annotate node "${node}" \
+                tilt.dev/registry=localhost:${KIND_LOCAL_REGISTRY_PORT} \
+                tilt.dev/registry-from-cluster=registry:${KIND_LOCAL_REGISTRY_PORT}
+    done
+fi
 
 if [ "$WILL_CREATE_CLUSTER" = true ]; then
     echo "[status] copying KUBECONFIG back to host"
@@ -291,4 +295,6 @@ kubectl exec -it kubemacs-0 -- attach
 or paste in a terminal what was added to your clipboard
 "
 
-bash
+if [ "$KUBEMACS_INIT_DEBUG" = true ]; then
+    bash
+fi

@@ -170,6 +170,9 @@ COPY known_hosts /etc/skel/.ssh/
 COPY kubeconfig /etc/skel/.kube/config
 RUN chmod 0600 /etc/skel/.pgpass
 RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii
+
+COPY bin/* /usr/local/bin/
+
 USER ii
 
 # # Fetch Golang dependencies for development
@@ -205,6 +208,3 @@ HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=5 \
   # but still enabling the repo should someone need it later
   # kubectl \
   # google-cloud-sdk \
-USER root
-COPY bin/* /usr/local/bin/
-USER ii
