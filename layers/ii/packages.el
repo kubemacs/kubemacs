@@ -38,6 +38,8 @@
   (use-package ob-tmate))
 (defun ii/init-ob-javascript ()
   (use-package ob-javascript))
+(defun ii/init-ob-powershell ()
+  (use-package ob-powershell))
 (defun ii/init-ob-sql-mode ()
   (use-package ob-sql-mode))
 (defun ii/init-ox-gfm ()
@@ -75,6 +77,7 @@
                (require 'org)
                (require 'ob-shell)
                (require 'ob-javascript)
+               (require 'ob-powershell)
                ;;(require 'ob-sql-mode)
                (add-to-list 'org-babel-load-languages '(shell . t))
                (add-to-list 'org-babel-load-languages '(javascript . t))
@@ -132,6 +135,7 @@
 (defun ii/post-init-org ()
   (require 'ob-shell)
   (require 'ob-javascript)
+  (require 'ob-powershell)
   (require 'cal-iso)
   )
 (defun ii/post-init-yasnippet ()
@@ -185,6 +189,9 @@
     (ob-javascript
      :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "ob-javascript")
      )
+    (ob-powershell
+     :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "ob-powershell")
+     )
     (kubernetes
       :ensure t
       :commands (kubernetes-overview))
@@ -198,10 +205,10 @@
                          :fetcher github
                          :tag "0.1.7"
                          :repo "ii/ob-tmate"))
-    (ob-go :ensure t
-           :location (recipe
-                      :fetcher github
-                      :repo "pope/ob-go"))
+    ;; (ob-go :ensure t
+    ;;        :location (recipe
+    ;;                   :fetcher github
+    ;;                   :repo "pope/ob-go"))
     (ob-sql-mode :ensure t)
     (ob-shell :ensure t
               :location built-in)
