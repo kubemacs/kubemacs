@@ -3,6 +3,7 @@
 
 ENV_FILE=cncf-conformance.env
 . $ENV_FILE
+docker pull $KUBEMACS_IMAGE
 docker run \
        --env-file $ENV_FILE \
        --name kubemacs-docker-init \
