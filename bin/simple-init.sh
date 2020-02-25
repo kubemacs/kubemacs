@@ -60,9 +60,10 @@ cd $INIT_DEFAULT_DIR
     if [ ! -f "$TMATE_SOCKET" ]
     then
         # wait for socket to appear
+        echo -n "Waiting for $TMATE_SOCKET_NAME:"
         while read i; do
             if [ "$i" = $TMATE_SOCKET_NAME ]; then break; fi
-            echo "XXXXX${i}YYYYYYYY"
+            echo -n "."
         done \
             < <(inotifywait  -e create,open --format '%f' --quiet /tmp --monitor)
     fi
