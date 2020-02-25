@@ -40,6 +40,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
   sudo \
   curl \
   ca-certificates \
+  libcap2-bin \
   && rm -rf /var/apt/lists/*
 
 # docker client binary
