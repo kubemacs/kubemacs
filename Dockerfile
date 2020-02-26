@@ -150,10 +150,13 @@ ADD kustomization.yaml /usr/share/kubemacs/manifests
 # Ideally we used a checkout of this repo, but I'm having trouble with the build + submodules
 # RUN git clone --depth 1 --recursive https://github.com/kubemacs/kubemacs /var/local/kubemacs.d
 ADD --chown=root:users *.el $KUBEMACS_CONFIGDIR/
+ADD --chown=root:users .gitmodules $KUBEMACS_CONFIGDIR/.gitmodules
+ADD --chown=root:users .git $KUBEMACS_CONFIGDIR/.git
 ADD --chown=root:users banners $KUBEMACS_CONFIGDIR/banners
 ADD --chown=root:users layers $KUBEMACS_CONFIGDIR/layers
 ADD --chown=root:users snippets $KUBEMACS_CONFIGDIR/snippets
-ADD --chown=root:users spacemacs $KUBEMACS_CONFIGDIR/spacemacs
+# ADD --chown=root:users spacemacs $KUBEMACS_CONFIGDIR/spacemacs
+RUN cd $KUBEMACS_CONFIGDIR && git submodule init && git submodule update
 # TODO I'm unsure how to clone recusively during cloud-build
 #RUN mkdir -p $KUBEMACS_CONFIGDIR
 # The interesting/configuration parts of iimacs/kubemacs need to be in $EMACSLOADPATH
@@ -184,6 +187,7 @@ RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii
 COPY bin/* /usr/local/bin/
 
 USER ii
+ENV TERM=screen-256color
 
 # # Fetch Golang dependencies for development
 # RUN mkdir -p ~/go/src/k8s.io && git clone https://github.com/kubernetes/kubernetes.git ~/go/src/k8s.io/kubernetes
