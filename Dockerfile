@@ -103,7 +103,15 @@ RUN apt-get update \
   build-essential \
   vim \
   rsync \
+  unzip \
+  file \
   && rm -rf /var/apt/lists/*
+
+RUN curl -L -o /usr/local/bin/bazel https://github.com/bazelbuild/bazel/releases/download/0.23.2/bazel-0.23.2-linux-x86_64 && \
+  chmod +x /usr/local/bin/bazel
+
+RUN /bin/env GO111MODULE=on GOPATH=/usr/local/go /usr/local/go/bin/go get golang.org/x/tools/gopls@latest
+RUN /bin/env GO111MODULE=on GOPATH=/usr/local/go /usr/local/go/bin/go get -u github.com/stamblerre/gocode
 
 # # Known dependencies
 # RUN apt-get update \
