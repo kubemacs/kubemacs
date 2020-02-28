@@ -7,7 +7,8 @@ ENV KUBEMACS_VERSION=0.0.2 \
   KUBECTL_VERSION=1.17.2 \
   GO_VERSION=1.13.6 \
   TILT_VERSION=0.12.0 \
-  TMATE_VERSION=2.4.0
+  TMATE_VERSION=2.4.0 \
+  BAZEL_VERSION=0.23.2
 # GOLANG, path vars
 ENV GOROOT=/usr/local/go \
   PATH="$PATH:/usr/local/go/bin"
@@ -107,7 +108,7 @@ RUN apt-get update \
   file \
   && rm -rf /var/apt/lists/*
 
-RUN curl -L -o /usr/local/bin/bazel https://github.com/bazelbuild/bazel/releases/download/0.23.2/bazel-0.23.2-linux-x86_64 && \
+RUN curl -L -o /usr/local/bin/bazel https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-linux-x86_64 && \
   chmod +x /usr/local/bin/bazel
 
 RUN /bin/env GO111MODULE=on GOPATH=/usr/local/go /usr/local/go/bin/go get golang.org/x/tools/gopls@latest
