@@ -18,8 +18,10 @@
   ""
   (text-mode)
 
+  ;; > "#+TITLE: Timesheet: Week " (setq v1 (skeleton-read "Timesheet Week? "))
   > "#+TITLE: Timesheet: Week " (setq v1 (skeleton-read "Timesheet Week? "))
-  ", " (setq v2 (skeleton-read "Timesheet Year? "))
+  ;; ", " (setq v2 (skeleton-read "Timesheet Year? "))
+  ", " (setq v2 "2020")
   " (" (getenv "USER") ")" \n
   > "#+AUTHOR: " (getenv "USER") \n
   > " " \n
