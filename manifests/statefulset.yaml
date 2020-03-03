@@ -66,6 +66,11 @@ spec:
               configMapKeyRef:
                 name: kubemacs-configuration
                 key: INIT_ORG_FILE
+          - name: INIT_PREFINISH_BLOCK
+            valueFrom:
+              configMapKeyRef:
+                name: kubemacs-configuration
+                key: INIT_PREFINISH_BLOCK
         volumeMounts:
           - mountPath: '/home/ii/workspace'
             name: kubemacs-hostpath
