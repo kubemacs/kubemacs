@@ -10,5 +10,4 @@ data:
   INIT_DEFAULT_REPOS_FOLDER: /home/ii/apisnoop
   INIT_DEFAULT_DIR: /home/ii/apisnoop
   INIT_ORG_FILE: /home/ii/apisnoop/org/tickets/mock-template.org
-  INIT_PREFINISH_BLOCK: |
-    ""
+  INIT_PREFINISH_BLOCK: ""
