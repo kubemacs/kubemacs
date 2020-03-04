@@ -58,7 +58,7 @@ KUBEMACS_INIT_DEFAULT_REPOS_FOLDER="${KUBEMACS_INIT_DEFAULT_REPOS_FOLDER:-$HOME}
 KUBEMACS_INIT_DEFAULT_DIR="${KUBEMACS_INIT_DEFAULT_DIR:-/home/ii}"
 KUBEMACS_INIT_ORG_FILE="${KUBEMACS_INIT_ORG_FILE:-}"
 KUBEMACS_INIT_DIRECT="${KUBEMACS_INIT_DIRECT:-true}"
-KUBEMACS_INIT_PREFINISH_BLOCK=${KUBEMACS_INIT_PREFINISH_BLOCK:-}
+KUBEMACS_INIT_PREFINISH_BLOCK="${KUBEMACS_INIT_PREFINISH_BLOCK:-}"
 KIND_LOCAL_REGISTRY_ENABLE=${KIND_LOCAL_REGISTRY_ENABLE:-false}
 KIND_LOCAL_REGISTRY_NAME=${KIND_LOCAL_REGISTRY_NAME:-registry}
 KIND_LOCAL_REGISTRY_PORT=${KIND_LOCAL_REGISTRY_PORT:-5000}
@@ -81,29 +81,29 @@ fi
 #    gcr.io/kubemacs/kubemacs:latest /usr/local/bin/docker-init.sh
 
 cat <<EOF
-| Kubemacs config                                                       |
-| --------------------------------------------------------------------- |
-| Property                           | Default value    | Current value |
-| ---------------------------------- | ---------------- | ------------- |
-| KUBEMACS_IMAGE                     |                  | $KUBEMACS_IMAGE |
-| KUBEMACS_DOCKER_INIT_CONTAINER_NAME  | kubemacs-init    | $KUBEMACS_DOCKER_INIT_CONTAINER_NAME |
-| KUBEMACS_INIT_DEBUG                | false            | $KUBEMACS_INIT_DEBUG |
-| KUBEMACS_HOST_KUBECONFIG_NAME      | config-kind      | $KUBEMACS_HOST_KUBECONFIG_NAME |
-| KUBEMACS_KIND_NAME                 | kind             | $KUBEMACS_KIND_NAME |
-| KUBEMACS_GIT_EMAIL                 |                  | $KUBEMACS_GIT_EMAIL |
-| KUBEMACS_GIT_NAME                  |                  | $KUBEMACS_GIT_NAME |
-| KUBEMACS_TIMEZONE                  | Pacific/Auckland | $KUBEMACS_TIMEZONE |
-| DOCKER_HOST                        |                  | $DOCKER_HOST |
-| KIND_LOCAL_REGISTRY_ENABLE         | false            | $KIND_LOCAL_REGISTRY_ENABLE |
-| KIND_LOCAL_REGISTRY_NAME           | registry         | $KIND_LOCAL_REGISTRY_NAME |
-| KIND_LOCAL_REGISTRY_PORT           | 5000             | $KIND_LOCAL_REGISTRY_PORT |
-| KUBEMACS_INIT_DEFAULT_NAMESPACE    | kubemacs         | $KUBEMACS_INIT_DEFAULT_NAMESPACE |
-| KUBEMACS_INIT_DEFAULT_REPOS_FOLDER | /home/ii         | $KUBEMACS_INIT_DEFAULT_REPOS_FOLDER |
-| KUBEMACS_INIT_DEFAULT_REPOS        |                  | $KUBEMACS_INIT_DEFAULT_REPOS |
-| KUBEMACS_INIT_DEFAULT_DIR          | /home/ii         | $KUBEMACS_INIT_DEFAULT_DIR |
-| KUBEMACS_INIT_ORG_FILE             |                  | $KUBEMACS_INIT_ORG_FILE |
-| KUBEMACS_INIT_PREFINISH_BLOCK      |                  | $KUBEMACS_INIT_PREFINISH_BLOCK |
-| HOST_UID                           | 0                | $HOST_UID |
+| Kubemacs config                                                        |
+| ---------------------------------------------------------------------- |
+| Property                            | Default value    | Current value |
+| ----------------------------------- | ---------------- | ------------- |
+| KUBEMACS_IMAGE                      |                  | $KUBEMACS_IMAGE |
+| KUBEMACS_DOCKER_INIT_CONTAINER_NAME | kubemacs-init    | $KUBEMACS_DOCKER_INIT_CONTAINER_NAME |
+| KUBEMACS_INIT_DEBUG                 | false            | $KUBEMACS_INIT_DEBUG |
+| KUBEMACS_HOST_KUBECONFIG_NAME       | config-kind      | $KUBEMACS_HOST_KUBECONFIG_NAME |
+| KUBEMACS_KIND_NAME                  | kind             | $KUBEMACS_KIND_NAME |
+| KUBEMACS_GIT_EMAIL                  |                  | $KUBEMACS_GIT_EMAIL |
+| KUBEMACS_GIT_NAME                   |                  | $KUBEMACS_GIT_NAME |
+| KUBEMACS_TIMEZONE                   | Pacific/Auckland | $KUBEMACS_TIMEZONE |
+| DOCKER_HOST                         |                  | $DOCKER_HOST |
+| KIND_LOCAL_REGISTRY_ENABLE          | false            | $KIND_LOCAL_REGISTRY_ENABLE |
+| KIND_LOCAL_REGISTRY_NAME            | registry         | $KIND_LOCAL_REGISTRY_NAME |
+| KIND_LOCAL_REGISTRY_PORT            | 5000             | $KIND_LOCAL_REGISTRY_PORT |
+| KUBEMACS_INIT_DEFAULT_NAMESPACE     | kubemacs         | $KUBEMACS_INIT_DEFAULT_NAMESPACE |
+| KUBEMACS_INIT_DEFAULT_REPOS_FOLDER  | /home/ii         | $KUBEMACS_INIT_DEFAULT_REPOS_FOLDER |
+| KUBEMACS_INIT_DEFAULT_REPOS         |                  | $KUBEMACS_INIT_DEFAULT_REPOS |
+| KUBEMACS_INIT_DEFAULT_DIR           | /home/ii         | $KUBEMACS_INIT_DEFAULT_DIR |
+| KUBEMACS_INIT_ORG_FILE              |                  | $KUBEMACS_INIT_ORG_FILE |
+| KUBEMACS_INIT_PREFINISH_BLOCK       |                  | $KUBEMACS_INIT_PREFINISH_BLOCK |
+| HOST_UID                            | 0                | $HOST_UID |
 
 EOF
 
