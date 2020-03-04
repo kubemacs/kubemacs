@@ -50,6 +50,7 @@ export INIT_PREFINISH_BLOCK="${INIT_PREFINISH_BLOCK}"
             git clone -v --recursive $repo
         done
     fi
+    cd
     eval $INIT_PREFINISH_BLOCK
 )
 
