@@ -14,7 +14,7 @@ resources:
   - master-ingress.yaml
   - session-ingress.yaml
   - tilt-ingress.yaml
-  # - tcp-services.yaml
+  - tcp-services.yaml
 patchesJson6902:
   - target:
       group: extensions

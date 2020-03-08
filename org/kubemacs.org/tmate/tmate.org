@@ -64,6 +64,24 @@
   #+begin_src shell :wrap "src json"
     kubectl get -n ingress-nginx configmap/tcp-services -o json | jq .data
   #+end_src
+  #+name: foo
+  #+begin_src shell :wrap "src json"
+    (
+    kubectl get ns
+    ) 2>&1
+    :
+  #+end_src
+
+  #+RESULTS: foo
+  #+begin_src json
+  NAME                 STATUS   AGE
+  default              Active   18m
+  kube-node-lease      Active   18m
+  kube-public          Active   18m
+  kube-system          Active   18m
+  kubemacs             Active   17m
+  local-path-storage   Active   18m
+  #+end_src
 
 ** config
   #+name: tcp-services
@@ -82,16 +100,13 @@
 ** results
   #+RESULTS: apply tcp-service mappings
   #+begin_example
-  configmap/tcp-services unchanged
   #+end_example
 
   #+RESULTS: get tcp-service mappings
   #+begin_src json
-  {
-    "10350": "ii/kubemacs-tilt:10350",
-    "2200": "ii/session:2200"
-  }
+  Error from server (NotFound): namespaces "ingress-nginx" not found
   #+end_src
+* PROD
 * aoeu
 #+begin_src shell
 kubectl get all
@@ -144,21 +159,256 @@ tilt up --host 0.0.0.0 --port 10350
 
   #+RESULTS:
   #+begin_example
-  COMMAND   PID USER   FD   TYPE     DEVICE SIZE/OFF NODE NAME
-  tmate      95   ii    6u  IPv4 2625393319      0t0  TCP 10.244.1.2:47424->157.230.72.130:22 (ESTABLISHED)
-  tmate     147   ii   11u  IPv4 2625297131      0t0  TCP 10.244.1.2:47686->157.230.72.130:22 (ESTABLISHED)
-  tilt    44945   ii    5u  IPv4 2627038037      0t0  TCP 10.244.1.2:56870->10.96.0.1:443 (ESTABLISHED)
-  tilt    44945   ii   17u  IPv6 2627093567      0t0  TCP *:10350 (LISTEN)
+  COMMAND  PID USER   FD   TYPE   DEVICE SIZE/OFF NODE NAME
+  tmate    546   ii   10u  IPv4 13561592      0t0  TCP 10.244.1.3:47140->157.230.72.130:22 (ESTABLISHED)
+  tmate    994   ii    7u  IPv4 13610000      0t0  TCP 10.244.1.3:52520->157.230.72.130:22 (ESTABLISHED)
+  tilt    1126   ii    6u  IPv4 13614089      0t0  TCP 10.244.1.3:52974->10.96.0.1:443 (ESTABLISHED)
+  tilt    1126   ii   12u  IPv6 13603725      0t0  TCP *:10350 (LISTEN)
+  tilt    1126   ii   14u  IPv4 13653102      0t0  TCP 10.244.1.3:59294->35.241.28.30:443 (ESTABLISHED)
   #+end_example
+* TODO SSH KEY genetation
+** ssh-server container
+[[file:~/tmate-ssh-server/create_keys.sh][file:~/tmate-ssh-server/create_keys.sh]]
+Will spit out what needs to be set in tmate.conf
+** tmate.conf
+* kubectl get svc
+  #+begin_src shell
+    kubectl get svc
+  #+end_src
 
+  #+RESULTS:
+  #+begin_example
+  NAME       TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
+  master     ClusterIP   10.96.241.41    <none>        4000/TCP,9100/TCP   12m
+  postgres   ClusterIP   10.96.208.155   <none>        5432/TCP            16m
+  session    ClusterIP   10.96.117.230   <none>        2200/TCP,4001/TCP   12m
+  #+end_example
+* Host to container and port mappings
+** tmate.local.ii.nz -> master:4000
+** tmate-ws.local.ii.nz -> session:4001
+** *:2200 -> session:2200
+
+* tmate-master listens on 4000
+9100 is the metrics / speed of server
+graphy bits using graphana
+  #+begin_example
+ lsof -i -n -P | grep LIST
+
+  #+end_example
+* tmate-websockes listens on 4001/4002 (only exports 4001)
+  #+begin_example
+ lsof -i -n -P | grep LIST
+  #+end_example
+* ssh-server listens on 2200
+  #+begin_example
+ lsof -i -n -P | grep LIST
+  #+end_example
+* mismatched keys
+  #+begin_example
+/etc/tmate-keys # ssh-keygen -l -E SHA256 -f ssh_host_ed25519_key.pub
+256 SHA256:ltQuqZqoF1GHYrrAVd99jW8W7vj/1gwoBwBF/FC9iuU pafy@croquette (ED25519)
+/etc/tmate-keys # ssh-keygen -l -E SHA256 -f ssh_host_
+ssh_host_ed25519_key      ssh_host_ed25519_key.pub  ssh_host_rsa_key          ssh_host_rsa_key.pub
+/etc/tmate-keys # ssh-keygen -l -E SHA256 -f ssh_host_rsa_key.pub
+2048 SHA256:pj6jMtCIgg26eJtHUro6KEmVOkVGmLdclArInW9LyLg pafy@croquette (RSA)
+  #+end_example
+* prod is a stateful set instead of deployment
+1
+kubemacs-0
+
+* more
+  #+begin_src shell
+    SSH_AUTH_DIR=`dirname $(echo $SSH_AUTH_SOCK)` ; ln -shf $SSH_AUTH_DIR/ /tmp/ssh-OSX  ; pushd $SSH_AUTH_DIR ; ln -sf Listeners agent.OSX ; popd
+  #+end_src
 * mix command
+
+
 #+begin_src shell :dir "."
 kubectl exec -it deploy/master mix do ecto.create, ecto.migrate
 #+end_src
+tmate remote-console
+** db commands within Exilr
+   #+begin_src shell
+     # Run me in elixer console
+     # run twice. first time will fail with cannot find migrations
+     # Run ecto.create first
+     Mix.Task.rerun("ecto.create", []) # possibly
+     Mix.Task.rerun("ecto.migrate", ["-r", Tmate.Repo, "--migrations-path", "./lib/tmate-0.1.1/priv/repo/migrations"])
+   #+end_src
 
 #+RESULTS:
 #+begin_example
-The database for Tmate.Repo has already been created
+The database for Tmate.Repo has been created
 
-16:34:01.463 [info]  Already up
+19:11:36.428 [info]  == Running 20151010162127 Tmate.Repo.Migrations.Initial.change/0 forward
+
+19:11:36.431 [info]  create table events
+
+19:11:36.436 [info]  create index events_type_index
+
+19:11:36.438 [info]  create index events_entity_id_index
+
+19:11:36.440 [info]  create table identities
+
+19:11:36.444 [info]  create index identities_type_key_index
+
+19:11:36.446 [info]  create table sessions
+
+19:11:36.450 [info]  create index sessions_host_identity_id_index
+
+19:11:36.451 [info]  create index sessions_stoken_index
+
+19:11:36.453 [info]  create index sessions_stoken_ro_index
+
+19:11:36.454 [info]  create table clients
+
+19:11:36.456 [info]  create index clients_session_id_client_id_index
+
+19:11:36.457 [info]  create index clients_session_id_index
+
+19:11:36.459 [info]  create index clients_client_id_index
+
+19:11:36.460 [info]  create table users
+
+19:11:36.467 [info]  == Migrated 20151010162127 in 0.0s
+
+19:11:36.490 [info]  == Running 20151221142603 Tmate.Repo.Migrations.KeySize.change/0 forward
+
+19:11:36.490 [info]  alter table identities
+
+19:11:36.492 [info]  == Migrated 20151221142603 in 0.0s
+
+19:11:36.495 [info]  == Running 20160121023039 Tmate.Repo.Migrations.AddMetadataIdentity.change/0 forward
+
+19:11:36.496 [info]  alter table identities
+
+19:11:36.496 [info]  alter table identities
+
+19:11:36.502 [info]  == Migrated 20160121023039 in 0.0s
+
+19:11:36.509 [info]  == Running 20160123063003 Tmate.Repo.Migrations.AddConnectionFmt.change/0 forward
+
+19:11:36.509 [info]  alter table sessions
+
+19:11:36.510 [info]  == Migrated 20160123063003 in 0.0s
+
+19:11:36.513 [info]  == Running 20160304084101 Tmate.Repo.Migrations.AddClientStats.change/0 forward
+
+19:11:36.513 [info]  alter table clients
+
+19:11:36.516 [info]  alter table sessions
+
+19:11:36.516 [info]  == Migrated 20160304084101 in 0.0s
+
+19:11:36.519 [info]  == Running 20160328175128 Tmate.Repo.Migrations.ClientIdUuid.change/0 forward
+
+19:11:36.519 [info]  alter table clients
+
+19:11:36.523 [debug] QUERY OK db=0.4ms
+update clients set id = md5(random()::text || clock_timestamp()::text)::uuid []
+
+19:11:36.523 [info]  drop index clients_session_id_client_id_index
+
+19:11:36.524 [info]  drop index clients_client_id_index
+
+19:11:36.525 [info]  alter table clients
+
+19:11:36.527 [info]  == Migrated 20160328175128 in 0.0s
+
+19:11:36.530 [info]  == Running 20160406210826 Tmate.Repo.Migrations.GithubUsers.change/0 forward
+
+19:11:36.530 [info]  rename column nickname to username on table users
+
+19:11:36.531 [info]  alter table users
+
+19:11:36.532 [info]  create index users_username_index
+
+19:11:36.534 [info]  create index users_email_index
+
+19:11:36.536 [info]  create index users_github_id_index
+
+19:11:36.538 [info]  == Migrated 20160406210826 in 0.0s
+
+19:11:36.546 [info]  == Running 20190904041603 Tmate.Repo.Migrations.AddDisconnectAt.change/0 forward
+
+19:11:36.547 [debug] QUERY OK db=0.8ms
+delete from sessions where closed_at is not null []
+
+19:11:36.548 [debug] QUERY OK db=0.6ms
+delete from clients where left_at is not null []
+
+19:11:36.548 [info]  alter table sessions
+
+19:11:36.549 [info]  alter table clients
+
+19:11:36.550 [info]  alter table sessions
+
+19:11:36.551 [debug] QUERY OK db=0.2ms
+update sessions set disconnected_at = clock_timestamp() []
+
+19:11:36.552 [info]  create index sessions_disconnected_at_index
+
+19:11:36.554 [info]  == Migrated 20190904041603 in 0.0s
+
+19:11:36.558 [info]  == Running 20191005234200 Tmate.Repo.Migrations.AddGeneration.change/0 forward
+
+19:11:36.558 [info]  alter table events
+
+19:11:36.559 [info]  == Migrated 20191005234200 in 0.0s
+
+19:11:36.562 [info]  == Running 20191014044039 Tmate.Repo.Migrations.AddClosedAt.change/0 forward
+
+19:11:36.563 [info]  alter table sessions
+
+19:11:36.564 [info]  == Migrated 20191014044039 in 0.0s
+
+19:11:36.567 [info]  == Running 20191108161753 Tmate.Repo.Migrations.RemoveIdentityOne.change/0 forward
+
+19:11:36.567 [info]  alter table sessions
+
+19:11:36.569 [info]  drop constraint sessions_host_identity_id_fkey from table sessions
+
+19:11:36.570 [info]  alter table clients
+
+19:11:36.571 [info]  drop constraint clients_identity_id_fkey from table clients
+
+19:11:36.572 [info]  == Migrated 20191108161753 in 0.0s
+
+19:11:36.576 [info]  == Running 20191108174232 Tmate.Repo.Migrations.RemoveIdentityThree.change/0 forward
+
+19:11:36.576 [info]  alter table sessions
+
+19:11:36.577 [info]  alter table clients
+
+19:11:36.578 [info]  drop table identities
+
+19:11:36.580 [info]  == Migrated 20191108174232 in 0.0s
+
+19:11:36.583 [info]  == Running 20191110232601 Tmate.Repo.Migrations.RemoveGithubId.change/0 forward
+
+19:11:36.584 [info]  alter table users
+
+19:11:36.585 [info]  == Migrated 20191110232601 in 0.0s
+
+19:11:36.589 [info]  == Running 20191110232704 Tmate.Repo.Migrations.ExpandTokenSize.change/0 forward
+
+19:11:36.590 [info]  drop index sessions_stoken_index
+
+19:11:36.590 [info]  drop index sessions_stoken_ro_index
+
+19:11:36.591 [info]  alter table sessions
+
+19:11:36.592 [info]  create index sessions_stoken_index
+
+19:11:36.594 [info]  create index sessions_stoken_ro_index
+
+19:11:36.595 [info]  == Migrated 20191110232704 in 0.0s
+
+19:11:36.599 [info]  == Running 20191111025821 Tmate.Repo.Migrations.AddApiKey.change/0 forward
+
+19:11:36.599 [info]  alter table users
+
+19:11:36.600 [info]  create index users_api_key_index
+
+19:11:36.603 [info]  == Migrated 20191111025821 in 0.0s
 #+end_example

@@ -4,7 +4,7 @@ metadata:
   name: tilt-ingress
 spec:
   rules:
-  - host: tilt.kubemacs.org
+  - host: tilt.local.ii.nz
     http:
       paths:
       - path: /

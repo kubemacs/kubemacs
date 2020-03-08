@@ -3,7 +3,7 @@ apiVersion: v1
 metadata:
   name: config
 data:
-  hostname: "tmate.kubemacs.org"
-  websocket_base_url: "wss://tmate-ws.kubemacs.org/"
-  master_base_url: "http://tmate-master.kubemacs.org/"
-  user_facing_base_url: "http://tmate.kubemacs.org/"
+  hostname: "tmate.local.ii.nz"
+  master_base_url: "http://tmate.local.ii.nz/"
+  user_facing_base_url: "http://tmate.local.ii.nz/"
+  websocket_base_url: "ws://tmate-ws.local.ii.nz/"

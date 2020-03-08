@@ -23,6 +23,7 @@ spec:
       containers:
       - name: tmate-ssh-server
         image: tmate/tmate-ssh-server:latest
+        args: [ "-v" ] 
         securityContext:
           capabilities:
             add: [SYS_ADMIN] # needed to spawn containers (CLONE_NEWPID, etc.)
@@ -51,8 +52,15 @@ spec:
       - name: tmate-websocket
         image: tmate/tmate-websocket:latest
         env:
-        - name: USE_PROXY_PROTOCOL
-          value: "1"
+        # - name: MIX_ENV
+        #   value: "dev"
+        - name: DAEMON_HMAC_KEY
+          valueFrom:
+            secretKeyRef:
+              name: misc
+              key: hmac_key
+        # - name: USE_PROXY_PROTOCOL
+        #   value: "1"
         - name: WEBSOCKET_BASE_URL
           valueFrom:
             configMapKeyRef:
@@ -68,6 +76,20 @@ spec:
             configMapKeyRef:
               name: config
               key: user_facing_base_url
+        - name: INTERNAL_API_AUTH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: misc
+              key: wsapi_key
+        - name: ERL_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: ERL_COOKIE
+          valueFrom:
+            secretKeyRef:
+              name: misc
+              key: erl_cookie
         ports:
           - containerPort: 4001
             name: http
