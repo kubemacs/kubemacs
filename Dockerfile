@@ -145,6 +145,8 @@ RUN /bin/env GO111MODULE=on GOPATH=/usr/local/go /usr/local/go/bin/go get -u git
 RUN mkdir -p /usr/share/kubemacs
 ADD kind-cluster-config.yaml kind-cluster+registry.yaml kustomization.yaml /usr/share/kubemacs/
 ADD manifests /usr/share/kubemacs/manifests
+ADD manifests/nginx-ingress /usr/share/kubemacs/manifests/nginx-ingress
+ADD manifests/tmate /usr/share/kubemacs/manifests/tmate
 ADD kustomization.yaml /usr/share/kubemacs/manifests
 
 # Ideally we used a checkout of this repo, but I'm having trouble with the build + submodules

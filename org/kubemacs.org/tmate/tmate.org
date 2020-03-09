@@ -215,6 +215,50 @@ ssh_host_ed25519_key      ssh_host_ed25519_key.pub  ssh_host_rsa_key          ss
 * prod is a stateful set instead of deployment
 1
 kubemacs-0
+* secrets
+  #+begin_src shell
+    kubectl get all
+  #+end_src
+
+  #+RESULTS:
+  #+begin_example
+  NAME                            READY   STATUS    RESTARTS   AGE
+  pod/kubemacs-0                  1/1     Running   0          10m
+  pod/master-0                    1/1     Running   0          10m
+  pod/postgres-6f99688564-k2dhq   1/1     Running   0          10m
+  pod/session-64f44b86cd-l2ggg    2/2     Running   0          10m
+
+  NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
+  service/kubemacs-tilt   ClusterIP   10.96.139.180   <none>        10350/TCP           10m
+  service/master          ClusterIP   10.96.61.201    <none>        4000/TCP            10m
+  service/postgres        ClusterIP   10.96.185.176   <none>        5432/TCP            10m
+  service/session         ClusterIP   10.96.112.247   <none>        2200/TCP,4001/TCP   10m
+
+  NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+  deployment.apps/postgres   1/1     1            1           10m
+  deployment.apps/session    1/1     1            1           10m
+
+  NAME                                  DESIRED   CURRENT   READY   AGE
+  replicaset.apps/postgres-6f99688564   1         1         1       10m
+  replicaset.apps/session-64f44b86cd    1         1         1       10m
+
+  NAME                        READY   AGE
+  statefulset.apps/kubemacs   1/1     10m
+  statefulset.apps/master     1/1     10m
+  #+end_example
+
+  #+begin_src shell
+    kubectl create secret generic misc \
+            --from-literal=hmac_key=hello1 \
+            --from-literal=erl_cookie=hello2 \
+            --from-literal=secret_key_base=hello3 \
+            --from-literal=wsapi_key=hello4 
+  #+end_src
+
+  #+RESULTS:
+  #+begin_example
+  secret/misc created
+  #+end_example
 
 * more
   #+begin_src shell

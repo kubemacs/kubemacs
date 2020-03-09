@@ -228,7 +228,6 @@ kind: Kustomization
 #   - basic-auth.yaml
   # - namespace.yaml
 bases:
-  - ../usr/share/kubemacs/nginx-ingress/
   - ../usr/share/kubemacs/
 configMapGenerator:
 - name: kubemacs-configuration

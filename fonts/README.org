@@ -1,3 +1,16 @@
 #+TITLE: adobe-fonts/source-code-pro
 * Source Code Pro
 These fonts are licensed by adobe under the SIL Open Font License.
+* Installation
+** OSX
+Copy all the ~*.ttf~ files from this folder into *~/Library/Fonts* in your home folder.
+
+  #+begin_src . :dir "."
+    cp *.ttf ~/Library/Fonts/
+  #+end_src
+
+  #+begin_src shell :dir "." :results silent
+    open .
+    open ~/Library/Fonts/
+  #+end_src
+

@@ -5,6 +5,7 @@ metadata:
   labels:
     app: master
 spec:
+  serviceName: "tmate"
   replicas: 1
   selector:
     matchLabels:
