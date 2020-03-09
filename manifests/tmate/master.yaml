@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: master
+  labels:
+    app: master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: master
+  template:
+    metadata:
+      labels:
+        app: master
+    spec:
+      containers:
+      - name: tmate-master
+        image: tmate/tmate-master:latest
+        env:
+        # - name: MIX_ENV
+        #   value: "dev"
+        - name: MASTER_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: config
+              key: master_base_url
+        # configure secrets
+        # ANYTHING shared with WS
+        - name: SECRET_KEY_BASE
+          valueFrom:
+            secretKeyRef:
+              name: misc
+              key: secret_key_base
+        # random string, shared with WS
+        - name: INTERNAL_API_AUTH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: misc
+              key: wsapi_key
+        # dev url
+        - name: PG_URI
+          value: "pg://postgres:postgres@postgres:5432/tmate_dev"
+        # - name: HOSTNAME
+        #   value: "master-0"
+        - name: ERL_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: ERL_COOKIE
+          value: "hhii WORLD"
+        - name: MAILGUN_API_KEY
+          value: "value hhii"
+        # configure proxy
+        # - name: USE_PROXY_PROTOCOL
+        #   value: "0"
+        ports:
+        - containerPort: 4000
+          name: http
+        # - containerPort: 9100
+        #   name: metrics
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: master
+spec:
+  selector:
+    app: master
+  ports:
+  - port: 4000
+    name: http
+  # - port: 9100
+  #   name: metrics

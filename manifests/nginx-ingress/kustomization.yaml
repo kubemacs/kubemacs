@@ -5,7 +5,7 @@ kind: Kustomization
 # https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.28.0/deploy/static/provider/baremetal/service-nodeport.yaml
 # namespace: ingress-nginx
 resources:
-  - mandatory.yaml
+  -  mandatory.yaml
   - service-nodeport.yaml
   - basic-auth.yaml
 patchesJson6902:
