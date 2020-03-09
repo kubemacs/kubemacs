@@ -38,6 +38,7 @@ export INIT_ORG_FILE="${INIT_ORG_FILE:-~/}"
 export INIT_DEFAULT_DIR="${INIT_DEFAULT_DIR:-~/}"
 export INIT_DEFAULT_REPOS="${INIT_DEFAULT_REPOS}"
 export INIT_DEFAULT_REPOS_FOLDER="${INIT_DEFAULT_REPOS_FOLDER}"
+export INIT_PREFINISH_BLOCK="${INIT_PREFINISH_BLOCK}"
 
 . /usr/local/bin/ssh-agent-export.sh
 
@@ -49,6 +50,8 @@ export INIT_DEFAULT_REPOS_FOLDER="${INIT_DEFAULT_REPOS_FOLDER}"
             git clone -v --recursive $repo
         done
     fi
+    cd
+    eval $INIT_PREFINISH_BLOCK
 )
 
 # This background process will ensure tmate attach commands
