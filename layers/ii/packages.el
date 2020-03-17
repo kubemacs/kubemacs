@@ -205,10 +205,11 @@
                          :fetcher github
                          :tag "0.1.7"
                          :repo "ii/ob-tmate"))
-    ;; (ob-go :ensure t
-    ;;        :location (recipe
-    ;;                   :fetcher github
-    ;;                   :repo "pope/ob-go"))
+    (ob-go :ensure t
+           :location (recipe
+                      :fetcher github
+                      :repo "pope/ob-go"))
+    (ob-tmux :ensure t)
     (ob-sql-mode :ensure t)
     (ob-shell :ensure t
               :location built-in)
@@ -251,7 +252,6 @@
     ;; org-protocol ;; https://orgmode.org/worg/org-contrib/org-protocol.html
     ;; http://tech.memoryimprintstudio.com/org-capture-from-external-applications/
     ;; https://github.com/sprig/org-capture-extension
-    ;;ob-tmux
     ;; org-babel-eval-in-repl
     ;; org-tree-slide
     ;; org-mu4e

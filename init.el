@@ -60,5 +60,9 @@
 ;; (define-key evil-insert-state-map (kbd "ESC") 'evil-normal-state)
 (message "iimacs: LOADED")
 
+;; Would be good to try and detect if we are in OSX and within an app bundle
+;; OR get tmate to compile to a static binary 
+;; OR have the emacs bundle set this before emacs loads since it is specific to the OSX app bundle
+(setenv "DYLD_LIBRARY_PATH" (expand-file-name (concat iimacs-dir "../../lib/")))
 ;; https://medium.com/@bobbypriambodo/blazingly-fast-spacemacs-with-persistent-server-92260f2118b7
 ;(evil-leader/set-key "q q" 'spacemacs/frame-killer)
