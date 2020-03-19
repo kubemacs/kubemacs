@@ -518,6 +518,13 @@ alist, to ensure correct results."
               ;; (switch-to-buffer "start-tmate-sh")
               ;; (y-or-n-p "Have you Pasted?")
               ;; (switch-to-buffer ii-org-buffer)
+              (if (string= system-type "darwin")
+                  (iterm-new-window-send-string
+                   (concat "tmate -S " socket ; TODO get -CC working for iTerm
+                           " new-session " ; -A creates if one doesn't already exists AND attaches
+                           "|| tmate -S " socket ; TODO get -CC working for iTerm
+                           " at" ; -A creates if one doesn't already exists AND attaches
+                           )))
               (y-or-n-p "A command has been copied to your local OS. Have you pasted it into a terminal?")
               (setq ii-tmate-configured t)
               )))

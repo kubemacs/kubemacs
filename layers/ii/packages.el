@@ -40,6 +40,10 @@
   (use-package ob-javascript))
 (defun ii/init-ob-powershell ()
   (use-package ob-powershell))
+(defun ii/init-ob-tmux ()
+  (use-package ob-tmux))
+(defun ii/init-iterm ()
+  (use-package iterm))
 (defun ii/init-ob-sql-mode ()
   (use-package ob-sql-mode))
 (defun ii/init-ox-gfm ()
@@ -192,6 +196,12 @@
     (ob-powershell
      :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "ob-powershell")
      )
+    (iterm
+     :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "iterm")
+     )
+    (ob-tmate
+     :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "ob-tmate")
+     )
     (kubernetes
       :ensure t
       :commands (kubernetes-overview))
@@ -200,11 +210,11 @@
     (kubernetes-evil
       :ensure t
       :after kubernetes)
-    (ob-tmate :ensure t
-              :location (recipe
-                         :fetcher github
-                         :tag "0.1.7"
-                         :repo "ii/ob-tmate"))
+    ;; (ob-tmate :ensure t
+    ;;           :location (recipe
+    ;;                      :fetcher github
+    ;;                      :tag "0.1.7"
+    ;;                      :repo "ii/ob-tmate"))
     (ob-go :ensure t
            :location (recipe
                       :fetcher github
