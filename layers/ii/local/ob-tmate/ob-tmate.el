@@ -52,12 +52,12 @@ Change in case you want to use a different tmate than the one in your $PATH."
   :group 'org-babel
   :type 'string)
 
-(defcustom org-babel-tmate-session-prefix "org-babel-session-"
+(defcustom org-babel-tmate-session-prefix "ii-"
   "The string that will be prefixed to tmate session names started by ob-tmate."
   :group 'org-babel
   :type 'string)
 
-(defcustom org-babel-tmate-default-window-name "ob1"
+(defcustom org-babel-tmate-default-window-name "i1"
   "This is the default tmate window name used for windows that are not explicitly named in an org session."
   :group 'org-babel
   :type 'string)
@@ -99,12 +99,14 @@ Argument PARAMS the org parameters of the code block."
       (unless window-alive (message "OB-TMATE: create-window"))
       (unless window-alive (ob-tmate--create-window ob-session session-dir))
       ;; Start terminal window if the session does not yet exist
-      ;; (unless session-alive
-	    ;; (ob-tmate--start-terminal-window ob-session terminal))
+      (unless session-alive
+        (ob-tmate--start-terminal-window ob-session terminal)
+        (y-or-n-p "Has a terminal started, and you hit q or ^c ?")
+        )
       ;; Wait until tmate window is available
       (while (not (ob-tmate--window-alive-p ob-session)))
       ;; Disable window renaming from within tmate
-      (ob-tmate--disable-renaming ob-session)
+      ;; (ob-tmate--disable-renaming ob-session)
       (ob-tmate--send-body
        ob-session (org-babel-expand-body:generic body params)))))
 
@@ -206,8 +208,16 @@ automatically space separated."
 
 Argument OB-SESSION: the current ob-tmate session."
   (message "OB-TMATE: start-terminal-window")
-  (let* ((process-name (concat "org-babel: terminal")))
-    (unless (ob-tmate--socket ob-session)
+  (let* ((process-name (concat "org-babel: terminal"))
+         (socket (ob-tmate--socket ob-session))
+         )
+    (if (string= system-type "darwin")
+        (iterm-new-window-send-string
+         (concat
+          "tmate -S " socket ; create a new session
+          " attach-session || bash"
+          ))
+      (unless (ob-tmate--socket ob-session)
       (if (string-equal terminal "xterm")
 	  (start-process process-name "*Messages*"
 			 terminal
@@ -217,7 +227,7 @@ Argument OB-SESSION: the current ob-tmate session."
 	(start-process process-name "*Messages*"
 		       terminal "--"
 		       org-babel-tmate-location "attach-session"
-           )))))
+           ))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tmate interaction
@@ -238,7 +248,7 @@ Argument OB-SESSION: the current ob-tmate session."
     (message (concat "OB-TMATE: ob-tmate--window-default => " (ob-tmate--window-default ob-session)))
     (ob-tmate--execute ob-session
                        "new-session"
-                       ;; "-A" ;; attach if it already exists
+                       ;; "-A" ;; attach if it already exists (d)
                        "-d" ;; just create the session, don't attach.
                        ;; "-S" (ob-tmate--socket ob-session)
                        ;; "-S" "/tmp/ob-tmate-socket" ;; Static for now
@@ -248,10 +258,10 @@ Argument OB-SESSION: the current ob-tmate session."
                        "-s" (ob-tmate--session ob-session)
                        "-n" (ob-tmate--window-default ob-session)
                        )
-    (message "OB-TMATE: Waiting for tmate to be ready")
-    (ob-tmate--execute ob-session
-    "wait" "tmate-ready"
-    )
+    ;; (message "OB-TMATE: Waiting for tmate to be ready")
+    ;; (ob-tmate--execute ob-session
+    ;; "wait" "tmate-ready"
+    ;; )
     ;; how can we capture this?
     ;; (setq ob-tmate-ssh-string (ob-tmate--execute-string ob-session
     ;;                   "display" "-p" "#{tmate_ssh}"
@@ -357,11 +367,16 @@ If no window is specified in OB-SESSION, returns 't."
   (let* (
          (window (ob-tmate--window-default ob-session))
 	       (target (ob-tmate--target ob-session))
+         ;; This appears to hang if we let it run early
 	       (output (ob-tmate--execute-string ob-session
 		                                       "list-windows"
 		                                       "-F '#W'"
-                                           )))
-    (string-match-p (concat window "\n") output)))
+                                           ))
+         )
+    ;; (y-or-n-p (concat "Is {" target "} alive?"))
+    (string-match-p (concat window "\n") output)
+    )
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Test functions

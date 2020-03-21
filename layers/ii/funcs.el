@@ -495,37 +495,51 @@ alist, to ensure correct results."
                     (start-process-shell-command
                      (concat target-name "-tmate-process")
                      "**tmate-process**"
-                     (concat "tmate -F -v -S " socket
-                             " new-session -s " target-name
+                     (concat "tmate"
+                             ;; " -F -v"
+                             " -d -v"
+                             " -S " socket
+                             " new-session"
+                             " -s " target-name
                              " -c " dir)
                      ))
-              (call-process-shell-command (concat "tmate -S " socket
-                                                  " wait tmate-ready") nil "wait ready")
-              (call-process-shell-command (concat "tmate -S " socket
-                                                  " set-hook -g client-attached"
-                                                  " 'run-shell "
-                                                  "\"tmate new-window osc52-tmate.sh\"'") nil "client-atteched")
+              ;; (call-process-shell-command (concat "tmate -S " socket
+              ;;                                     " wait tmate-ready") nil "wait ready")
+              ;; (call-process-shell-command (concat "tmate -S " socket
+              ;;                                     " set-hook -g client-attached"
+              ;;                                     " 'run-shell "
+              ;;                                     "\"tmate new-window osc52-tmate.sh\"'") nil "client-atteched")
                      ))
           ;; popup asking user to paste connection command into another terminal
-          (unless ii-tmate-configured
+          ;; (switch-to-buffer "**tmate-process**")
+          (unless t ; ii-tmate-configured
             (progn
-              (ii/populate-clipboard-with-tmate-connect-command)
-              (setq ii-org-buffer (current-buffer))
-              ;; (if (xclip-working)
-              ;;     (populate-x-clipboard)
-              ;;   (populate-terminal-clipboard)
-              ;;   )
-              ;; (switch-to-buffer "start-tmate-sh")
-              ;; (y-or-n-p "Have you Pasted?")
-              ;; (switch-to-buffer ii-org-buffer)
               (if (string= system-type "darwin")
-                  (iterm-new-window-send-string
-                   (concat "tmate -S " socket ; TODO get -CC working for iTerm
-                           " new-session " ; -A creates if one doesn't already exists AND attaches
-                           "|| tmate -S " socket ; TODO get -CC working for iTerm
-                           " at" ; -A creates if one doesn't already exists AND attaches
-                           )))
-              (y-or-n-p "A command has been copied to your local OS. Have you pasted it into a terminal?")
+                  (message "We would normally start tmate/iterm here")
+                  ;; (iterm-new-window-send-string
+                  ;;  (concat
+                  ;;   "tmate -S " socket ; Wait for tmate to be ready
+                  ;;   " wait tmate-ready "
+                  ;;   "; tmate -S " socket ; copy ssh/url to clipboard
+                  ;;   " display -p '#{tmate_ssh } # #{tmate_web} | pbcopy' "
+                  ;;   "; tmate -S " socket ; create a new session
+                  ;;   " new-session " ; OR
+                  ;;   "|| tmate -S " socket ; attach
+                  ;;   " at" ; TODO get -CC working for iTerm
+                  ;;   ))
+                (progn
+                  (ii/populate-clipboard-with-tmate-connect-command)
+                  (setq ii-org-buffer (current-buffer))
+                  ;; (if (xclip-working)
+                  ;;     (populate-x-clipboard)
+                  ;;   (populate-terminal-clipboard)
+                  ;;   )
+                  ;; (switch-to-buffer "start-tmate-sh")
+                  ;; (y-or-n-p "Have you Pasted?")
+                  ;; (switch-to-buffer ii-org-buffer)
+                  ;; (y-or-n-p "A command has been copied to your local OS. Have you pasted it into a terminal?")
+                  )
+                )
               (setq ii-tmate-configured t)
               )))
       )
