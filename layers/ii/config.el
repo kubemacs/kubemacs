@@ -29,6 +29,11 @@
  ii-tmate-configured nil
  ii-tmate-process nil
  helm-mode-handle-completion-in-region nil
+ ;; TODO set tmux-terminal defaults based on OS and what is installed
+ org-babel-tmux-terminal "xterm"
+ org-babel-tmux-terminal-opts '("-T" "ob-tmux" "-e")
+ org-babel-tmux-session-prefix "ii-"
+ org-babel-tmux-default-window-name "main"
  )
 
 ;; setting 'safe-local-variable properties

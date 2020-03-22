@@ -102,6 +102,8 @@ Argument PARAMS the org parameters of the code block."
       (unless session-alive
         (ob-tmate--start-terminal-window ob-session terminal)
         (y-or-n-p "Has a terminal started, and you hit q or ^c ?")
+        (gui-select-text (ob-tmate--ssh-url ob-session))
+        (osc52-interprogram-cut-function (ob-tmate--ssh-url ob-session))
         )
       ;; Wait until tmate window is available
       (while (not (ob-tmate--window-alive-p ob-session)))
@@ -214,20 +216,25 @@ Argument OB-SESSION: the current ob-tmate session."
     (if (string= system-type "darwin")
         (iterm-new-window-send-string
          (concat
-          "tmate -S " socket ; create a new session
+          "tmate -S " socket
           " attach-session || bash"
           ))
-      (unless (ob-tmate--socket ob-session)
+      ;; (unless (ob-tmate--socket ob-session)
       (if (string-equal terminal "xterm")
-	  (start-process process-name "*Messages*"
-			 terminal
-			 "-T" (ob-tmate--target ob-session)
-			 "-e" org-babel-tmate-location "attach-session"
-       )
-	(start-process process-name "*Messages*"
-		       terminal "--"
-		       org-babel-tmate-location "attach-session"
-           ))))))
+          (start-process process-name "*Messages*"
+                         terminal
+                         "-T" (ob-tmate--target ob-session)
+                         "-e"
+                         (concat org-babel-tmate-location " -S " socket
+                         " attach-session || read X")
+                         )
+        (start-process process-name "*Messages*"
+                       terminal "--"
+                       org-babel-tmate-location "attach-session"
+                       )
+        )
+      ;; )
+      )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tmate interaction
@@ -359,6 +366,13 @@ Argument OB-SESSION: the current ob-tmate session."
 	       "-S" (ob-tmate--socket ob-session)
 	       '("ls"))
   ))
+
+(defun ob-tmate--ssh-url (ob-session)
+  "Retrieve the ssh # http://url/session for the ob-session"
+  (ob-tmate--execute-string ob-session
+                            "display"
+                            "-p '#{tmate_ssh} # #{tmate_web}'"
+                            ))
 
 (defun ob-tmate--window-alive-p (ob-session)
   "Check if WINDOW exists in tmate session.
