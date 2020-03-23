@@ -52,12 +52,12 @@ Change in case you want to use a different tmate than the one in your $PATH."
   :group 'org-babel
   :type 'string)
 
-(defcustom org-babel-tmate-session-prefix "ii-"
+(defcustom org-babel-tmate-session-prefix ""
   "The string that will be prefixed to tmate session names started by ob-tmate."
   :group 'org-babel
   :type 'string)
 
-(defcustom org-babel-tmate-default-window-name "i1"
+(defcustom org-babel-tmate-default-window-name "0"
   "This is the default tmate window name used for windows that are not explicitly named in an org session."
   :group 'org-babel
   :type 'string)
@@ -83,14 +83,20 @@ Argument BODY the body of the tmate code block.
 Argument PARAMS the org parameters of the code block."
   (message "Sending source code block to interactive terminal session...")
   (save-window-excursion
-    (let* ((org-session (cdr (assq :session params)))
-	   (terminal (cdr (assq :terminal params)))
-	   (socket (cdr (assq :socket params)))
-	   (session-dir (cdr (assq :dir params)))
-	   (socket (when socket (expand-file-name socket)))
-	   (ob-session (ob-tmate--from-org-session org-session socket))
-     (session-alive (ob-tmate--session-alive-p ob-session))
-	   (window-alive (ob-tmate--window-alive-p ob-session)))
+    (let* (
+           (org-session (cdr (assq :session params)))
+           (terminal (cdr (assq :terminal params)))
+           (socket (cdr (assq :socket params)))
+           (session-dir (cdr (assq :dir params)))
+           (session-name (ob-tmate--tmate-window org-session))
+           (session-window (ob-tmate--tmate-window org-session))
+           (socket (if socket
+                       (expand-file-name socket)
+                     (ob-tmate--tmate-socket org-session)
+                     ))
+           (ob-session (ob-tmate--from-org-session org-session socket))
+           (session-alive (ob-tmate--session-alive-p ob-session))
+           (window-alive (ob-tmate--window-alive-p ob-session)))
       ;; Create tmate session and window if they do not yet exist
       (message "OB-TMATE: Checking for session: %S" session-alive)
       (unless session-alive (message "OB-TMATE: create-session"))
@@ -131,15 +137,34 @@ Argument PARAMS the org parameters of the code block."
   "Extract tmate window from ORG-SESSION string."
   (let* ((window (cadr (split-string org-session ":"))))
     (if (string-equal "" window) nil window)))
+(defun ob-tmate--tmate-socket (org-session)
+  "Extract tmate window from ORG-SESSION string."
+  (let* (
+         (session-name (car (split-string org-session ":")))
+         )
+    (concat temporary-file-directory user-login-name "." session-name ".tmate" )
+    ))
 
 (defun ob-tmate--from-org-session (org-session socket)
   "Create a new ob-tmate-session object from ORG-SESSION specification.
 Required argument SOCKET: the location of the tmate socket."
-
-  (ob-tmate--create
-   :session (ob-tmate--tmate-session org-session)
-   :window (ob-tmate--tmate-window org-session)
-   :socket socket))
+  (let* (
+         (session-name (ob-tmate--tmate-session org-session))
+         (session-window (ob-tmate--tmate-window org-session))
+         (session-socket (if socket
+                     (expand-file-name socket)
+                   (ob-tmate--tmate-socket org-session)
+                   ))
+         )
+    (message "FROM_ORG_SESSION: org-session %S" org-session)
+    (message "FROM_ORG_SESSION: socket %S" socket)
+    (message "FROM_ORG_SESSION: session: %S window: %S socket: %S" session-name session-window session-socket)
+    (ob-tmate--create
+     :session session-name
+     :window session-window
+     :socket session-socket)
+      )
+  )
 
 (defun ob-tmate--window-default (ob-session)
   "Extracts the tmate window from the ob-tmate- object.
@@ -171,6 +196,8 @@ Argument OB-SESSION: the current ob-tmate session."
 
 Argument OB-SESSION: the current ob-tmate session.
 Optional command-line arguments can be passed in ARGS."
+  (message "OBSESSION: %S" ob-session)
+  (message "OBSESSION ARGS: %S" args)
   (if (ob-tmate--socket ob-session)
       (progn
         (message (concat "OB-TMATE: execute on provided socket: => " (ob-tmate--socket ob-session)))

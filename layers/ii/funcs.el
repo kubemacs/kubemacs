@@ -300,83 +300,83 @@ alist, to ensure correct results."
 ;; and org-file name
 (defun ii/tmate-org-hacks()
   (message "START: ii/tmate-org-hacks")
-  (set (make-local-variable 'ssh-user)
-       user-login-name)
-  ;; set this in the org file or ENV
-  (set (make-local-variable 'ssh-host)
-       (if (eq (system-name) "sharing.io")
-           (concat "sharing.io")
-         (concat "")
-         ))
-  (set (make-local-variable 'ssh-user-host)
-       (concat ssh-user "@" ssh-host))
-  (set (make-local-variable 'user-buffer)
-       (concat user-login-name "." (file-name-base load-file-name)))
-  (set (make-local-variable 'tmate-sh)
-         (if (and (getenv "TMPDIR") (file-directory-p (getenv "TMPDIR")))
-             (concat (getenv "TMPDIR") user-buffer ".target.sh")
-           (concat "/tmp/" user-buffer ".target.sh")
-           )
-         )
-  (set (make-local-variable 'socket)
-       (if (and (getenv "TMPDIR") (file-directory-p (getenv "TMPDIR")))
-           (concat (getenv "TMPDIR") user-buffer ".target.iisocket")
-         (concat "/tmp/" user-buffer ".target.iisocket")
-         ))
-  (set (make-local-variable 'socket-param)
-       (concat ":sockets " socket))
-  (set (make-local-variable 'copy-tmate-to-ui)
-       ;; TODO make this use osc52 or termux as necessary
-       "; (echo \\$TMATE_CONNECT | xclip -i -sel p -f | xclip -i -sel c ) 2>/dev/null "
-       )
-  (set (make-local-variable 'start-tmate-command)
-       (concat
-        "tmate -S "
-        socket
-        " new-session -A -s "
-        user-login-name
-        " -n main "
-        "\"tmate wait tmate-ready "
-        "&& TMATE_CONNECT=\\$("
-        "tmate display -p '#{tmate_ssh} # "
-        user-buffer
-        ".target # "
-        ;; would like this to be shorter
-        (concat
-         (format-time-string "%Y-%m-%d %T")
-         (funcall (lambda ($x) (format "%s:%s" (substring $x 0 3) (substring $x 3 5))) (format-time-string "%z")))
-        " # #{tmate_web} ') "
-        "; echo \\$TMATE_CONNECT "
-        copy-tmate-to-ui
-        "; echo Share the above with your friends and hit enter when done. "
-        ;; "; read "
-        "; bash --login\""
-        )
-       )
+  ;; (set (make-local-variable 'ssh-user)
+  ;;      user-login-name)
+  ;; ;; set this in the org file or ENV
+  ;; (set (make-local-variable 'ssh-host)
+  ;;      (if (eq (system-name) "sharing.io")
+  ;;          (concat "sharing.io")
+  ;;        (concat "")
+  ;;        ))
+  ;; (set (make-local-variable 'ssh-user-host)
+  ;;      (concat ssh-user "@" ssh-host))
+  ;; (set (make-local-variable 'user-buffer)
+  ;;      (concat user-login-name "." (file-name-base load-file-name)))
+  ;; (set (make-local-variable 'tmate-sh)
+  ;;        (if (and (getenv "TMPDIR") (file-directory-p (getenv "TMPDIR")))
+  ;;            (concat (getenv "TMPDIR") user-buffer ".target.sh")
+  ;;          (concat "/tmp/" user-buffer ".target.sh")
+  ;;          )
+  ;;        )
+  ;; (set (make-local-variable 'socket)
+  ;;      (if (and (getenv "TMPDIR") (file-directory-p (getenv "TMPDIR")))
+  ;;          (concat (getenv "TMPDIR") user-buffer ".target.iisocket")
+  ;;        (concat "/tmp/" user-buffer ".target.iisocket")
+  ;;        ))
+  ;; (set (make-local-variable 'socket-param)
+  ;;      (concat ":sockets " socket))
+  ;; (set (make-local-variable 'copy-tmate-to-ui)
+  ;;      ;; TODO make this use osc52 or termux as necessary
+  ;;      "; (echo \\$TMATE_CONNECT | xclip -i -sel p -f | xclip -i -sel c ) 2>/dev/null "
+  ;;      )
+  ;; (set (make-local-variable 'start-tmate-command)
+  ;;      (concat
+  ;;       "tmate -S "
+  ;;       socket
+  ;;       " new-session -A -s "
+  ;;       user-login-name
+  ;;       " -n main "
+  ;;       "\"tmate wait tmate-ready "
+  ;;       "&& TMATE_CONNECT=\\$("
+  ;;       "tmate display -p '#{tmate_ssh} # "
+  ;;       user-buffer
+  ;;       ".target # "
+  ;;       ;; would like this to be shorter
+  ;;       (concat
+  ;;        (format-time-string "%Y-%m-%d %T")
+  ;;        (funcall (lambda ($x) (format "%s:%s" (substring $x 0 3) (substring $x 3 5))) (format-time-string "%z")))
+  ;;       " # #{tmate_web} ') "
+  ;;       "; echo \\$TMATE_CONNECT "
+  ;;       copy-tmate-to-ui
+  ;;       "; echo Share the above with your friends and hit enter when done. "
+  ;;       ;; "; read "
+  ;;       "; bash --login\""
+  ;;       )
+  ;;      )
   ;; at some point we can bring back working on remote hosts
-  (set (make-local-variable 'start-tmate-over-ssh-command)
-       (concat
-        "tmate -S "
-        socket
-        " new-session -A -s "
-        user-login-name
-        " -n main "
-        "\"tmate wait tmate-ready "
-        "\\&\\& TMATE_CONNECT=\\$\\("
-        "tmate display -p '#{tmate_ssh} # "
-        user-buffer
-        ".target # "
-        (concat
-         (format-time-string "%Y-%m-%d %T")
-         (funcall (lambda ($x) (format "%s:%s" (substring $x 0 3) (substring $x 3 5))) (format-time-string "%z")))
-        " #{tmate_web} '\\) "
-        "; echo \\$TMATE_CONNECT "
-        copy-tmate-to-ui
-        "; echo Share the above with your friends and hit enter when done. "
-        ;; "; read "
-        "; bash --login\""
-        )
-       )
+  ;; (set (make-local-variable 'start-tmate-over-ssh-command)
+  ;;      (concat
+  ;;       "tmate -S "
+  ;;       socket
+  ;;       " new-session -A -s "
+  ;;       user-login-name
+  ;;       " -n main "
+  ;;       "\"tmate wait tmate-ready "
+  ;;       "\\&\\& TMATE_CONNECT=\\$\\("
+  ;;       "tmate display -p '#{tmate_ssh} # "
+  ;;       user-buffer
+  ;;       ".target # "
+  ;;       (concat
+  ;;        (format-time-string "%Y-%m-%d %T")
+  ;;        (funcall (lambda ($x) (format "%s:%s" (substring $x 0 3) (substring $x 3 5))) (format-time-string "%z")))
+  ;;       " #{tmate_web} '\\) "
+  ;;       "; echo \\$TMATE_CONNECT "
+  ;;       copy-tmate-to-ui
+  ;;       "; echo Share the above with your friends and hit enter when done. "
+  ;;       ;; "; read "
+  ;;       "; bash --login\""
+  ;;       )
+  ;;      )
   (message "END: ii/tmate-org-hacks")
   )
 
@@ -399,8 +399,10 @@ alist, to ensure correct results."
         (alist-set :exports "code"
         (alist-set :session (concat user-login-name ":main")
         (alist-set :window user-login-name
-        (alist-set :socket socket
-                   org-babel-default-header-args:tmate)))))
+        ;; (alist-set :socket socket
+                   org-babel-default-header-args:tmate)
+        ;; )
+        )))
   (make-local-variable 'org-babel-default-header-args:tmate)
   (setq org-babel-default-header-args:tmux
         (alist-set :exports "code"
@@ -483,34 +485,49 @@ alist, to ensure correct results."
   (interactive)
   ;; only run if this is a tmate block
   (if (string= "tmate" (car (org-babel-get-src-block-info t)))
-      (let (
-            (socket
-             (alist-get :socket (nth 2 (org-babel-get-src-block-info t))))
-            (dir
-             (file-truename
-              (alist-get :dir (nth 2 (org-babel-get-src-block-info t))
-                         (file-name-directory buffer-file-name))))
-            (target-name
-             (file-name-base load-file-name))
+      (let* (
+             (org-session (alist-get :session (nth 2 (org-babel-get-src-block-info t))))
+             ;; (org-session (cdr (assq :session params)))
+             (terminal (alist-get :terminal (nth 2 (org-babel-get-src-block-info t))))
+             ;; (terminal (cdr (assq :terminal params)))
+             ;; (socket (cdr (assq :socket params)))
+             (socket (alist-get :socket (nth 2 (org-babel-get-src-block-info t))))
+             (session-dir (cdr (assq :dir params)))
+             (session-x (message "terminal: %S, socket: %S, org-session: %S" terminal socket org-session))
+             (session-name (ob-tmate--tmate-session org-session))
+             (session-window (ob-tmate--tmate-window org-session))
+             (session-socket (if socket
+                                 (expand-file-name socket)
+                               (ob-tmate--tmate-socket org-session)
+                       ))
+             (session-y (message "session-socket: %S" session-socket))
+            ;; (dir
+            ;;  (file-truename
+            ;;   (alist-get :dir (nth 2 (org-babel-get-src-block-info t))
+            ;;              (file-name-directory buffer-file-name))))
+            ;; (target-name
+            ;;  (file-name-base load-file-name))
             )
         (progn
           (message "about to trying to start ii-tmate-process")
-          (make-local-variable 'ii-tmate-process)
+          ;; (make-local-variable 'ii-tmate-process)
           (make-local-variable 'ii-tmate-configured)
           ;; ensure a tmate server has been started
           (unless ii-tmate-process
             (progn
               (setq ii-tmate-process
                     (start-process-shell-command
-                     (concat target-name "-tmate-process")
-                     "**tmate-process**"
+                     (concat session-name "-tmate-process")
+                     (concat "**" session-name "-tmate-process**")
                      (concat "tmate"
                              ;; " -F -v"
                              " -d -v"
-                             " -S " socket
+                             " -S " session-socket
                              " new-session"
-                             " -s " target-name
-                             " -c " dir)
+                             " -s " session-name
+                             " -n " "init"; session-window
+                             " -c " session-dir
+                             "read X")
                      ))
               ;; (call-process-shell-command (concat "tmate -S " socket
               ;;                                     " wait tmate-ready") nil "wait ready")
@@ -521,36 +538,37 @@ alist, to ensure correct results."
                      ))
           ;; popup asking user to paste connection command into another terminal
           ;; (switch-to-buffer "**tmate-process**")
-          (unless t ; ii-tmate-configured
-            (progn
-              (if (string= system-type "darwin")
-                  (message "We would normally start tmate/iterm here")
-                  ;; (iterm-new-window-send-string
-                  ;;  (concat
-                  ;;   "tmate -S " socket ; Wait for tmate to be ready
-                  ;;   " wait tmate-ready "
-                  ;;   "; tmate -S " socket ; copy ssh/url to clipboard
-                  ;;   " display -p '#{tmate_ssh } # #{tmate_web} | pbcopy' "
-                  ;;   "; tmate -S " socket ; create a new session
-                  ;;   " new-session " ; OR
-                  ;;   "|| tmate -S " socket ; attach
-                  ;;   " at" ; TODO get -CC working for iTerm
-                  ;;   ))
-                (progn
-                  (ii/populate-clipboard-with-tmate-connect-command)
-                  (setq ii-org-buffer (current-buffer))
-                  ;; (if (xclip-working)
-                  ;;     (populate-x-clipboard)
-                  ;;   (populate-terminal-clipboard)
-                  ;;   )
-                  ;; (switch-to-buffer "start-tmate-sh")
-                  ;; (y-or-n-p "Have you Pasted?")
-                  ;; (switch-to-buffer ii-org-buffer)
-                  ;; (y-or-n-p "A command has been copied to your local OS. Have you pasted it into a terminal?")
-                  )
-                )
-              (setq ii-tmate-configured t)
-              )))
+          ;; (unless t ; ii-tmate-configured
+          ;;   (progn
+          ;;     (if (string= system-type "darwin")
+          ;;         (message "We used to start tmate/iterm here, now we do it elsewhere")
+          ;;         ;; (iterm-new-window-send-string
+          ;;         ;;  (concat
+          ;;         ;;   "tmate -S " socket ; Wait for tmate to be ready
+          ;;         ;;   " wait tmate-ready "
+          ;;         ;;   "; tmate -S " socket ; copy ssh/url to clipboard
+          ;;         ;;   " display -p '#{tmate_ssh } # #{tmate_web} | pbcopy' "
+          ;;         ;;   "; tmate -S " socket ; create a new session
+          ;;         ;;   " new-session " ; OR
+          ;;         ;;   "|| tmate -S " socket ; attach
+          ;;         ;;   " at" ; TODO get -CC working for iTerm
+          ;;         ;;   ))
+          ;;       (progn
+          ;;         (ii/populate-clipboard-with-tmate-connect-command)
+          ;;         (setq ii-org-buffer (current-buffer))
+          ;;         ;; (if (xclip-working)
+          ;;         ;;     (populate-x-clipboard)
+          ;;         ;;   (populate-terminal-clipboard)
+          ;;         ;;   )
+          ;;         ;; (switch-to-buffer "start-tmate-sh")
+          ;;         ;; (y-or-n-p "Have you Pasted?")
+          ;;         ;; (switch-to-buffer ii-org-buffer)
+          ;;         ;; (y-or-n-p "A command has been copied to your local OS. Have you pasted it into a terminal?")
+          ;;         )
+          ;;       )
+          ;;     (setq ii-tmate-configured t)
+          ;;     ))
+          )
       )
     ))
 
