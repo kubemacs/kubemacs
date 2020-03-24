@@ -408,8 +408,11 @@ alist, to ensure correct results."
         (alist-set :exports "code"
         (alist-set :session (concat user-login-name ":main")
         (alist-set :window user-login-name
-        (alist-set :socket socket
-                   org-babel-default-header-args:tmate)))))
+                   ;; (alist-set :socket socket
+                   org-babel-default-header-args:tmate)
+                   ;; )
+        ))
+        )
   (make-local-variable 'org-babel-default-header-args:sql-mode)
   (setq org-babel-default-header-args:sql-mode
         (alist-set :results "replace code"
