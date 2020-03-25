@@ -491,7 +491,7 @@ alist, to ensure correct results."
       (let* (
              (org-session (alist-get :session (nth 2 (org-babel-get-src-block-info t))))
              ;; (org-session (cdr (assq :session params)))
-             (terminal (alist-get :terminal (nth 2 (org-babel-get-src-block-info t))))
+             ;; (terminal (alist-get :terminal (nth 2 (org-babel-get-src-block-info t))))
              ;; (terminal (cdr (assq :terminal params)))
              ;; (socket (cdr (assq :socket params)))
              (socket (alist-get :socket (nth 2 (org-babel-get-src-block-info t))))

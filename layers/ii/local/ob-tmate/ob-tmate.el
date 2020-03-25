@@ -62,12 +62,35 @@ Change in case you want to use a different tmate than the one in your $PATH."
   :group 'org-babel
   :type 'string)
 
+(defun default-org-babel-tmate-terminal()
+  "What terminal should we use as a default"
+  (cond ((string= system-type "darwin") (concat "iterm"))
+        ((string= system-type "gnu/linux")
+         (if ;; incluster
+             (file-exists-p "/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+             (concat "osc52")
+         (concat "xterm")
+         ))
+        (t (concat "xterm"))
+    )
+)
+(defcustom org-babel-tmate-terminal (default-org-babel-tmate-terminal)
+  "This is the terminal that will be spawned."
+  :group 'org-babel
+  :type 'string)
+
+(defcustom org-babel-tmate-terminal-opts '("--")
+  "The list of options that will be passed to the terminal."
+  :group 'org-babel
+  :type 'list)
+
+
 (defvar org-babel-default-header-args:tmate
   '((:results . "silent")
     (:session . "default")
     (:dir . ".")
     (:socket . nil)
-    (:terminal . "gnome-terminal"))
+    )
   "Default arguments to use when running tmate source blocks.")
 
 (add-to-list 'org-src-lang-modes '("tmate" . sh))
@@ -85,7 +108,6 @@ Argument PARAMS the org parameters of the code block."
   (save-window-excursion
     (let* (
            (org-session (cdr (assq :session params)))
-           (terminal (cdr (assq :terminal params)))
            (socket (cdr (assq :socket params)))
            (session-dir (cdr (assq :dir params)))
            (session-name (ob-tmate--tmate-window org-session))
@@ -106,7 +128,7 @@ Argument PARAMS the org parameters of the code block."
       (unless window-alive (ob-tmate--create-window ob-session session-dir))
       ;; Start terminal window if the session does not yet exist
       (unless session-alive
-        (ob-tmate--start-terminal-window ob-session terminal)
+        (ob-tmate--start-terminal-window ob-session)
         (y-or-n-p "Has a terminal started, and you hit q or ^c ?")
         (gui-select-text (ob-tmate--ssh-url ob-session))
         (osc52-interprogram-cut-function (ob-tmate--ssh-url ob-session))
@@ -232,36 +254,53 @@ automatically space separated."
    (concat org-babel-tmate-location " "
 	   (string-join args " ")))))
 
-(defun ob-tmate--start-terminal-window (ob-session terminal)
+(defun ob-tmate--start-terminal-window-iterm (ob-session)
+  "Start a terminal window in iterm"
+  (let* ((socket (ob-tmate--socket ob-session))
+         )
+    (iterm-new-window-send-string
+     (concat
+      "tmate -S " socket
+      " attach-session || bash"
+      ))
+    )
+  )
+(defun ob-tmate--start-terminal-window-xterm (ob-session)
+  "Start a terminal window in iterm"
+  (let* ((process-name (concat "org-babel: terminal"))
+         (socket (ob-tmate--socket ob-session))
+         (target (ob-tmate--target ob-session))
+         )
+    (start-process process-name "*tmate-terminal*"
+                   terminal
+                   "-T" target
+                   "-e"
+                   (concat org-babel-tmate-location " -S " socket
+                           " attach-session || read X")
+                   )
+    )
+  )
+(defun ob-tmate--start-terminal-window-osc52 (ob-session)
+  "Start a terminal window in iterm"
+  (let* ((socket (ob-tmate--socket ob-session))
+         (tmate-command (concat org-babel-tmate-location " -S " socket
+                 " attach-session || read X")
+         )
+         (osc52-interprogram-cut-function tmate-command)
+    )
+    ))
+(defun ob-tmate--start-terminal-window (ob-session)
   "Start a TERMINAL window with tmate attached to session.
 
 Argument OB-SESSION: the current ob-tmate session."
   (message "OB-TMATE: start-terminal-window")
-  (let* ((process-name (concat "org-babel: terminal"))
-         (socket (ob-tmate--socket ob-session))
+  (cond
+        ((string= org-babel-tmate-terminal "iterm") (ob-tmate--start-terminal-window-iterm ob-session))
+        ((string= org-babel-tmate-terminal "xterm") (ob-tmate--start-terminal-window-xterm ob-session))
+        ((string= org-babel-tmate-terminal "osc52") (ob-tmate--start-terminal-window-osc52 ob-session))
+        (t (message "We didn't find a supported terminal type"))
          )
-    (if (string= system-type "darwin")
-        (iterm-new-window-send-string
-         (concat
-          "tmate -S " socket
-          " attach-session || bash"
-          ))
-      ;; (unless (ob-tmate--socket ob-session)
-      (if (string-equal terminal "xterm")
-          (start-process process-name "*Messages*"
-                         terminal
-                         "-T" (ob-tmate--target ob-session)
-                         "-e"
-                         (concat org-babel-tmate-location " -S " socket
-                         " attach-session || read X")
-                         )
-        (start-process process-name "*Messages*"
-                       terminal "--"
-                       org-babel-tmate-location "attach-session"
-                       )
         )
-      ;; )
-      )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tmate interaction
