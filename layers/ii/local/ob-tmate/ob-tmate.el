@@ -272,7 +272,7 @@ automatically space separated."
          (target (ob-tmate--target ob-session))
          )
     (start-process process-name "*tmate-terminal*"
-                   terminal
+                   "xterm"
                    "-T" target
                    "-e"
                    (concat org-babel-tmate-location " -S " socket

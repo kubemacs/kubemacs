@@ -496,7 +496,7 @@ alist, to ensure correct results."
              ;; (socket (cdr (assq :socket params)))
              (socket (alist-get :socket (nth 2 (org-babel-get-src-block-info t))))
              (session-dir (cdr (assq :dir params)))
-             (session-x (message "terminal: %S, socket: %S, org-session: %S" terminal socket org-session))
+             ;; (session-x (message "terminal: %S, socket: %S, org-session: %S" terminal socket org-session))
              (session-name (ob-tmate--tmate-session org-session))
              (session-window (ob-tmate--tmate-window org-session))
              (session-socket (if socket
