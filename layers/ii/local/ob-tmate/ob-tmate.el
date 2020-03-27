@@ -57,7 +57,7 @@ Change in case you want to use a different tmate than the one in your $PATH."
   :group 'org-babel
   :type 'string)
 
-(defcustom org-babel-tmate-default-window-name "0"
+(defcustom org-babel-tmate-default-window-name "i"
   "This is the default tmate window name used for windows that are not explicitly named in an org session."
   :group 'org-babel
   :type 'string)
@@ -87,7 +87,7 @@ Change in case you want to use a different tmate than the one in your $PATH."
 
 (defvar org-babel-default-header-args:tmate
   '((:results . "silent")
-    (:session . "default")
+    (:session . "humacs")
     (:dir . ".")
     (:socket . nil)
     )
@@ -110,7 +110,7 @@ Argument PARAMS the org parameters of the code block."
            (org-session (cdr (assq :session params)))
            (socket (cdr (assq :socket params)))
            (session-dir (cdr (assq :dir params)))
-           (session-name (ob-tmate--tmate-window org-session))
+           (session-name (ob-tmate--tmate-session org-session))
            (session-window (ob-tmate--tmate-window org-session))
            (socket (if socket
                        (expand-file-name socket)
@@ -120,18 +120,23 @@ Argument PARAMS the org parameters of the code block."
            (session-alive (ob-tmate--session-alive-p ob-session))
            (window-alive (ob-tmate--window-alive-p ob-session)))
       ;; Create tmate session and window if they do not yet exist
-      (message "OB-TMATE: Checking for session: %S" session-alive)
-      (unless session-alive (message "OB-TMATE: create-session"))
-      (unless session-alive (ob-tmate--create-session ob-session session-dir))
-      (message "OB-TMATE: Checking for window: %S" window-alive)
-      (unless window-alive (message "OB-TMATE: create-window"))
-      (unless window-alive (ob-tmate--create-window ob-session session-dir))
       ;; Start terminal window if the session does not yet exist
+      (message "OB-TMATE: Checking for session: %S" session-alive)
       (unless session-alive
-        (ob-tmate--start-terminal-window ob-session)
-        (y-or-n-p "Has a terminal started, and you hit q or ^c ?")
-        (gui-select-text (ob-tmate--ssh-url ob-session))
-        (osc52-interprogram-cut-function (ob-tmate--ssh-url ob-session))
+        (progn
+          (message "OB-TMATE: create-session")
+          (ob-tmate--create-session session-name session-dir socket)
+          (ob-tmate--start-terminal-window ob-session)
+          (y-or-n-p "Has a terminal started and shown you a url?")
+          (gui-select-text (ob-tmate--ssh-url ob-session))
+          (osc52-interprogram-cut-function (ob-tmate--ssh-url ob-session))
+          )
+        )
+      (message "OB-TMATE: Checking for window: %S" window-alive)
+      (unless window-alive
+        (progn
+          (message "OB-TMATE: create-window"))
+        (ob-tmate--create-window ob-session session-dir)
         )
       ;; Wait until tmate window is available
       (while (not (ob-tmate--window-alive-p ob-session)))
@@ -204,7 +209,7 @@ If no window is specified, use first window.
 
 Argument OB-SESSION: the current ob-tmate session."
   (let* ((target-session (ob-tmate--session ob-session))
-	 (window (ob-tmate--window ob-session))
+	 (window (ob-tmate--window-default ob-session))
 	 (target-window (if window (concat "=" window) "^")))
     (concat target-session ":" target-window)))
 
@@ -306,42 +311,77 @@ Argument OB-SESSION: the current ob-tmate session."
 ;; Tmate interaction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun ob-tmate--create-session (ob-session session-dir)
+(defun ob-tmate--create-session (session-name session-dir session-socket)
   "Create a tmate session if it does not yet exist.
 
 Argument OB-SESSION: the current ob-tmate session."
-  (unless (ob-tmate--session-alive-p ob-session)
-    ;; This ensures the TMATE variable is unset
-    ;; This hack gets us a tmate_ssh string
-    ;; tmate -S /tmp/tmate.sock new-session -d ; tmate -S /tmp/tmate.sock wait tmate-ready ; tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'
-    (message "OB-TMATE: Creating new / connect to existing tmate session")
-    ;; (message (concat "OB-TMATE: ob-session" ob-session))
-    (message (concat "OB-TMATE: ob-tmate--session ob-session => " (ob-tmate--session ob-session)))
-    (message (concat "OB-TMATE: ob-tmate--window => " (ob-tmate--window ob-session)))
-    (message (concat "OB-TMATE: ob-tmate--window-default => " (ob-tmate--window-default ob-session)))
-    (ob-tmate--execute ob-session
-                       "new-session"
-                       ;; "-A" ;; attach if it already exists (d)
-                       "-d" ;; just create the session, don't attach.
-                       ;; "-S" (ob-tmate--socket ob-session)
-                       ;; "-S" "/tmp/ob-tmate-socket" ;; Static for now
-                       ;; "-u" ;; UTF-8 please... only in newer tmux
-                       ;; "-vv" ;; Logs please... also only in newer tmux
-                       "-c" (expand-file-name session-dir)
-                       "-s" (ob-tmate--session ob-session)
-                       "-n" (ob-tmate--window-default ob-session)
-                       )
-    ;; (message "OB-TMATE: Waiting for tmate to be ready")
-    ;; (ob-tmate--execute ob-session
-    ;; "wait" "tmate-ready"
-    ;; )
-    ;; how can we capture this?
-    ;; (setq ob-tmate-ssh-string (ob-tmate--execute-string ob-session
-    ;;                   "display" "-p" "#{tmate_ssh}"
-    ;;                   ))
-    ;; (message (concat "OB-TMATE: " ob-tmate-ssh-string))
-    )
+  ;; (unless (ob-tmate--session-alive-p ob-session)
+  ;; This hack gets us a tmate_ssh string
+  ;; tmate -S /tmp/tmate.sock new-session -d ; tmate -S /tmp/tmate.sock wait tmate-ready ; tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'
+  (message "OB-TMATE: Creating new / connect to existing tmate session")
+  ;; (message (concat "OB-TMATE: ob-session" ob-session))
+  (message "OB-TMATE: ob-tmate--create-session name,dir,socket => %S,%S,%S" session-name session-dir session-socket)
+  (start-process-shell-command
+   (concat session-name "-tmate-process")
+   (concat "**" session-name "-tmate-process**")
+   (concat "nohup tmate"
+           " -n " "init"; session-window
+           " -F -v"
+           ;; " -d -v"
+           " -S " session-socket
+           " new-session"
+           " -P -F '#{tmate_ssh}:#{tmate_web}'"
+           " -s " session-name
+           " -c " session-dir
+           " -n 0 " ; This is window 0
+           " bash -c \"" ; begin command
+           "( " ; start wrap to display errors
+           "echo Waiting for tmate..." ; wait for tmate ready
+           " && "
+           ;; wait for tmate to be fully ready
+           "tmate wait tmate-ready "
+           " && "
+           "echo '\nShare this only with people you trust:'"
+           " && "
+           "tmate display -p '#{tmate_ssh} # " session-name "'"
+           " && "
+           "tmate display -p '#{tmate_web} # " session-name "'"
+           " && "
+           "echo '\nShare this read only connection otherwise:'"
+           " && "
+           "tmate display -p '#{tmate_ssh_ro} # " session-name "'"
+           " && "
+           "tmate display -p '#{tmate_web_ro} # " session-name "'"
+           " && "
+           ;; Let folks know what to do with this
+           "echo '\nShare the above connection with a friend and check huemacs'"
+           " ) 2>&1" ; end wrap to display errors
+           " && "
+           "read X" ; need to hit enter to continue
+           "\"" ; end command
+           )
+   )
+  ;; (ob-tmate--execute ob-session
+  ;;                    "new-session"
+  ;;                    ;; "-A" ;; attach if it already exists (d)
+  ;;                    "-d" ;; just create the session, don't attach.
+  ;;                    ;; "-S" (ob-tmate--socket ob-session)
+  ;;                    ;; "-S" "/tmp/ob-tmate-socket" ;; Static for now
+  ;;                    ;; "-u" ;; UTF-8 please... only in newer tmux
+  ;;                    ;; "-vv" ;; Logs please... also only in newer tmux
+  ;;                    "-c" (expand-file-name session-dir)
+  ;;                    "-s" (ob-tmate--session ob-session)
+  ;;                    "-n" (ob-tmate--window-default ob-session)
+  ;;                    )
+  ;; (message "OB-TMATE: Waiting for tmate to be ready")
+  ;; (ob-tmate--execute ob-session "wait" "tmate-ready")
+  ;; how can we capture this?
+  ;; (setq ob-tmate-ssh-string (ob-tmate--execute-string ob-session
+  ;;                   "display" "-p" "#{tmate_ssh}"
+  ;;                   ))
+  ;; (message (concat "OB-TMATE: " ob-tmate-ssh-string))
   )
+
 
 (defun ob-tmate--create-window (ob-session session-dir)
   "Create a tmate window in session if it does not yet exist.
@@ -365,7 +405,7 @@ Argument OB-SESSION: the current ob-tmate session."
     ;; "-S" (ob-tmate--socket ob-session)
     "new-window"
      "set-window-option"
-     "-t" (ob-tmate--window ob-session)
+     "-t" (ob-tmate--window-default ob-session)
      option value)))
 
 (defun ob-tmate--disable-renaming (ob-session)
@@ -387,12 +427,12 @@ Argument OB-SESSION: the current ob-tmate session."
     (progn
       (ob-tmate--execute ob-session
                          "select-window"
-                         "-t" (ob-tmate--window ob-session))
+                         "-t" (ob-tmate--window-default ob-session))
       (ob-tmate--execute ob-session
                          ;; "-S" (ob-tmate--socket ob-session)
                          "send-keys"
                          "-l"
-                         "-t" (ob-tmate--window ob-session)
+                         "-t" (ob-tmate--window-default ob-session)
                          line "\n")
       )))
 
