@@ -129,7 +129,10 @@ Argument PARAMS the org parameters of the code block."
           (ob-tmate--start-terminal-window ob-session)
           (y-or-n-p "Has a terminal started and shown you a url?")
           (gui-select-text (ob-tmate--ssh-url ob-session))
-          (osc52-interprogram-cut-function (ob-tmate--ssh-url ob-session))
+          (osc52-interprogram-cut-function (concat (ob-tmate--ssh-url ob-session) " # " (ob-tmate--web-url ob-session)))
+          (if (y-or-n-p "Open browser for url?")
+              (browse-url (ob-tmate--web-url ob-session))
+            )
           )
         )
       (message "OB-TMATE: Checking for window: %S" window-alive)
@@ -265,8 +268,10 @@ automatically space separated."
          )
     (iterm-new-window-send-string
      (concat
-      "tmate -S " socket
-      " attach-session || bash"
+      "tmate "
+      ;; "-CC " ; use Control Mode... very beta
+      "-S " socket
+      " attach-session" ; || bash"
       ))
     )
   )
