@@ -66,8 +66,8 @@ nodes:
      hostPort: 5432
    - containerPort: 6443
      hostPort: 6443
-   - containerPort: 10350
-     hostPort: 10350
+   # - containerPort: 10350
+   #   hostPort: 10350
    # - containerPort: 80
    #   hostPort: 2080
    # - containerPort: 443
