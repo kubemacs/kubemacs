@@ -397,7 +397,7 @@ alist, to ensure correct results."
   (make-local-variable 'org-babel-default-header-args:tmate)
   (setq org-babel-default-header-args:tmate
         (alist-set :exports "code"
-        (alist-set :session (concat user-login-name ":main")
+        (alist-set :session user-login-name
         (alist-set :window user-login-name
         ;; (alist-set :socket socket
                    org-babel-default-header-args:tmate)
@@ -406,7 +406,7 @@ alist, to ensure correct results."
   (make-local-variable 'org-babel-default-header-args:tmate)
   (setq org-babel-default-header-args:tmux
         (alist-set :exports "code"
-        (alist-set :session (concat user-login-name ":main")
+        (alist-set :session user-login-name
         (alist-set :window user-login-name
                    ;; (alist-set :socket socket
                    org-babel-default-header-args:tmate)

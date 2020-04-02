@@ -57,10 +57,15 @@ Change in case you want to use a different tmate than the one in your $PATH."
   :group 'org-babel
   :type 'string)
 
-(defcustom org-babel-tmate-default-window-name "i"
-  "This is the default tmate window name used for windows that are not explicitly named in an org session."
-  :group 'org-babel
-  :type 'string)
+;; (defcustom org-babel-tmate-default-session-name "tmate"
+;;   "This is the default tmate window name used for windows that are not explicitly named in an org session."
+;;   :group 'org-babel
+;;   :type 'string)
+
+;; (defcustom org-babel-tmate-default-window-name "i"
+;;   "This is the default tmate window name used for windows that are not explicitly named in an org session."
+;;   :group 'org-babel
+;;   :type 'string)
 
 (defun default-org-babel-tmate-terminal()
   "What terminal should we use as a default"
@@ -87,7 +92,8 @@ Change in case you want to use a different tmate than the one in your $PATH."
 
 (defvar org-babel-default-header-args:tmate
   '((:results . "silent")
-    (:session . "humacs")
+    (:session . "tmate")
+    (:window . "i")
     (:dir . ".")
     (:socket . nil)
     )
@@ -107,16 +113,16 @@ Argument PARAMS the org parameters of the code block."
   (message "Sending source code block to interactive terminal session...")
   (save-window-excursion
     (let* (
-           (org-session (cdr (assq :session params)))
            (socket (cdr (assq :socket params)))
-           (session-dir (cdr (assq :dir params)))
-           (session-name (ob-tmate--tmate-session org-session))
-           (session-window (ob-tmate--tmate-window org-session))
+           (dir (cdr (assq :dir params)))
+           (session (cdr (assq :session params)))
+           (window (cdr (assq :window params)))
            (socket (if socket
                        (expand-file-name socket)
-                     (ob-tmate--tmate-socket org-session)
+                     (ob-tmate--tmate-socket session)
                      ))
-           (ob-session (ob-tmate--from-org-session org-session socket))
+           (ob-session (ob-tmate--create
+                        :session session :window window :socket socket))
            (session-alive (ob-tmate--session-alive-p ob-session))
            (window-alive (ob-tmate--window-alive-p ob-session)))
       ;; Create tmate session and window if they do not yet exist
@@ -125,7 +131,7 @@ Argument PARAMS the org parameters of the code block."
       (unless session-alive
         (progn
           (message "OB-TMATE: create-session")
-          (ob-tmate--create-session session-name session-dir socket)
+          (ob-tmate--create-session session dir socket)
           (ob-tmate--start-terminal-window ob-session)
           (y-or-n-p "Has a terminal started and shown you a url?")
           (gui-select-text (ob-tmate--ssh-url ob-session))
@@ -139,7 +145,7 @@ Argument PARAMS the org parameters of the code block."
       (unless window-alive
         (progn
           (message "OB-TMATE: create-window"))
-        (ob-tmate--create-window ob-session session-dir)
+        (ob-tmate--create-window ob-session dir)
         )
       ;; Wait until tmate window is available
       (while (not (ob-tmate--window-alive-p ob-session)))
@@ -175,25 +181,10 @@ Argument PARAMS the org parameters of the code block."
     (concat temporary-file-directory user-login-name "." session-name ".tmate" )
     ))
 
-(defun ob-tmate--from-org-session (org-session socket)
+(defun ob-tmate--from-session-window-socket (session window socket)
   "Create a new ob-tmate-session object from ORG-SESSION specification.
 Required argument SOCKET: the location of the tmate socket."
-  (let* (
-         (session-name (ob-tmate--tmate-session org-session))
-         (session-window (ob-tmate--tmate-window org-session))
-         (session-socket (if socket
-                     (expand-file-name socket)
-                   (ob-tmate--tmate-socket org-session)
-                   ))
-         )
-    (message "FROM_ORG_SESSION: org-session %S" org-session)
-    (message "FROM_ORG_SESSION: socket %S" socket)
-    (message "FROM_ORG_SESSION: session: %S window: %S socket: %S" session-name session-window session-socket)
-    (ob-tmate--create
-     :session session-name
-     :window session-window
-     :socket session-socket)
-      )
+  (ob-tmate--create :session session :window window :socket socket)
   )
 
 (defun ob-tmate--window-default (ob-session)
@@ -308,6 +299,7 @@ Argument OB-SESSION: the current ob-tmate session."
         ((string= org-babel-tmate-terminal "iterm") (ob-tmate--start-terminal-window-iterm ob-session))
         ((string= org-babel-tmate-terminal "xterm") (ob-tmate--start-terminal-window-xterm ob-session))
         ((string= org-babel-tmate-terminal "osc52") (ob-tmate--start-terminal-window-osc52 ob-session))
+        ((string= org-babel-tmate-terminal "web") (ob-tmate--start-terminal-window-osc52 ob-session))
         (t (message "We didn't find a supported terminal type"))
          )
         )
@@ -482,8 +474,15 @@ Argument OB-SESSION: the current ob-tmate session."
   "Retrieve the ssh # http://url/session for the ob-session"
   (ob-tmate--execute-string ob-session
                             "display"
-                            "-p '#{tmate_ssh} # #{tmate_web}'"
+                            "-p '#{tmate_ssh}'"
                             ))
+(defun ob-tmate--web-url (ob-session)
+  "Retrieve the ssh # http://url/session for the ob-session"
+  (substring (ob-tmate--execute-string ob-session
+                            "display"
+                            "-p '#{tmate_web}'"
+                            )
+             0 -1))
 
 (defun ob-tmate--window-alive-p (ob-session)
   "Check if WINDOW exists in tmate session.
