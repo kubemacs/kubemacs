@@ -1,2 +1,2 @@
 # curl https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor  > nodesource.gpg
-deb http://deb.nodesource.com/node_12.x eoan main
+deb http://deb.nodesource.com/node_12.x focal main

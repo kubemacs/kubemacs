@@ -1,24 +1,18 @@
-FROM ubuntu:eoan-20200114
+FROM ubuntu:20.04
 # Software Versions
 ENV KUBEMACS_VERSION=0.0.2 \
   EMACS_VERSION=26.3 \
   DOCKER_VERSION=19.03.5 \
-  KIND_VERSION=0.7.0 \
-  KUBECTL_VERSION=1.17.2 \
+  KIND_VERSION=0.8.1 \
+  KUBECTL_VERSION=1.18.3 \
   GO_VERSION=1.13.6 \
   TILT_VERSION=0.12.0 \
   TMATE_VERSION=2.4.0 \
-  BAZEL_VERSION=0.23.2
+  BAZEL_VERSION=2.2.0
 # GOLANG, path vars
 ENV GOROOT=/usr/local/go \
   PATH="$PATH:/usr/local/go/bin"
-# Setup Postgresql Upstream REPO - Google Cloud SDK REPO
-# Postgres client Related vars
-ENV PGUSER=apisnoop \
-  PGDATABASE=apisnoop \
-  PGHOST=postgres \
-  PGPORT=5432 \
-  TZ="Pacific/Auckland"
+
 # These vars ensure that emacs loads kubemacs before all else
 # Note the : following the KUBEMACS_CONFIGDIR in EMACSLOADPATH
 ENV KUBEMACS_CONFIGDIR=/var/local/kubemacs.d
@@ -64,11 +58,6 @@ RUN curl -fsSL \
   https://github.com/windmilleng/tilt/releases/download/v${TILT_VERSION}/tilt.${TILT_VERSION}.linux.x86_64.tar.gz \
   | tar --directory /usr/local/bin --extract --ungzip tilt
 
-# We stopped using a shell script, and added apt list+gpg files
-# # install nodejs
-# RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
-#   DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
-
 # install golang
 RUN cd /tmp && \
   curl -L https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz \
@@ -87,7 +76,6 @@ RUN apt-get update \
   apt-get install --no-install-recommends -y \
   git \
   openssh-client \
-  nodejs \
   postgresql-client-12 \
   jq \
   inotify-tools \
@@ -106,6 +94,7 @@ RUN apt-get update \
   rsync \
   unzip \
   file \
+  bash-completion \
   && rm -rf /var/apt/lists/*
 
 RUN curl -L -o /usr/local/bin/bazel https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-linux-x86_64 && \
@@ -114,33 +103,9 @@ RUN curl -L -o /usr/local/bin/bazel https://github.com/bazelbuild/bazel/releases
 RUN /bin/env GO111MODULE=on GOPATH=/usr/local/go /usr/local/go/bin/go get golang.org/x/tools/gopls@latest
 RUN /bin/env GO111MODULE=on GOPATH=/usr/local/go /usr/local/go/bin/go get -u github.com/stamblerre/gocode
 
-# # Known dependencies
-# RUN apt-get update \
-#   && DEBIAN_FRONTEND=noninteractive \
-#   apt-get install --no-install-recommends -y \
-#   acl \
-#   apt-file \
-#   apt-utils \
-#   ripgrep \
-#   psmisc \
-#   software-properties-common \
-#   sudo \
-#   vim \
-#   zsh \
-#   && rm -rf /var/apt/lists/*
-#   # apt-transport-https \
-
-# gopls, gocode, and others needed for dev will install into /usr/local/bin
-# RUN GOPATH=/usr/local \
-#   go get -u -v github.com/nsf/gocode \
-#   && GOPATH=/usr/local \
-#   go get -u -v golang.org/x/tools/... \
-#   && rm -rf /root/.cache /usr/local/pkg /usr/local/src
-
-
 # # ensure that Python3 is default
-# RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1 && \
-#     update-alternatives --install /usr/bin/python python /usr/bin/python3 2
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1 && \
+  update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 RUN mkdir -p /usr/share/kubemacs
 ADD kind-cluster-config.yaml kind-cluster+registry.yaml kustomization.yaml /usr/share/kubemacs/
@@ -181,42 +146,14 @@ RUN mkdir -p /etc/skel/.ssh
 COPY known_hosts /etc/skel/.ssh/
 COPY kubeconfig /etc/skel/.kube/config
 RUN chmod 0600 /etc/skel/.pgpass
-RUN useradd -m -G sudo,users -s /bin/bash -u 2000 ii
+RUN groupadd -g 1000 standard && \
+  useradd -m -G sudo,users,standard -s /bin/bash -u 2000 ii
 
 COPY bin/* /usr/local/bin/
 
 USER ii
 
-# # Fetch Golang dependencies for development
-# RUN mkdir -p ~/go/src/k8s.io && git clone https://github.com/kubernetes/kubernetes.git ~/go/src/k8s.io/kubernetes
-# RUN cd ~/go/src/k8s.io/kubernetes ; go mod download
-#  go get -u -v ...
-# RUN go get -u -v k8s.io/apimachinery/pkg/apis/meta/v1
-# ENV GO111MODULE=on
-# RUN go get -u -v k8s.io/client-go/kubernetes@v0.17.0
-# RUN go get -u -v k8s.io/client-go/tools/clientcmd@v0.17.0
-# RUN git clone --depth 1 https://github.com/cncf/apisnoop /home/ii/apisnoop
-# RUN cd /home/ii/apisnoop/org/tickets ; go mod download
-
 # ENTRYPOINT ["/bin/bash"]
 CMD ["simple-init.sh"]
 HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=5 \
   CMD ["tmate", "-S ", "/tmp/ii.default.target.iisocket", "wait-for", "tmate-ready"] || exit 1
-# ca-certificates need to be updated to connect to https://download.docker.com
-# RUN apt-get update \
-#   && DEBIAN_FRONTEND=noninteractive \
-#   apt-get install --no-install-recommends -y \
-#   ca-certificates \
-#   && rm -rf /var/apt/lists/*
-
-# We need the docker client binary ... do it directly instead
-# RUN apt-get update \
-#   && DEBIAN_FRONTEND=noninteractive \
-#   apt-get install --no-install-recommends -y \
-#   docker docker.io \
-#   && rm -rf /var/apt/lists/*
-
-  # Installing just kubectl insteaf of everything from google-cloud-sdk
-  # but still enabling the repo should someone need it later
-  # kubectl \
-  # google-cloud-sdk \
