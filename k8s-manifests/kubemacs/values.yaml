@@ -4,6 +4,7 @@
 
 options:
   hostDockerSocket: false
+  hostTmp: false
   timezone: "Pacific/Auckland"
   gitName: ""
   gitEmail: ""

@@ -61,10 +61,16 @@ spec:
         {{- with .Values.extraEnvVars }}
             {{- toYaml . | nindent 12 }}
         {{- end }}
-        {{- if .Values.options.hostDockerSocket }}
+        {{- if or .Values.options.hostDockerSocket .Values.options.hostTmp }}
           volumeMounts:
+            {{- if .Values.options.hostDockerSocket }}
             - name: var-run-docker-sock
               mountPath: /var/run/docker.sock
+            {{- end }}
+            {{- if .Values.options.hostTmp }}
+            - name: tmp
+              mountPath: /tmp
+            {{- end }}
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
@@ -78,10 +84,17 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-    {{- if .Values.options.hostDockerSocket }}
+    {{- if or .Values.options.hostDockerSocket .Values.options.hostTmp }}
       volumes:
+        {{- if .Values.options.hostDockerSocket }}
         - name: var-run-docker-sock
           hostPath:
             path: /var/run/docker.sock
             type: Socket
+        {{- end }}
+        {{- if .Values.options.hostTmp }}
+        - name: tmp
+          hostPath:
+            path: /tmp
+        {{- end }}
     {{- end }}
