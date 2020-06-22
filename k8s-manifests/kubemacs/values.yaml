@@ -3,6 +3,7 @@
 # Declare variables to be passed into your templates.
 
 options:
+  hostDockerSocket: false
   timezone: "Pacific/Auckland"
   gitName: ""
   gitEmail: ""
@@ -13,6 +14,8 @@ options:
     (
       echo 'Welcome to Kubemacs'
     )
+
+extraEnvVars: []
 
 image:
   repository: kubemacs/kubemacs

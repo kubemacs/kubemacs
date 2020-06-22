@@ -46,15 +46,26 @@ spec:
             - name: GIT_AUTHOR_NAME
               value: {{ .Values.options.gitName | quote }}
             - name: INIT_DEFAULT_REPOS_FOLDER
-              value: {{ .Values.options.workingFolder | quote }}
+              value: {{ .Values.options.workingDirectory | quote }}
             - name: INIT_DEFAULT_REPOS
-              value: {{ .Values.options.repos | quote }}
+              value:
+              {{- range .Values.options.repos }}
+                {{ . }}
+              {{- end }}
             - name: INIT_DEFAULT_DIR
-              value: {{ .Values.options.workingFolder | quote }}
+              value: {{ .Values.options.workingDirectory | quote }}
             - name: INIT_ORG_FILE
               value: {{ .Values.options.workingFile | quote }}
             - name: INIT_PREFINISH_BLOCK
               value: {{ .Values.options.preinitScript | quote }}
+        {{- with .Values.extraEnvVars }}
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- if .Values.options.hostDockerSocket }}
+          volumeMounts:
+            - name: var-run-docker-sock
+              mountPath: /var/run/docker.sock
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -66,4 +77,11 @@ spec:
     {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- if .Values.options.hostDockerSocket }}
+      volumes:
+        - name: var-run-docker-sock
+          hostPath:
+            path: /var/run/docker.sock
+            type: Socket
     {{- end }}
