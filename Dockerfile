@@ -6,9 +6,10 @@ ENV KUBEMACS_VERSION=0.0.2 \
   KIND_VERSION=0.8.1 \
   KUBECTL_VERSION=1.18.3 \
   GO_VERSION=1.13.6 \
-  TILT_VERSION=0.12.0 \
+  TILT_VERSION=0.15.0 \
   TMATE_VERSION=2.4.0 \
-  BAZEL_VERSION=2.2.0
+  BAZEL_VERSION=2.2.0 \
+  HELM_VERSION=2.16.9
 # GOLANG, path vars
 ENV GOROOT=/usr/local/go \
   PATH="$PATH:/usr/local/go/bin"
@@ -70,6 +71,8 @@ RUN curl -L \
   | tar --directory /usr/local/bin --extract --xz \
   --strip-components 1 tmate-${TMATE_VERSION}-static-linux-amd64/tmate
 
+RUN curl -L https://get.helm.sh/helm-v2.16.9-linux-amd64.tar.gz | tar --directory /usr/local/bin --extract -xz --strip-components 1 linux-amd64/helm
+
 # Major dependencies (nodejs + postgres come from upstream apt repos)
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
@@ -95,6 +98,8 @@ RUN apt-get update \
   unzip \
   file \
   bash-completion \
+  less \
+  iputils-ping \
   && rm -rf /var/apt/lists/*
 
 RUN curl -L -o /usr/local/bin/bazel https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-linux-x86_64 && \
