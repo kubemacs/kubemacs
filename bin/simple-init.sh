@@ -22,11 +22,11 @@ else
     kind get kubeconfig
 fi
 
-if [ -z $GIT_AUTHOR_EMAIL ]; then
+if [ -z "$GIT_AUTHOR_EMAIL" ]; then
     echo "ERROR: GIT_AUTHOR_EMAIL env Must be set"
     exit 1
 fi
-if [ -z $GIT_AUTHOR_NAME ]; then
+if [ -z "$GIT_AUTHOR_NAME" ]; then
     echo "ERROR: GIT_AUTHOR_NAME env Must be set"
     exit 1
 fi
@@ -47,11 +47,11 @@ export INIT_PREFINISH_BLOCK="${INIT_PREFINISH_BLOCK}"
         mkdir -p $INIT_DEFAULT_REPOS_FOLDER
         cd $INIT_DEFAULT_REPOS_FOLDER
         for repo in $INIT_DEFAULT_REPOS; do
-            git clone -v --recursive $repo
+            git clone -v --recursive "$repo"
         done
     fi
     cd
-    eval $INIT_PREFINISH_BLOCK
+    eval "$INIT_PREFINISH_BLOCK"
 )
 
 # This background process will ensure tmate attach commands
