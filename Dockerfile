@@ -30,14 +30,43 @@ COPY apt/*.gpg /etc/apt/trusted.gpg.d/
 RUN DEBIAN_FRONTEND=noninteractive \
   apt-get update \
   && apt-get upgrade -y \
-  && apt-get install --no-install-recommends -y \
+  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
   emacs-nox \
   xz-utils \
   sudo \
   curl \
   ca-certificates \
   libcap2-bin \
-  && rm -rf /var/apt/lists/*
+# Major dependencies (nodejs + postgres come from upstream apt repos)
+  git \
+  openssh-client \
+  postgresql-client-12 \
+  jq \
+  inotify-tools \
+  xtermcontrol \
+  nodejs \
+  gnupg2 \
+  tzdata \
+  wget \
+  python3-dev \
+  xz-utils \
+  apache2-utils \
+  sqlite3 \
+  silversearcher-ag \
+  build-essential \
+  vim \
+  rsync \
+  unzip \
+  file \
+  bash-completion \
+  less \
+  iputils-ping \
+  dnsutils \
+  tree \
+  bash-completion \
+  && rm -rf /var/apt/lists/* \
+# ensure that Python3 is default
+  && update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 # docker client binary
 RUN curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz \
@@ -74,43 +103,8 @@ RUN curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-${D
   && curl -L -o /usr/local/bin/bazel https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-linux-x86_64 && \
     chmod +x /usr/local/bin/bazel && bazel
 
-# Major dependencies (nodejs + postgres come from upstream apt repos)
-RUN apt-get update \
-  && DEBIAN_FRONTEND=noninteractive \
-  apt-get install --no-install-recommends -y \
-  git \
-  openssh-client \
-  postgresql-client-12 \
-  jq \
-  inotify-tools \
-  xtermcontrol \
-  nodejs \
-  gnupg2 \
-  tzdata \
-  wget \
-  python3-dev \
-  xz-utils \
-  apache2-utils \
-  sqlite3 \
-  silversearcher-ag \
-  build-essential \
-  vim \
-  rsync \
-  unzip \
-  file \
-  bash-completion \
-  less \
-  iputils-ping \
-  dnsutils \
-  tree \
-  bash-completion \
-  && rm -rf /var/apt/lists/*
-
-RUN /bin/env GO111MODULE=on GOPATH=/usr/local/go /usr/local/go/bin/go get golang.org/x/tools/gopls@latest
-RUN /bin/env GO111MODULE=on GOPATH=/usr/local/go /usr/local/go/bin/go get -u github.com/stamblerre/gocode
-
-# # ensure that Python3 is default
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 2
+RUN /bin/env GO111MODULE=on GOPATH=/usr/local/go /usr/local/go/bin/go get golang.org/x/tools/gopls@latest \
+ && /bin/env GO111MODULE=on GOPATH=/usr/local/go /usr/local/go/bin/go get -u github.com/stamblerre/gocode
 
 RUN mkdir -p /usr/share/kubemacs
 ADD kind-cluster-config.yaml kind-cluster+registry.yaml kustomization.yaml /usr/share/kubemacs/
