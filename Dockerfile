@@ -9,15 +9,15 @@ ENV KUBEMACS_VERSION=0.0.2 \
   TILT_VERSION=0.15.0 \
   TMATE_VERSION=2.4.0 \
   BAZEL_VERSION=2.2.0 \
-  HELM_VERSION=2.16.9
+  HELM_VERSION=2.16.9 \
 # GOLANG, path vars
-ENV GOROOT=/usr/local/go \
-  PATH="$PATH:/usr/local/go/bin"
-
+  GOROOT=/usr/local/go \
+  PATH="$PATH:/usr/local/go/bin" \
 # These vars ensure that emacs loads kubemacs before all else
 # Note the : following the KUBEMACS_CONFIGDIR in EMACSLOADPATH
-ENV KUBEMACS_CONFIGDIR=/var/local/kubemacs.d
-ENV EMACSLOADPATH=/var/local/kubemacs.d:
+  KUBEMACS_CONFIGDIR=/var/local/kubemacs.d \
+  EMACSLOADPATH=/var/local/kubemacs.d:
+
 # Node 12, Postgres (pgdg), and Google Cloud SDK are currently available here:
 COPY apt/*.list /etc/apt/sources.list.d/
 # Ensure the keyfile for each repo above is available
@@ -73,6 +73,9 @@ RUN curl -L \
 
 RUN curl -L https://get.helm.sh/helm-v2.16.9-linux-amd64.tar.gz | tar --directory /usr/local/bin --extract -xz --strip-components 1 linux-amd64/helm
 
+RUN curl -L -o /usr/local/bin/bazel https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-linux-x86_64 && \
+  chmod +x /usr/local/bin/bazel && bazel
+
 # Major dependencies (nodejs + postgres come from upstream apt repos)
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
@@ -100,17 +103,16 @@ RUN apt-get update \
   bash-completion \
   less \
   iputils-ping \
+  dnsutils \
+  tree \
+  bash-completion \
   && rm -rf /var/apt/lists/*
-
-RUN curl -L -o /usr/local/bin/bazel https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-linux-x86_64 && \
-  chmod +x /usr/local/bin/bazel
 
 RUN /bin/env GO111MODULE=on GOPATH=/usr/local/go /usr/local/go/bin/go get golang.org/x/tools/gopls@latest
 RUN /bin/env GO111MODULE=on GOPATH=/usr/local/go /usr/local/go/bin/go get -u github.com/stamblerre/gocode
 
 # # ensure that Python3 is default
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1 && \
-  update-alternatives --install /usr/bin/python python /usr/bin/python3 2
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 RUN mkdir -p /usr/share/kubemacs
 ADD kind-cluster-config.yaml kind-cluster+registry.yaml kustomization.yaml /usr/share/kubemacs/
