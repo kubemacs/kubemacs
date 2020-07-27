@@ -42,39 +42,37 @@ RUN DEBIAN_FRONTEND=noninteractive \
 # docker client binary
 RUN curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz \
   | tar --directory=/usr/local/bin --extract --ungzip \
-  --strip-components=1 docker/docker
+  --strip-components=1 docker/docker \
 
 # kind binary
-RUN curl -Lo /usr/local/bin/kind \
-  https://github.com/kubernetes-sigs/kind/releases/download/v${KIND_VERSION}/kind-$(uname)-amd64 \
-  && chmod +x /usr/local/bin/kind
+  && curl -Lo /usr/local/bin/kind \
+    https://github.com/kubernetes-sigs/kind/releases/download/v${KIND_VERSION}/kind-$(uname)-amd64 \
+    && chmod +x /usr/local/bin/kind \
 
 # kubectl binary
-RUN curl -L https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl \
-  -o /usr/local/bin/kubectl \
-  && chmod +x /usr/local/bin/kubectl
+  && curl -L https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl \
+    && chmod +x /usr/local/bin/kubectl \
 
 # tilt binary
-RUN curl -fsSL \
-  https://github.com/windmilleng/tilt/releases/download/v${TILT_VERSION}/tilt.${TILT_VERSION}.linux.x86_64.tar.gz \
-  | tar --directory /usr/local/bin --extract --ungzip tilt
+  && curl -fsSL \
+    https://github.com/windmilleng/tilt/releases/download/v${TILT_VERSION}/tilt.${TILT_VERSION}.linux.x86_64.tar.gz \
+    | tar --directory /usr/local/bin --extract --ungzip tilt \
 
 # install golang
-RUN cd /tmp && \
-  curl -L https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz \
-  | tar --directory /usr/local --extract --ungzip
+  && curl -L https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz \
+    | tar --directory /usr/local --extract --ungzip \
 
 # tmate allows others to connect to your session
 # they support using self hosted / though we default to using their hosted service
-RUN curl -L \
-  https://github.com/tmate-io/tmate/releases/download/${TMATE_VERSION}/tmate-${TMATE_VERSION}-static-linux-amd64.tar.xz \
-  | tar --directory /usr/local/bin --extract --xz \
-  --strip-components 1 tmate-${TMATE_VERSION}-static-linux-amd64/tmate
+  && curl -L \
+    https://github.com/tmate-io/tmate/releases/download/${TMATE_VERSION}/tmate-${TMATE_VERSION}-static-linux-amd64.tar.xz \
+    | tar --directory /usr/local/bin --extract --xz \
+    --strip-components 1 tmate-${TMATE_VERSION}-static-linux-amd64/tmate \
 
-RUN curl -L https://get.helm.sh/helm-v2.16.9-linux-amd64.tar.gz | tar --directory /usr/local/bin --extract -xz --strip-components 1 linux-amd64/helm
+  && curl -L https://get.helm.sh/helm-v2.16.9-linux-amd64.tar.gz | tar --directory /usr/local/bin --extract -xz --strip-components 1 linux-amd64/helm \
 
-RUN curl -L -o /usr/local/bin/bazel https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-linux-x86_64 && \
-  chmod +x /usr/local/bin/bazel && bazel
+  && curl -L -o /usr/local/bin/bazel https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-linux-x86_64 && \
+    chmod +x /usr/local/bin/bazel && bazel
 
 # Major dependencies (nodejs + postgres come from upstream apt repos)
 RUN apt-get update \
