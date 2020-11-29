@@ -33,7 +33,7 @@ spec:
         - name: SSH_KEYS_PATH
           value: /etc/tmate-keys
         - name: SSH_PORT_ADVERTISE
-          value: "2200"
+          value: "22"
         # - name: SSH_PORT_ADVERTISE
         #   value: "2200"
         - name: SSH_HOSTNAME
@@ -106,8 +106,12 @@ metadata:
 spec:
   selector:
     app: session
+  type: LoadBalancer
+  externalIPs:
+    - 147.75.109.41
   ports:
-  - port: 2200
+  - port: 22
+    targetPort: 2200
     name: ssh
   - port: 4001
     name: http

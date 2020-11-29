@@ -144,7 +144,7 @@ statefulset.apps/kubemacs   1/1     10h
 [[./Tiltfile]]
 [[~/tmate-kube/dev/master.yaml::kind:%20Deployment]]
 #+begin_src tmate :dir "." :session ii:tmate-tilt
-export TMATE_NS=ii
+export TMATE_NS=hh
 kubectl create ns $TMATE_NS
 kubectl config set-context $(kubectl config current-context) --namespace=$TMATE_NS
 tilt up --host 0.0.0.0 --port 10350

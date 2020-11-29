@@ -15,8 +15,12 @@ metadata:
   # annotations:
   #   nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
+  tls:
+    - host:
+        - tmate-ws.hh.ii.sharing.io
+      secretName: letsencrypt-prod
   rules:
-  - host: "tmate-ws.local.ii.nz"
+  - host: "tmate-ws.hh.ii.sharing.io"
     http:
       # required PGADMIN_CONFIG_SERVER_MODE env set to False in deployment
       # We need to template this out

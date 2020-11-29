@@ -2,7 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 # namespace: tmate
 bases:
-  - ../../nginx-ingress
+  # - ../../nginx-ingress
   # - ../../tilt
 resources:
   # - tmate-ns.yaml
@@ -14,14 +14,14 @@ resources:
   - master-ingress.yaml
   - session-ingress.yaml
   - tilt-ingress.yaml
-  - tcp-services.yaml
+  # - tcp-services.yaml
 patchesJson6902:
-  - target:
-      group: extensions
-      version: v1beta1 
-      kind: Ingress
-      name: tilt-ingress
-    path: tilt-ingress-patch.yaml
+  # - target:
+  #     group: extensions
+  #     version: v1beta1
+  #     kind: Ingress
+  #     name: tilt-ingress
+  #   path: tilt-ingress-patch.yaml
   # - target:
   #     version: v1
   #     kind: ConfigMap

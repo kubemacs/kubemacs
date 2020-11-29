@@ -14,6 +14,18 @@ spec:
       labels:
         app: master
     spec:
+      initContainers:
+      - name: tmate-migrate
+        image: tmate/tmate-master:latest
+        command:
+          - /bin/sh
+          - -c
+          - mix do ecto.create, ecto.migrate
+        env:
+        # - name: MIX_ENV
+        #   value: "dev"
+        - name: PG_URI
+          value: "pg://postgres:postgres@postgres:5432/tmate_dev"
       containers:
       - name: tmate-master
         image: tmate/tmate-master:latest

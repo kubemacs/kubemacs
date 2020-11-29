@@ -3,7 +3,7 @@ apiVersion: v1
 metadata:
   name: config
 data:
-  hostname: "tmate.local.ii.nz"
-  master_base_url: "http://tmate.local.ii.nz/"
-  user_facing_base_url: "http://tmate.local.ii.nz/"
-  websocket_base_url: "ws://tmate-ws.local.ii.nz/"
+  hostname: "tmate.hh.ii.sharing.io"
+  master_base_url: "http://tmate.hh.ii.sharing.io/"
+  user_facing_base_url: "http://tmate.hh.ii.sharing.io/"
+  websocket_base_url: "ws://tmate-ws.hh.ii.sharing.io/"

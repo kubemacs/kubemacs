@@ -14,18 +14,18 @@ spec:
       labels:
         app: postgres
     spec:
-      volumes:
-        - name: pgdata
-          persistentVolumeClaim:
-            claimName: pgdata-pvc
+      # volumes:
+      #   - name: pgdata
+      #     persistentVolumeClaim:
+      #       claimName: pgdata-pvc
       containers:
         - name: postgres
           image: postgres:11-alpine
           ports:
             - containerPort: 5432
-          volumeMounts:
-            - name: pgdata
-              mountPath: /var/lib/postgresql/data
+          # volumeMounts:
+          #   - name: pgdata
+          #     mountPath: /var/lib/postgresql/data
           env:
           - name: POSTGRES_HOST_AUTH_METHOD
             value: trust
@@ -40,29 +40,29 @@ spec:
   ports:
   - port: 5432
 
----
-kind: PersistentVolume
-apiVersion: v1
-metadata:
-  name: pgdata-pv
-spec:
-  accessModes:
-    - ReadWriteOnce
-  capacity:
-    storage: 100Mi
-  hostPath:
-    path: /data/pgdata
-  storageClassName: standard
+# ---
+# kind: PersistentVolume
+# apiVersion: v1
+# metadata:
+#   name: pgdata-pv
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   capacity:
+#     storage: 100Mi
+#   hostPath:
+#     path: /data/pgdata
+#   storageClassName: standard
 
----
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: pgdata-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
-  storageClassName: standard
+# ---
+# kind: PersistentVolumeClaim
+# apiVersion: v1
+# metadata:
+#   name: pgdata-pvc
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 100Mi
+#   storageClassName: standard
